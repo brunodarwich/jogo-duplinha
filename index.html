@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>MOBA Duplinha 2.5D</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- WebRTC Peer-to-Peer Networking for 1-3 Players -->
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script>if (typeof Peer === 'undefined') { document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"><\\/script>'); }</script>
+</head>
+<body>
+  <!-- Fullscreen Game Canvas -->
+  <canvas id="game-canvas"></canvas>
+
+  <!-- HUD Overlays (Pointer-events transparent, children interactive) -->
+  <div id="hud-overlay" class="hud-overlay">
+    <!-- Top HUD: Objectives & Match Timer -->
+    <header class="top-hud">
+      <div class="tower-status allied">
+        <span class="icon">🛡️</span>
+        <span id="allied-towers-count">Towers: 2</span>
+      </div>
+      <div class="match-timer-container">
+        <span id="match-timer">00:00</span>
+      </div>
+      <div class="tower-status enemy">
+        <span class="icon">💀</span>
+        <span id="enemy-towers-count">Towers: 2</span>
+      </div>
+      <div class="audio-controls-container">
+        <button id="btn-audio-toggle" class="audio-toggle-btn" title="Alternar Áudio (Mute/Ativar) [M]">🔊</button>
+        <input type="range" id="sound-volume-slider" class="sound-volume-slider" min="0" max="1" step="0.05" value="0.7" title="Volume do Jogo">
+      </div>
+    </header>
+
+    <!-- Dynamic Event Banner Container (M1 / R1) -->
+    <div id="event-banner-container" class="event-banner-container"></div>
+
+    <!-- Death Timer Overlay (M1 / R1) -->
+    <div id="death-timer-overlay" class="death-timer-overlay hidden">
+      <div class="death-timer-card">
+        <div class="death-icon-pulse">
+          <span class="death-icon">💀</span>
+        </div>
+        <h2 class="death-title">VOCÊ FOI DERROTADO</h2>
+        <div class="death-divider"></div>
+        <p class="death-label">Ressurgindo na Fonte em</p>
+        <div class="death-timer-value">
+          <span id="death-timer-countdown" class="death-countdown">0s</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Epic Endgame Modal (M1 / R1) -->
+    <div id="endgame-modal" class="endgame-modal hidden">
+      <div class="endgame-card">
+        <div class="endgame-badge">
+          <span id="endgame-badge-icon" class="badge-icon">🏆</span>
+        </div>
+        <h1 id="endgame-title" class="endgame-title">VITÓRIA!</h1>
+        <p id="endgame-subtitle" class="endgame-subtitle">O Boss Supremo e o Cristal Inimigo foram aniquilados!</p>
+        <div class="endgame-stats" id="endgame-stats">
+          <div class="endgame-stat-item">
+            <span class="label">Tempo de Batalha:</span>
+            <span id="endgame-match-time" class="value">00:00</span>
+          </div>
+        </div>
+        <div class="endgame-actions">
+          <button id="endgame-restart-btn" class="endgame-btn restart">Jogar Novamente</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat & Cheat Command Bar (Press Enter or / to open) -->
+    <div id="chat-command-bar" class="chat-command-bar hidden">
+      <div class="chat-command-inner">
+        <span class="chat-prompt">💬 [Comando]:</span>
+        <input type="text" id="chat-command-input" class="chat-command-input" placeholder="Digite /plan, /boost, /gold, /help... (Enter para enviar, ESC para fechar)" maxlength="60" autocomplete="off" spellcheck="false">
+        <button id="chat-command-submit" class="chat-command-submit">Enviar</button>
+      </div>
+    </div>
+
+    <!-- Bottom HUD Console -->
+    <footer class="bottom-hud">
+      <!-- Hero Portrait & Level -->
+      <div class="hud-portrait-box">
+        <div id="hero-portrait" class="hero-portrait knight">🛡️</div>
+        <div id="hero-level-badge" class="level-badge">1</div>
+      </div>
+
+      <!-- Stats Matrix -->
+      <div class="hud-stats-box">
+        <div class="stat-item" title="Dano de Ataque (AD)"><span class="stat-icon">⚔️</span><span id="stat-ad">58</span></div>
+        <div class="stat-item" title="Poder de Habilidade (AP)"><span class="stat-icon">✨</span><span id="stat-ap">0</span></div>
+        <div class="stat-item" title="Armadura Física"><span class="stat-icon">🛡️</span><span id="stat-armor">38</span></div>
+        <div class="stat-item" title="Resistência Mágica"><span class="stat-icon">🔮</span><span id="stat-mr">32</span></div>
+        <div class="stat-item" title="Velocidade de Movimento"><span class="stat-icon">👟</span><span id="stat-speed">325</span></div>
+        <div class="stat-item gold" title="Ouro"><span class="stat-icon">💰</span><span id="stat-gold">500</span></div>
+      </div>
+
+      <!-- Center Console (HP, Mana, Ability Bar) -->
+      <div class="hud-center-console">
+        <div class="status-bars">
+          <div class="bar-container hp-bar">
+            <div id="hud-hp-fill" class="bar-fill hp" style="width: 100%;"></div>
+            <span id="hud-hp-text" class="bar-text">680 / 680</span>
+          </div>
+          <div class="bar-container mana-bar">
+            <div id="hud-mana-fill" class="bar-fill mana" style="width: 100%;"></div>
+            <span id="hud-mana-text" class="bar-text">300 / 300</span>
+          </div>
+          <div class="bar-container xp-bar" title="Experiência (XP)">
+            <div id="hud-xp-fill" class="bar-fill xp" style="width: 0%;"></div>
+            <span id="hud-xp-text" class="bar-text">0 / 240 XP</span>
+          </div>
+        </div>
+
+        <div class="ability-bar">
+          <div class="ability-slot-wrapper">
+            <button id="btn-upgrade-q" class="ability-levelup-btn hidden" data-upgrade-slot="Q" title="Evoluir Habilidade Q (Ctrl+Q)">+</button>
+            <div id="ability-q" class="ability-slot" data-key="Q" title="Q: Shield Slam (Golpe de Escudo)">
+              <div class="ability-icon">💥</div>
+              <div class="ability-cooldown-sweep"></div>
+              <span class="cooldown-text"></span>
+              <span class="mana-badge">50</span>
+              <span class="hotkey-label">Q</span>
+            </div>
+            <div class="ability-pips" id="pips-q">
+              <span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span>
+            </div>
+          </div>
+          <div class="ability-slot-wrapper">
+            <button id="btn-upgrade-w" class="ability-levelup-btn hidden" data-upgrade-slot="W" title="Evoluir Habilidade W (Ctrl+W)">+</button>
+            <div id="ability-w" class="ability-slot" data-key="W" title="W: Provocation (Provocação em Área)">
+              <div class="ability-icon">📢</div>
+              <div class="ability-cooldown-sweep"></div>
+              <span class="cooldown-text"></span>
+              <span class="mana-badge">60</span>
+              <span class="hotkey-label">W</span>
+            </div>
+            <div class="ability-pips" id="pips-w">
+              <span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span>
+            </div>
+          </div>
+          <div class="ability-slot-wrapper">
+            <button id="btn-upgrade-e" class="ability-levelup-btn hidden" data-upgrade-slot="E" title="Evoluir Habilidade E (Ctrl+E)">+</button>
+            <div id="ability-e" class="ability-slot" data-key="E" title="E: Cleave (Cutilada Rotativa)">
+              <div class="ability-icon">⚔️</div>
+              <div class="ability-cooldown-sweep"></div>
+              <span class="cooldown-text"></span>
+              <span class="mana-badge">40</span>
+              <span class="hotkey-label">E</span>
+            </div>
+            <div class="ability-pips" id="pips-e">
+              <span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span>
+            </div>
+          </div>
+          <div class="ability-slot-wrapper">
+            <button id="btn-upgrade-r" class="ability-levelup-btn hidden" data-upgrade-slot="R" title="Evoluir Habilidade R (Ctrl+R)">+</button>
+            <div id="ability-r" class="ability-slot ultimate" data-key="R" title="R: Fortress (Fortaleza Inabalável)">
+              <div class="ability-icon">🏰</div>
+              <div class="ability-cooldown-sweep"></div>
+              <span class="cooldown-text"></span>
+              <span class="mana-badge">100</span>
+              <span class="hotkey-label">R</span>
+            </div>
+            <div class="ability-pips" id="pips-r">
+              <span class="pip"></span><span class="pip"></span><span class="pip"></span>
+            </div>
+          </div>
+          <div class="ability-slot-wrapper">
+            <div id="ability-b" class="ability-slot recall" data-key="B" title="B: Recall (Teleporte de Retorno à Base)">
+              <div class="ability-icon">🌀</div>
+              <div class="ability-cooldown-sweep"></div>
+              <span class="cooldown-text"></span>
+              <span class="hotkey-label">B</span>
+            </div>
+            <div class="ability-pips recall-spacer"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6-Slot Inventory -->
+      <div class="hud-inventory" title="Inventário de 6 Itens">
+        <div class="inv-slot" data-slot="0"></div>
+        <div class="inv-slot" data-slot="1"></div>
+        <div class="inv-slot" data-slot="2"></div>
+        <div class="inv-slot" data-slot="3"></div>
+        <div class="inv-slot" data-slot="4"></div>
+        <div class="inv-slot" data-slot="5"></div>
+      </div>
+
+      <!-- Interactive Minimap (Bottom-Right) -->
+      <div id="minimap-container" class="minimap-container">
+        <canvas id="minimap-canvas" width="200" height="200"></canvas>
+      </div>
+    </footer>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+server.js
+iniciar_jogo.bat
+JOGAR.bat
+tests/
+.agents/
+*.md
