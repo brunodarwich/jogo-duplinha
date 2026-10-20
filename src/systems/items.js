@@ -98,6 +98,11 @@ export const ITEM_CATALOG = {
   }
 };
 
+// Individual high-resolution illustrations shared by the shop and equipped slots.
+for (const item of Object.values(ITEM_CATALOG)) {
+  item.image = `assets/items/${item.id}.png`;
+}
+
 export function getSellRefund(cost) {
   return Math.floor(cost * 0.70);
 }

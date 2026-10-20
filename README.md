@@ -20,6 +20,8 @@ Você também pode abrir o arquivo `index.html` com qualquer servidor local (Liv
 
 ## 🕹️ Controles e Comandos
 
+A câmera inicia em 125% para destacar o herói. O painel de zoom no canto superior direito oferece botões −/+, controle deslizante de 60% a 160% e restauração para 125%. A roda do mouse também ajusta o zoom suavemente.
+
 | Comando | Ação |
 |---|---|
 | **Botão Direito do Mouse** | Mover herói / Focar ataque em alvos ou torres |
@@ -54,7 +56,7 @@ Você também pode abrir o arquivo `index.html` com qualquer servidor local (Liv
 - **Mini-Bosses em Turnos**:
   - **Onda 5**: Surge o **Stone Colossus** (alta resistência a torres e pisão com atordoamento em área).
   - **Onda 10**: Surge o **Abyssal Behemoth** (poças de dano contínuo e rugido com silenciamento).
-- **Boss Supremo no Nexus**: Protege o cristal inimigo em 3 fases com poderes devastadores. O Nexus só pode ser destruído após a derrota do Boss Supremo!
+- **Boss Supremo no Nexus**: Protege o cristal inimigo em 3 fases com poderes devastadores. O Nexus fica vulnerável assim que as duas torres anteriores da equipe caem, mesmo com o chefe vivo. A mesma regra vale para o Nexus aliado.
 - **Condição de Vitória**: Destruir o Nexus Inimigo.
 - **Condição de Derrota**: Ter o Nexus Aliado destruído.
 
@@ -62,7 +64,8 @@ Você também pode abrir o arquivo `index.html` com qualquer servidor local (Liv
 
 ## 💰 Loja de Itens e Economia (6 Slots)
 
-- **Ouro**: Ganho passivo contínuo (+2 ouro/s) + bônus de abates em lacaios (+25g), torres (+300g) e chefes (+150g a +500g).
+- **Ouro**: 1.200 iniciais e renda passiva de 10 ouro/s (600/min), inclusive durante a morte. Abates de lacaios rendem 42g (corpo a corpo), 28g (atirador) e 90g (canhão); torres rendem 600g, mini-chefes 900g e o chefe supremo 1.500g. A renda para ao terminar a partida.
+- **Imagens dos itens**: 18 ilustrações individuais em `assets/items/`, usadas na loja, nos detalhes e nos seis espaços de equipamento. A loja inclui o ponto inicial junto ao Nexus.
 - **Catálogo de 18 Itens**: Divididos em 3 Tiers (Ataque, Magia, Defesa e Botas):
   - *Tier 1*: Adaga Ágil, Botas Simples, Cristal de Rubi, Espada Curta, Tomo Arcano, Colete de Malha.
   - *Tier 2*: Grevas de Batalha, Passo do Arcano, Martelo de Guerra, Cetro Esmeralda, Foice Sangrenta, Armadura de Ferro.
@@ -81,8 +84,8 @@ Você também pode abrir o arquivo `index.html` com qualquer servidor local (Liv
 
 ## 🧪 Testes Automatizados
 
-Para rodar a suíte completa com **262 testes automatizados** (testes unitários, matemáticos, de combate, economia, UI, UX, VFX, SFX e simulações E2E completas):
+Para rodar a suíte completa com **269 testes automatizados** (testes unitários, matemáticos, de combate, economia, UI, UX, VFX, SFX e simulações E2E completas):
 ```bash
 npm test
 ```
-Resultados certificados: **262/262 testes aprovados com 100% de sucesso em 35 suítes!**
+Resultados certificados: **269/269 testes aprovados com 100% de sucesso em 36 suítes!**

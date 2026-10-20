@@ -41,7 +41,7 @@ export const MINION_BASE_STATS = {
     speed: 280,
     range: 110,
     attackSpeed: 1.0,
-    bounty: 21,
+    bounty: 42,
     radius: 14,
     height: 26
   },
@@ -56,7 +56,7 @@ export const MINION_BASE_STATS = {
     range: 350,
     attackSpeed: 0.8,
     projectileSpeed: 600,
-    bounty: 14,
+    bounty: 28,
     radius: 14,
     height: 26
   },
@@ -71,7 +71,7 @@ export const MINION_BASE_STATS = {
     range: 450,
     attackSpeed: 0.65,
     projectileSpeed: 700,
-    bounty: 45,
+    bounty: 90,
     structureDamageMultiplier: 1.5,
     radius: 20,
     height: 34
@@ -117,9 +117,9 @@ export function shouldDisengageLeash(minionPos, currentWaypointPos) {
  */
 export function resolveMinionDeath(minionType, killerEntity, nearbyAllies = []) {
   const bounties = {
-    melee: 21,
-    ranged: 14,
-    cannon: 45
+    melee: MINION_BASE_STATS.melee.bounty,
+    ranged: MINION_BASE_STATS.ranged.bounty,
+    cannon: MINION_BASE_STATS.cannon.bounty
   };
 
   const baseBounty = bounties[minionType] || 0;

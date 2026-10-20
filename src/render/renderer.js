@@ -14,6 +14,7 @@
 
 import { worldToScreen, screenToWorld, compareDepth } from '../core/isometric.js';
 import { IndicatorType } from '../core/input.js';
+import { getVisualHeight } from './sprite_loader.js';
 
 export class Renderer {
   /**
@@ -440,13 +441,35 @@ export class Renderer {
   // Pass 6: Overhead Health & Mana Bars
   // ───────────────────────────────────────────────────────────────
   pass6_OverheadHUD(ctx, entities, camera, zoom) {
+    const obstacles = entities.filter(ent =>
+      (typeof ent.isAlive === 'function' ? ent.isAlive() : ent.hp > 0) &&
+      ['hero', 'tower', 'nexus'].includes(ent.type)
+    ).map(ent => {
+      const { sx, sy } = worldToScreen(ent.x, ent.y, ent.z, camera, zoom);
+      const width = ent.type === 'hero' ? 78 : (ent.radius || 40) * 3.4;
+      return { left: sx - width * zoom / 2, right: sx + width * zoom / 2,
+        top: sy - getVisualHeight(ent) * zoom, bottom: sy + 12 * zoom };
+    }).sort((a, b) => b.top - a.top);
     for (const ent of entities) {
       const isDead = typeof ent.isDead === 'function' ? ent.isDead() : !!ent.isDead;
       if (isDead || (typeof ent.hp === 'number' && ent.hp <= 0)) continue;
       if (!this.isEntityInViewport(ent, camera, zoom)) continue;
 
       if (typeof ent.drawHUD === 'function') {
+        const { sx, sy } = worldToScreen(ent.x, ent.y, ent.z, camera, zoom);
+        const originalBottom = sy - getVisualHeight(ent) * zoom - 10;
+        let bottom = originalBottom;
+        // Lift the whole label stack clear of nearby characters and structures.
+        for (const obstacle of obstacles) {
+          if (sx + 85 > obstacle.left && sx - 85 < obstacle.right &&
+              bottom > obstacle.top && bottom - 50 < obstacle.bottom) {
+            bottom = obstacle.top - 10;
+          }
+        }
+        ctx.save();
+        if (typeof ctx.translate === 'function') ctx.translate(0, bottom - originalBottom);
         ent.drawHUD(ctx, camera, zoom);
+        ctx.restore();
       }
     }
   }

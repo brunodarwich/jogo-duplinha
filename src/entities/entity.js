@@ -1,3 +1,4 @@
+import { STARTING_GOLD } from '../systems/economy.js';
 /**
  * Entity Base Architecture.
  * Standardized coordinate space, depth sorting, collision radii, and procedural 2.5D rendering.
@@ -8,7 +9,7 @@
 import { worldToScreen, getDepthKey } from '../core/isometric.js';
 import { calculateRespawnTime, calculateHeroStatsAtLevel } from './heroes.js';
 import { getXpForNextLevel, canUpgradeAbility, MAX_LEVEL } from '../systems/leveling.js';
-import { getHeroSprite, getMinionSprite, drawChibiSprite, drawDetailed3DStructure } from '../render/sprite_loader.js';
+import { getHeroSprite, getMinionSprite, drawChibiSprite, drawDetailed3DStructure, getVisualHeight } from '../render/sprite_loader.js';
 
 export class Entity {
   /**
@@ -269,7 +270,7 @@ export class Entity {
     const manaHeight = isHero ? 3 : 0;
     const totalH = hpHeight + (manaHeight > 0 ? manaHeight + 1 : 0);
 
-    const offset = (this.height || 40) * zoom;
+    const offset = getVisualHeight(this) * zoom + totalH + 12 + (this.isRecalling ? 9 : 0);
     const x = Math.round(sx - w / 2);
     const y = Math.round(sy - offset);
 
@@ -329,9 +330,9 @@ export class Entity {
     // 6. Local Player Golden Chevron
     if (isLocal) {
       ctx.beginPath();
-      ctx.moveTo(sx - 4, y - 7);
-      ctx.lineTo(sx + 4, y - 7);
-      ctx.lineTo(sx, y - 2);
+      ctx.moveTo(sx - 4, y - 27);
+      ctx.lineTo(sx + 4, y - 27);
+      ctx.lineTo(sx, y - 22);
       ctx.closePath();
       ctx.fillStyle = '#fbbf24';
       ctx.fill();
@@ -389,7 +390,7 @@ export class HeroEntity extends Entity {
     this.magicResist = options.magicResist || 32;
     this.attackSpeed = options.attackSpeed || 0.65;
     this.attackRange = options.attackRange || 130;
-    this.gold = options.gold ?? 500;
+    this.gold = options.gold ?? STARTING_GOLD;
     this.inventory = options.inventory || new Array(6).fill(null);
 
     // Basic attack tracking & state

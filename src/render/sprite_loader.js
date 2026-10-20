@@ -39,6 +39,50 @@ export const SPRITE_PATHS = {
 };
 
 const imageCache = new Map();
+const spriteLevels = new WeakMap();
+
+// Reduce large illustrations in stages instead of discarding most source pixels
+// in one draw. Retain enough detail for the actual device pixel ratio and zoom.
+function getRenderSprite(img, width, height) {
+  if (typeof document === 'undefined') return img;
+  const ratio = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
+  const target = Math.max(width, height) * ratio;
+  let levels = spriteLevels.get(img);
+  if (!levels) {
+    levels = [img];
+    spriteLevels.set(img, levels);
+  }
+  let level = 0;
+  while (Math.max(levels[level].width, levels[level].height) / 2 >= target) {
+    if (!levels[level + 1]) {
+      const source = levels[level];
+      const reduced = document.createElement('canvas');
+      reduced.width = Math.max(1, Math.floor(source.width / 2));
+      reduced.height = Math.max(1, Math.floor(source.height / 2));
+      const context = reduced.getContext('2d');
+      if (!context) break;
+      context.imageSmoothingEnabled = true;
+      context.imageSmoothingQuality = 'high';
+      context.drawImage(source, 0, 0, reduced.width, reduced.height);
+      levels.push(reduced);
+    }
+    level++;
+  }
+  return levels[level];
+}
+
+export function getVisualHeight(entity) {
+  if (entity.type === 'hero') return 78 * 0.90 * 1.025 + 78 * 0.055 - 6;
+  if (entity.type === 'tower' || entity.type === 'nexus') {
+    const nexus = entity.tier === 'nexus' || entity.type === 'nexus';
+    return Math.max(
+      nexus ? (entity.radius || 40) * 4.4 * 0.84 : (entity.height || 90) * 1.75 * 0.84,
+      (entity.height || 90) * 1.08 + (nexus ? 28 : 20) + 4.5
+    );
+  }
+  if (entity.type === 'minion') return (entity.subType === 'cannon' ? 62 : 46) * 0.98 - 4;
+  return entity.height || 40;
+}
 
 /**
  * Checks if current runtime supports HTMLImageElement loading.
@@ -229,6 +273,9 @@ export function drawChibiSprite(ctx, img, sx, sy, drawW, drawH, options = {}) {
     : 1.0 + Math.sin(now * 0.004 + phaseOffset) * 0.012;
 
   ctx.save();
+  img = getRenderSprite(img, drawW, drawH);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
   if (typeof ctx.translate === 'function') {
     ctx.translate(sx, sy + bobY);
     if (typeof ctx.scale === 'function') {
@@ -313,10 +360,12 @@ export function drawDetailed3DStructure(ctx, structure, sx, sy, zoom = 1.0, came
   let drewSprite = false;
 
   if (structSprite && typeof ctx.drawImage === 'function') {
-    const drawW = isNexus ? r * 3.4 : r * 3.1;
-    const drawH = isNexus ? r * 3.4 : h * 1.75;
+    const drawW = isNexus ? r * 4.4 : r * 3.1;
+    const drawH = isNexus ? r * 4.4 : h * 1.75;
     const bobCrystal = Math.sin(now * 0.003) * (2.5 * zoom);
-    ctx.drawImage(structSprite, sx - drawW * 0.5, sy - drawH * 0.84 + bobCrystal * 0.2, drawW, drawH);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(getRenderSprite(structSprite, drawW, drawH), sx - drawW * 0.5, sy - drawH * 0.84 + bobCrystal * 0.2, drawW, drawH);
     drewSprite = true;
   }
 
@@ -411,7 +460,7 @@ export function drawDetailed3DStructure(ctx, structure, sx, sy, zoom = 1.0, came
 
   // 5. Dynamic 3D Floating Crystal & Orbital Rings at Crown
   const floatOffset = Math.sin(now * 0.0038) * (4.5 * zoom);
-  const crystalY = sy - (isNexus ? h * 1.05 : h * 1.08) + floatOffset;
+  const crystalY = sy - (isNexus && drewSprite ? r * 4.4 * 0.60 : isNexus ? h * 1.05 : h * 1.08) + floatOffset;
   const crystalW = (isNexus ? 18 : 13) * zoom;
   const crystalH = (isNexus ? 28 : 20) * zoom;
 

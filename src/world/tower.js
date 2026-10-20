@@ -6,7 +6,7 @@
 
 import { Entity } from '../entities/entity.js';
 import { worldToScreen } from '../core/isometric.js';
-import { drawDetailed3DStructure } from '../render/sprite_loader.js';
+import { drawDetailed3DStructure, getVisualHeight } from '../render/sprite_loader.js';
 
 export const TOWER_RADIUS = 400;
 export const TOWER_PROJECTILE_SPEED = 750;
@@ -185,11 +185,6 @@ export class DefensiveTower extends Entity {
   isInvulnerable() {
     if (this.parentTower && this.parentTower.hp > 0) {
       return true;
-    }
-    if (this.tier === 'nexus' && this.team === 'enemy') {
-      if (typeof this.isSupremeBossAlive === 'function' && this.isSupremeBossAlive()) {
-        return true;
-      }
     }
     return false;
   }
@@ -372,7 +367,7 @@ export class DefensiveTower extends Entity {
     // If invulnerable, render golden shield label above health bar
     if (this.isInvulnerable()) {
       const { sx, sy } = worldToScreen(this.x, this.y, this.z, camera, zoom);
-      const offset = (this.height + 18) * zoom;
+      const offset = getVisualHeight(this) * zoom + 38;
       ctx.save();
       ctx.fillStyle = '#fbbf24';
       ctx.font = 'bold 10px sans-serif';

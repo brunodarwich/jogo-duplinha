@@ -672,7 +672,7 @@ test('4.1 Allied hierarchy: Outer -> Inner -> Nexus strict sequential vulnerabil
   assertEqual(nexus.hp, 3500);
 });
 
-test('4.2 Enemy hierarchy: Outer -> Inner -> (Supreme Boss alive -> Nexus immune)', () => {
+test('4.2 Enemy hierarchy: Outer -> Inner -> Nexus vulnerable with boss alive', () => {
   let supremeBossAlive = true;
   const { enemy } = createTowerHierarchy({
     isSupremeBossAlive: () => supremeBossAlive
@@ -688,10 +688,10 @@ test('4.2 Enemy hierarchy: Outer -> Inner -> (Supreme Boss alive -> Nexus immune
   assertEqual(inner.hp, 0);
 
   // Supreme Boss is still alive!
-  assertEqual(nexus.isInvulnerable(), true, 'Enemy Nexus remains invulnerable while Supreme Boss is alive');
+  assertEqual(nexus.isInvulnerable(), false, 'Enemy Nexus unlocks after the towers fall');
   const immuneDmg = nexus.takeDamage(1000);
-  assertEqual(immuneDmg.damageTaken, 0);
-  assertEqual(nexus.hp, nexus.maxHp);
+  assertEqual(immuneDmg.damageTaken, 1000);
+  assertEqual(nexus.hp, nexus.maxHp - 1000);
 
   // Slay Supreme Boss
   supremeBossAlive = false;
@@ -735,10 +735,10 @@ test('4.4 Match outcome trigger evaluation matches invulnerability hierarchy', (
   assertEqual(resA.outcome, 'DEFEAT', 'Allied nexus <= 0 triggers DEFEAT immediately');
   assertEqual(resA.isOver, true);
 
-  // Scenario B: Enemy Nexus down, but Supreme Boss STILL alive -> IN_PROGRESS
+  // Scenario B: Enemy Nexus down, Supreme Boss still alive -> VICTORY
   const resB = evaluateMatchOutcome(5000, 0, true);
-  assertEqual(resB.outcome, 'IN_PROGRESS', 'Enemy nexus destroyed before boss slain must NOT trigger victory');
-  assertEqual(resB.isOver, false);
+  assertEqual(resB.outcome, 'VICTORY', 'Enemy nexus destruction triggers victory');
+  assertEqual(resB.isOver, true);
 
   // Scenario C: Enemy Nexus down AND Supreme Boss slain -> VICTORY
   const resC = evaluateMatchOutcome(5000, 0, false);

@@ -81,8 +81,8 @@ export function evaluateMatchOutcome(alliedNexusHp, enemyNexusHp, supremeBossAli
   if (alliedNexusHp <= 0) {
     return { outcome: 'DEFEAT', isOver: true };
   }
-  // Enemy nexus cannot be destroyed while supreme boss is alive
-  if (enemyNexusHp <= 0 && !supremeBossAlive) {
+  // The tower hierarchy controls access; the guardian is an optional encounter.
+  if (enemyNexusHp <= 0) {
     return { outcome: 'VICTORY', isOver: true };
   }
   return { outcome: 'IN_PROGRESS', isOver: false };

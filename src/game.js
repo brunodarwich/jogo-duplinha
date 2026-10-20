@@ -23,6 +23,7 @@ import { BossManager, SupremeBoss, evaluateMatchOutcome } from './world/boss.js'
 import { applyDamage } from './combat/combat.js';
 import { HeroProjectile } from './combat/projectile.js';
 import { calculateKillXp, resolveMinionXpDistribution } from './systems/leveling.js';
+import { STARTING_GOLD, accruePassiveGold, TOWER_BOUNTY, BOSS_BOUNTY, SUPREME_BOUNTY } from './systems/economy.js';
 import { preloadAllSprites } from './render/sprite_loader.js';
 
 export class GameSimulation {
@@ -133,7 +134,7 @@ export class GameSimulation {
       speed: baseStats.movementSpeed,
       movementSpeed: baseStats.movementSpeed,
       abilities: heroKit,
-      gold: 500
+      gold: STARTING_GOLD
     });
 
     // Setup hero inventory
@@ -560,7 +561,7 @@ export class GameSimulation {
       speed: stats.movementSpeed,
       movementSpeed: stats.movementSpeed,
       abilities: kit,
-      gold: 500
+      gold: STARTING_GOLD
     });
 
     remoteHero.baseStats = stats;
@@ -1204,9 +1205,9 @@ export class GameSimulation {
               const killRes = resolveMinionDeath(ent.subType || 'melee', this.playerHero, this.entities.filter(e => e.team === this.playerHero.team && e.type === 'hero'));
               bounty = killRes.awardedKillerGold;
             } else if (ent.type === 'tower') {
-              bounty = 300;
+              bounty = TOWER_BOUNTY;
             } else if (ent.type === 'boss') {
-              bounty = (ent.name?.includes('Supreme') || ent.name?.includes('Guardian')) ? 500 : 300;
+              bounty = (ent.name?.includes('Supreme') || ent.name?.includes('Guardian')) ? SUPREME_BOUNTY : BOSS_BOUNTY;
             }
             this.playerHero.gold = (this.playerHero.gold || 0) + bounty;
             if (this.shopUI) this.shopUI.updateGoldDisplay();
@@ -1234,9 +1235,9 @@ export class GameSimulation {
               const killRes = resolveMinionDeath(ent.subType || 'melee', this.playerHero, this.entities.filter(e => e.team === this.playerHero.team && e.type === 'hero'));
               bounty = killRes.awardedKillerGold;
             } else if (ent.type === 'tower') {
-              bounty = 300;
+              bounty = TOWER_BOUNTY;
             } else if (ent.type === 'boss') {
-              bounty = (ent.name?.includes('Supreme') || ent.name?.includes('Guardian')) ? 500 : 300;
+              bounty = (ent.name?.includes('Supreme') || ent.name?.includes('Guardian')) ? SUPREME_BOUNTY : BOSS_BOUNTY;
             }
             this.playerHero.gold = (this.playerHero.gold || 0) + bounty;
             if (this.shopUI) this.shopUI.updateGoldDisplay();
@@ -1591,11 +1592,11 @@ export class GameSimulation {
         const killRes = resolveMinionDeath(target.subType || 'melee', hero, this.entities.filter(e => e.team === hero.team && e.type === 'hero'));
         bounty = killRes.awardedKillerGold;
       } else if (target.type === 'tower') {
-        bounty = 300;
+        bounty = TOWER_BOUNTY;
       } else if (target.type === 'boss') {
-        bounty = (target.name?.includes('Supreme') || target.name?.includes('Guardian')) ? 500 : 300;
+        bounty = (target.name?.includes('Supreme') || target.name?.includes('Guardian')) ? SUPREME_BOUNTY : BOSS_BOUNTY;
       } else if (target.type === 'hero') {
-        bounty = 300;
+        bounty = TOWER_BOUNTY;
       }
 
       if (bounty > 0 && hero) {
@@ -1636,6 +1637,9 @@ export class GameSimulation {
 
   update(dt = 0.01667, tickIndex = 0) {
     this.matchTime += dt;
+    if (!this.isVictory && !this.isDefeat && accruePassiveGold(this.playerHero, dt) > 0) {
+      if (this.shopUI) this.shopUI.updateGoldDisplay();
+    }
 
     // 0. 20Hz Real-Time Network State Sync
     this.netSyncAccumulator = (this.netSyncAccumulator || 0) + dt;
@@ -1832,10 +1836,10 @@ export class GameSimulation {
         }
         if (this.hud?.eventBanners) {
           this.hud.eventBanners.showVictoryBanner({
-            message: 'Parabéns! O Boss Supremo e o Cristal Inimigo foram aniquilados!'
+            message: 'Parabéns! A fortaleza inimiga foi destruída!'
           });
         }
-        this.showGameOverModal('VITÓRIA!', 'Parabéns! O Boss Supremo e o Cristal Inimigo foram aniquilados!', 'victory');
+        this.showGameOverModal('VITÓRIA!', 'Parabéns! A fortaleza inimiga foi destruída!', 'victory');
       } else if (outcome.outcome === 'DEFEAT' && !this.isDefeat) {
         this.isDefeat = true;
         if (this.sound) {

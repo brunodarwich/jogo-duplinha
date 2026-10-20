@@ -15,6 +15,16 @@
 
   <!-- HUD Overlays (Pointer-events transparent, children interactive) -->
   <div id="hud-overlay" class="hud-overlay">
+    <section id="zoom-controls" class="zoom-controls" aria-label="Zoom da câmera">
+      <div class="zoom-heading"><span>ZOOM</span><output aria-label="Zoom selecionado">125%</output></div>
+      <div class="zoom-actions">
+        <button type="button" data-zoom="out" aria-label="Afastar câmera" title="Afastar">−</button>
+        <input type="range" min="0.6" max="1.6" step="0.05" value="1.25" aria-label="Aproximação da câmera">
+        <button type="button" data-zoom="in" aria-label="Aproximar câmera" title="Aproximar">+</button>
+      </div>
+      <button type="button" class="zoom-reset" data-zoom="reset" title="Restaurar zoom de 125%">Restaurar 125%</button>
+      <small>Use também a roda do mouse</small>
+    </section>
     <!-- Top HUD: Objectives & Match Timer -->
     <header class="top-hud">
       <div class="tower-status allied">
@@ -96,7 +106,7 @@
         <div class="stat-item" title="Armadura Física"><span class="stat-icon">🛡️</span><span id="stat-armor">38</span></div>
         <div class="stat-item" title="Resistência Mágica"><span class="stat-icon">🔮</span><span id="stat-mr">32</span></div>
         <div class="stat-item" title="Velocidade de Movimento"><span class="stat-icon">👟</span><span id="stat-speed">325</span></div>
-        <div class="stat-item gold" title="Ouro"><span class="stat-icon">💰</span><span id="stat-gold">500</span></div>
+        <div class="stat-item gold" title="Ouro"><span class="stat-icon">💰</span><span id="stat-gold">1200</span></div>
       </div>
 
       <!-- Center Console (HP, Mana, Ability Bar) -->

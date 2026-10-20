@@ -198,10 +198,10 @@ console.log('\n>>> [3/5] Testing Structure Invulnerability Hierarchy...');
   // 3.3 Enemy Nexus dual-protection (Inner tower AND Supreme Boss)
   enemyInner.takeDamage(3000);
   assert(enemyInner.hp <= 0, 'Inner tower destroyed');
-  assert(enemyNexus.isInvulnerable() === true, 'Enemy nexus STILL invulnerable because Supreme Boss is alive!');
+  assert(enemyNexus.isInvulnerable() === false, 'Enemy nexus unlocks after towers fall with boss alive');
 
   res = enemyNexus.takeDamage(1000);
-  assert(res.damageTaken === 0 && res.invulnerable === true, 'Enemy nexus takes 0 damage while Supreme Boss alive');
+  assert(res.damageTaken === 1000 && res.invulnerable === false, 'Enemy nexus takes damage while Supreme Boss alive');
 
   // Slay Supreme Boss
   supremeBossAlive = false;
@@ -209,7 +209,7 @@ console.log('\n>>> [3/5] Testing Structure Invulnerability Hierarchy...');
 
   res = enemyNexus.takeDamage(1000);
   assert(res.damageTaken === 1000 && res.invulnerable === false, 'Enemy nexus successfully takes damage');
-  assert(enemyNexus.hp === 4000, 'Enemy nexus HP reduced from 5000 to 4000');
+  assert(enemyNexus.hp === 3000, 'Enemy nexus HP reduced to 3000 after two hits');
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -329,7 +329,7 @@ console.log('\n>>> [5/5] Testing Boss Phases, Abilities & Endgame Victory/Defeat
 
   // Scenario B: Enemy Nexus down but Supreme Boss still alive -> IN_PROGRESS
   outcome = evaluateMatchOutcome(2000, 0, true);
-  assert(outcome.isOver === false && outcome.outcome === 'IN_PROGRESS', 'Enemy Nexus down with Supreme Boss alive does NOT grant victory');
+  assert(outcome.isOver === true && outcome.outcome === 'VICTORY', 'Enemy Nexus down grants victory with Supreme Boss alive');
 
   // Scenario C: Enemy Nexus down and Supreme Boss dead -> VICTORY
   outcome = evaluateMatchOutcome(2000, 0, false);

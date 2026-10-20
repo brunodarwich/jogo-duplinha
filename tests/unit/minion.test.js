@@ -55,13 +55,13 @@ describe('Tier 1 Unit: Minion Wave Timers, Composition & Leash AI', () => {
     const hero = { id: 'player_1', type: 'hero' };
 
     const meleeKill = minionMod.resolveMinionDeath('melee', hero);
-    assertEqual(meleeKill.awardedKillerGold, 21);
+    assertEqual(meleeKill.awardedKillerGold, 42);
 
     const rangedKill = minionMod.resolveMinionDeath('ranged', hero);
-    assertEqual(rangedKill.awardedKillerGold, 14);
+    assertEqual(rangedKill.awardedKillerGold, 28);
 
     const cannonKill = minionMod.resolveMinionDeath('cannon', hero);
-    assertEqual(cannonKill.awardedKillerGold, 45);
+    assertEqual(cannonKill.awardedKillerGold, 90);
   });
 
   it('TC-MIN-06: Non-hero last-hit (tower/creep) grants 0 gold to players', async () => {
@@ -85,10 +85,10 @@ describe('Tier 1 Unit: Minion Wave Timers, Composition & Leash AI', () => {
     const ally3 = { id: 'player_3', type: 'hero' };
 
     const res = minionMod.resolveMinionDeath('cannon', killer, [killer, ally2, ally3]);
-    assertEqual(res.awardedKillerGold, 45);
-    // 30% of 45 = 13g assist
+    assertEqual(res.awardedKillerGold, 90);
+    // 30% of 90 = 27g assist
     assertEqual(res.awardedAssistGold.length, 2);
     assertEqual(res.awardedAssistGold[0].heroId, 'player_2');
-    assertEqual(res.awardedAssistGold[0].gold, 13);
+    assertEqual(res.awardedAssistGold[0].gold, 27);
   });
 });

@@ -39,8 +39,8 @@ describe('Tier 4 E2E: Real-World Match End-to-End Simulation', () => {
     const inv = new itemMod.HeroInventory(hero);
     const recallSys = new recallMod.RecallSystem(fountainCoords);
 
-    // Initial 500 gold
-    assertEqual(eco.getGold(hero.id), 500);
+    // Initial 1200 gold
+    assertEqual(eco.getGold(hero.id), 1200);
     assertTrue(recallSys.isInsideShopZone(hero), 'Hero spawns inside shop zone');
 
     // Buy Espada Curta (450g)
@@ -48,7 +48,7 @@ describe('Tier 4 E2E: Real-World Match End-to-End Simulation', () => {
     eco.setGold(hero.id, eco.getGold(hero.id) - starterCost);
     const buyRes = inv.addItem('item_sword_1');
     assertTrue(buyRes.success);
-    assertEqual(eco.getGold(hero.id), 50);
+    assertEqual(eco.getGold(hero.id), 750);
     assertEqual(hero.attackDamage, knightBase.attackDamage + 15);
     assertEqual(hero.lifesteal, 0.05);
 
@@ -62,16 +62,16 @@ describe('Tier 4 E2E: Real-World Match End-to-End Simulation', () => {
     // ==========================================
     // STAGE 3: Minion Wave Spawning & Farming
     // ==========================================
-    // Advance 60s: passive gold generates 60 * 2 = 120g
+    // Advance 60s: passive gold generates 60 * 10 = 600g
     eco.updatePassiveGold(60.0);
-    assertEqual(eco.getGold(hero.id), 50 + 120); // 170g
+    assertEqual(eco.getGold(hero.id), 750 + 600); // 1350g
 
     // Wave 1 spawns
     const wave1 = minionMod.getWaveComposition(1);
     assertEqual(wave1.meleeCount, 3);
     assertEqual(wave1.rangedCount, 3);
 
-    // Hero last-hits 2 melee minions (+21g each) and 1 ranged minion (+14g)
+    // Hero last-hits 2 melee minions (+42g each) and 1 ranged minion (+28g)
     const kill1 = minionMod.resolveMinionDeath('melee', hero);
     eco.awardLastHit(hero.id, kill1.awardedKillerGold);
     const kill2 = minionMod.resolveMinionDeath('melee', hero);
@@ -79,8 +79,8 @@ describe('Tier 4 E2E: Real-World Match End-to-End Simulation', () => {
     const kill3 = minionMod.resolveMinionDeath('ranged', hero);
     eco.awardLastHit(hero.id, kill3.awardedKillerGold);
 
-    // 170 + 21 + 21 + 14 = 226g
-    assertEqual(eco.getGold(hero.id), 226);
+    // 1350 + 42 + 42 + 28 = 1462g
+    assertEqual(eco.getGold(hero.id), 1462);
 
     // ==========================================
     // STAGE 4: Combat Engagement & Low HP

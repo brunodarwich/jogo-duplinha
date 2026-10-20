@@ -12,7 +12,7 @@ export class Camera {
    * @param {number} [options.worldY=650] - Initial world Y focus
    * @param {number} [options.viewportWidth=1280] - Screen viewport width in pixels
    * @param {number} [options.viewportHeight=720] - Screen viewport height in pixels
-   * @param {number} [options.zoom=1.0] - Viewport zoom factor
+   * @param {number} [options.zoom=1.25] - Viewport zoom factor
    * @param {number} [options.smoothing=8.0] - Exponential lerp decay factor
    * @param {Object} [options.bounds] - Map boundaries { minX, minY, maxX, maxY }
    * @param {Object} [options.target=null] - Initial follow target entity
@@ -25,7 +25,7 @@ export class Camera {
     this.viewportHeight = options.viewportHeight ?? options.height ?? 720;
     this.minZoom = options.minZoom ?? 0.6;
     this.maxZoom = options.maxZoom ?? 1.6;
-    const initialZoom = options.zoom ?? 0.75;
+    const initialZoom = options.zoom ?? 1.25;
     this.zoom = Math.max(this.minZoom, Math.min(this.maxZoom, initialZoom));
     this.targetZoom = this.zoom;
     this.zoomSmoothing = options.zoomSmoothing ?? 12.0;

@@ -2,8 +2,20 @@
  * Specification Reference: Gold Economy, Passive Generation & Objective Bounties
  */
 
-export const STARTING_GOLD = 500;
-export const PASSIVE_GOLD_RATE = 2.0; // 2.0 gold/sec
+export const STARTING_GOLD = 1200;
+export const PASSIVE_GOLD_RATE = 10; // 600 gold/minute, including time spent dead
+export const TOWER_BOUNTY = 600;
+export const BOSS_BOUNTY = 900;
+export const SUPREME_BOUNTY = 1500;
+
+export function accruePassiveGold(hero, dt) {
+  if (!hero || !Number.isFinite(dt) || dt <= 0) return 0;
+  hero.passiveGoldAccumulator = (hero.passiveGoldAccumulator || 0) + dt * PASSIVE_GOLD_RATE;
+  const grant = Math.floor(hero.passiveGoldAccumulator + 1e-9);
+  hero.passiveGoldAccumulator -= grant;
+  hero.gold = (hero.gold || 0) + grant;
+  return grant;
+}
 
 export class EconomyManager {
   constructor(heroes = []) {
@@ -44,8 +56,8 @@ export class EconomyManager {
   }
 
   awardTowerBounty(killerHeroId, alliedHeroIds = []) {
-    const KILLER_BONUS = 100;
-    const TEAM_BONUS = 150;
+    const KILLER_BONUS = 250;
+    const TEAM_BONUS = 350;
 
     for (const id of alliedHeroIds) {
       if (!this.goldPool[id]) this.goldPool[id] = 0;
@@ -60,13 +72,13 @@ export class EconomyManager {
   awardBossBounty(killerHeroId, alliedHeroIds = [], isSupreme = false) {
     if (isSupreme) {
       if (killerHeroId) {
-        this.goldPool[killerHeroId] = (this.goldPool[killerHeroId] || 0) + 500;
+        this.goldPool[killerHeroId] = (this.goldPool[killerHeroId] || 0) + SUPREME_BOUNTY;
       }
       return;
     }
 
-    const KILLER_BONUS = 150;
-    const TEAM_BONUS = 150;
+    const KILLER_BONUS = 300;
+    const TEAM_BONUS = 600;
     for (const id of alliedHeroIds) {
       if (!this.goldPool[id]) this.goldPool[id] = 0;
       this.goldPool[id] += TEAM_BONUS;

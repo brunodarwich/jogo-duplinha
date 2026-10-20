@@ -345,7 +345,7 @@ test('3.3 Multi-projectile volley on dynamic Entity only impacts once if fatal',
 // --- SECTION 4: Structure Invulnerability with Dynamic Supreme Boss ---
 section('4. Structure Invulnerability with Dynamic Supreme Boss');
 
-test('4.1 Enemy Nexus invulnerability strictly tied to dynamic NexusGuardianBoss', () => {
+test('4.1 Enemy Nexus unlocks after towers regardless of dynamic NexusGuardianBoss', () => {
   const supremeBoss = new NexusGuardianBoss({ team: 'enemy', x: 2500, y: 2500 });
   const hierarchy = createTowerHierarchy({
     isSupremeBossAlive: () => supremeBoss.isAlive()
@@ -361,11 +361,11 @@ test('4.1 Enemy Nexus invulnerability strictly tied to dynamic NexusGuardianBoss
   inner.takeDamage(inner.maxHp);
   assert(inner.hp <= 0, 'Inner destroyed');
 
-  // Supreme Boss alive -> Nexus invulnerable
-  assert(nexus.isInvulnerable(), 'Nexus invulnerable while Supreme Boss is alive');
+  // Supreme Boss alive, but the towers have fallen.
+  assert(!nexus.isInvulnerable(), 'Nexus vulnerable while Supreme Boss is alive');
   const dmgRes = nexus.takeDamage(500);
-  assertEqual(dmgRes.damageTaken, 0, 'Deals 0 damage to invulnerable Nexus');
-  assertEqual(nexus.hp, nexus.maxHp);
+  assertEqual(dmgRes.damageTaken, 500, 'Deals damage to exposed Nexus');
+  assertEqual(nexus.hp, nexus.maxHp - 500);
 
   // Supreme Boss slain
   supremeBoss.takeDamage(supremeBoss.maxHp);

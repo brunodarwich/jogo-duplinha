@@ -68,13 +68,13 @@ describe('Tier 1 Unit: Boss Encounters, Phases & Victory/Defeat Triggers', () =>
     assertEqual(supreme.hp, 11000);
   });
 
-  it('TC-BOS-06: VICTORY requires Supreme Boss dead AND Enemy Nexus destroyed', async () => {
+  it('TC-BOS-06: Destroying the Enemy Nexus wins regardless of Supreme Boss life', async () => {
     const { module: bossMod } = await resolveModule('world/boss');
 
-    // Nexus at 0 but supreme boss still alive => cannot win
+    // Destroying the exposed nexus wins even if the guardian is still alive.
     const outcome1 = bossMod.evaluateMatchOutcome(1000, 0, true);
-    assertFalse(outcome1.isOver);
-    assertEqual(outcome1.outcome, 'IN_PROGRESS');
+    assertTrue(outcome1.isOver);
+    assertEqual(outcome1.outcome, 'VICTORY');
 
     // Supreme boss dead AND nexus at 0 => VICTORY
     const outcome2 = bossMod.evaluateMatchOutcome(1000, 0, false);

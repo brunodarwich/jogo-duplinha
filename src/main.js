@@ -9,6 +9,7 @@ import { LobbyUI } from './ui/lobby_ui.js';
 import { LoadingScreen } from './ui/loading_screen.js';
 import { PeerNetwork } from './net/peer_network.js';
 import { VirtualJoystick } from './ui/virtual_joystick.js';
+import { setupZoomControls } from './ui/zoom_controls.js';
 
 window.addEventListener('DOMContentLoaded', () => {
   const canvas = document.getElementById('game-canvas');
@@ -63,6 +64,7 @@ window.addEventListener('DOMContentLoaded', () => {
           network: net
         });
       window.gameSim = gameSim;
+      setupZoomControls(gameSim.camera, canvas);
 
       // Mobile Virtual Joystick & Touch Controls
       const joystick = new VirtualJoystick(gameSim);

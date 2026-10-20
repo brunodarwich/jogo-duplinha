@@ -3,6 +3,20 @@ import { assertEqual, assertTrue, assertFalse } from '../helpers/assert.js';
 import { resolveModule } from '../helpers/module_resolver.js';
 
 describe('Tier 1 Unit: Defensive Tower Aggro Rules & Heat Scaling', () => {
+  for (const team of ['allied', 'enemy']) {
+    it(`Final ${team} nexus unlocks after both towers fall, even with the boss alive`, async () => {
+      const { createTowerHierarchy } = await import('../../src/world/tower.js');
+      const { outer, inner, nexus } = createTowerHierarchy({ isSupremeBossAlive: () => true })[team];
+      assertEqual(nexus.takeDamage(1000).damageTaken, 0);
+      outer.takeDamage(outer.maxHp);
+      assertTrue(nexus.isInvulnerable());
+      inner.takeDamage(inner.maxHp);
+      assertFalse(nexus.isInvulnerable());
+      assertEqual(nexus.takeDamage(1000).damageTaken, 1000);
+      assertTrue(nexus.takeDamage(nexus.maxHp).destroyed);
+      assertFalse(nexus.isAlive());
+    });
+  }
   it('TC-TOW-01: Validates 400-unit attack radius boundary', async () => {
     const { module: towerMod } = await resolveModule('world/tower');
     const tower = new towerMod.DefensiveTower('tower_blue_1', 'allied', 400, 400);

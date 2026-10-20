@@ -3152,3 +3152,24 @@ html, body {
 
 
 
+
+/* Camera controls: clear of the top HUD and bottom minimap. */
+.zoom-controls { position: absolute; right: 16px; top: 86px; width: 190px; padding: 12px; border: 1px solid #80663e; border-radius: 12px; background: rgba(12, 20, 32, .94); color: #f3e3bf; pointer-events: auto; box-shadow: 0 8px 24px #0006; }
+.zoom-heading, .zoom-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.zoom-heading { font-size: 11px; letter-spacing: .12em; margin-bottom: 8px; }
+.zoom-heading output { font-size: 15px; font-weight: 700; letter-spacing: 0; color: #7dd3fc; font-variant-numeric: tabular-nums; }
+.zoom-actions button { min-width: 44px; min-height: 44px; font-size: 24px; }
+.zoom-controls button { border: 1px solid #80663e; border-radius: 7px; background: #1c2d40; color: #fff0cf; cursor: pointer; }
+.zoom-controls button:hover { background: #304b65; }
+.zoom-controls button:disabled { opacity: .35; cursor: default; }
+.zoom-controls :focus-visible { outline: 2px solid #7dd3fc; outline-offset: 3px; }
+.zoom-controls input { width: 100%; min-width: 0; accent-color: #7dd3fc; cursor: pointer; }
+.zoom-reset { width: 100%; min-height: 32px; margin-top: 8px; }
+.zoom-controls small { display: block; margin-top: 8px; text-align: center; font-size: 10px; color: #bbc7d4; }
+@media (max-width: 600px) { .zoom-controls { right: 8px; top: 76px; width: 155px; padding: 8px; } .zoom-controls small { display: none; } }
+
+/* Illustrated inventory assets retain a clear silhouette at every shop size. */
+.item-art { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
+.item-icon { flex-shrink: 0; width: 56px; height: 56px; }
+.details-icon { display: block; flex-shrink: 0; width: 72px; height: 72px; }
+.slot-item-icon { display: block; width: 100%; height: 100%; }

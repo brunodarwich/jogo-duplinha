@@ -132,7 +132,7 @@ assert(hierarchy.enemy.nexus.isInvulnerable() === true, 'Enemy nexus is invulner
 hierarchy.enemy.outer.hp = 0;
 hierarchy.enemy.inner.hp = 0;
 // Inner is destroyed, but Supreme Boss is STILL alive!
-assert(hierarchy.enemy.nexus.isInvulnerable() === true, 'Enemy nexus remains invulnerable while Supreme Boss is alive even after inner falls');
+assert(hierarchy.enemy.nexus.isInvulnerable() === false, 'Enemy nexus unlocks after towers fall even with boss alive');
 
 // Slay supreme boss
 const hierarchy2 = createTowerHierarchy({ isSupremeBossAlive: () => false });
@@ -239,7 +239,7 @@ assert(evaluateMatchOutcome(5000, 5000, true).outcome === 'IN_PROGRESS', 'Both n
 // Case 2: Allied Nexus Falls -> DEFEAT
 assert(evaluateMatchOutcome(0, 5000, true).outcome === 'DEFEAT', 'Allied Nexus 0 HP -> DEFEAT');
 // Case 3: Enemy Nexus 0 HP but Supreme Boss ALIVE -> IN_PROGRESS
-assert(evaluateMatchOutcome(5000, 0, true).outcome === 'IN_PROGRESS', 'Enemy Nexus 0 HP with Supreme Boss alive -> IN_PROGRESS (cannot win)');
+assert(evaluateMatchOutcome(5000, 0, true).outcome === 'VICTORY', 'Enemy Nexus 0 HP with Supreme Boss alive -> VICTORY');
 // Case 4: Enemy Nexus 0 HP and Supreme Boss DEAD -> VICTORY
 assert(evaluateMatchOutcome(5000, 0, false).outcome === 'VICTORY', 'Enemy Nexus 0 HP with Supreme Boss dead -> VICTORY');
 

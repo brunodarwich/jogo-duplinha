@@ -5,6 +5,10 @@
 
 import { ITEM_CATALOG, getSellRefund, HeroInventory } from '../systems/items.js';
 
+export function renderItemImage(item) {
+  return `<img class="item-art" src="${item.image}" alt="${item.name}" width="64" height="64">`;
+}
+
 export function formatStatChips(stats = {}) {
   if (!stats || typeof stats !== 'object') {
     return [];
@@ -52,7 +56,7 @@ export class ShopUI {
           </div>
           <div class="shop-player-gold">
             <span class="coin-icon">💰</span>
-            <span id="shop-gold-val">500</span>
+            <span id="shop-gold-val">1200</span>
           </div>
           <button id="shop-close-btn" class="shop-close-btn" title="Fechar (P ou ESC)">✖</button>
         </header>
@@ -129,7 +133,8 @@ export class ShopUI {
     const hero = this.gameSim.playerHero;
     const fountain = { x: 400, y: 400 };
     const dist = Math.hypot(hero.x - fountain.x, hero.y - fountain.y);
-    return dist <= 280;
+    // Include the nexus spawn and the space occupied after structure collision resolution.
+    return dist <= 450;
   }
 
   toggle() {
@@ -161,6 +166,20 @@ export class ShopUI {
     const goldEl = document.getElementById('shop-gold-val');
     if (goldEl && this.gameSim?.playerHero) {
       goldEl.textContent = Math.floor(this.gameSim.playerHero.gold || 0);
+      if (this.isOpen) {
+        const gold = this.gameSim.playerHero.gold || 0;
+        const affordability = Object.values(ITEM_CATALOG).map(item => gold >= item.cost ? '1' : '0').join('');
+        if (affordability !== this.lastAffordability) {
+          this.lastAffordability = affordability;
+          this.renderItemsGrid();
+        }
+        const selectionState = this.selectedItem
+          ? `${this.selectedItem.id}:${gold >= this.selectedItem.cost}:${this.isOpenShopZone()}` : '';
+        if (this.selectedItem && selectionState !== this.lastSelectionState) {
+          this.lastSelectionState = selectionState;
+          this.selectItem(this.selectedItem);
+        }
+      }
     }
   }
 
@@ -198,7 +217,7 @@ export class ShopUI {
         : '';
 
       card.innerHTML = `
-        <div class="item-icon">${item.icon || '📦'}</div>
+        <div class="item-icon">${renderItemImage(item)}</div>
         <div class="item-info">
           <div class="item-name">${item.name}</div>
           <div class="item-cost">💰 ${item.cost}</div>
@@ -218,6 +237,7 @@ export class ShopUI {
     const details = document.getElementById('shop-details');
     if (!details || !this.gameSim?.playerHero) return;
 
+    this.selectedItem = item;
     const hero = this.gameSim.playerHero;
     const canAfford = (hero.gold || 0) >= item.cost;
     const insideBase = this.isOpenShopZone();
@@ -225,7 +245,7 @@ export class ShopUI {
     details.innerHTML = `
       <div class="details-content">
         <div class="details-header">
-          <span class="details-icon">${item.icon || '📦'}</span>
+          <span class="details-icon">${renderItemImage(item)}</span>
           <div>
             <h3>${item.name}</h3>
             <span class="details-tier">Tier ${item.tier} • 💰 ${item.cost} de Ouro</span>
@@ -274,6 +294,7 @@ export class ShopUI {
     }
 
     hero.gold -= item.cost;
+    this.renderItemsGrid();
     this.updateGoldDisplay();
     this.updateHUDInventory();
     this.selectItem(item); // Refresh buy button state
@@ -295,6 +316,7 @@ export class ShopUI {
     const item = hero.inventoryInstance.getItem(slotIdx);
     if (!item) return;
 
+    this.selectedItem = null;
     // Open shop and show sell option
     this.open();
     const details = document.getElementById('shop-details');
@@ -306,7 +328,7 @@ export class ShopUI {
     details.innerHTML = `
       <div class="details-content">
         <div class="details-header">
-          <span class="details-icon">${item.icon || '📦'}</span>
+          <span class="details-icon">${renderItemImage(item)}</span>
           <div>
             <h3>${item.name} (Equipado)</h3>
             <span class="details-tier">Slot ${slotIdx + 1} • Valor de Venda: 💰 ${refund}</span>
@@ -328,6 +350,7 @@ export class ShopUI {
         const removed = hero.inventoryInstance.removeItem(slotIdx);
         if (removed.success) {
           hero.gold = (hero.gold || 0) + refund;
+          this.renderItemsGrid();
           this.updateGoldDisplay();
           this.updateHUDInventory();
           details.innerHTML = '<div class="details-placeholder">Item vendido com sucesso!</div>';
@@ -347,7 +370,7 @@ export class ShopUI {
       const item = inv.getItem(idx);
       slotEl.classList.remove('tier-1', 'tier-2', 'tier-3');
       if (item) {
-        slotEl.innerHTML = `<span class="slot-item-icon" title="${item.name}: ${item.description}">${item.icon || '📦'}</span>`;
+        slotEl.innerHTML = `<span class="slot-item-icon" title="${item.name}: ${item.description}">${renderItemImage(item)}</span>`;
         slotEl.classList.add('occupied', `tier-${item.tier || 1}`);
       } else {
         slotEl.innerHTML = '';

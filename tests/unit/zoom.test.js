@@ -3,6 +3,11 @@ import { assertEqual, assertCloseTo, assertTrue, assertFalse } from '../helpers/
 import { resolveModule } from '../helpers/module_resolver.js';
 
 describe('Tier 1 Unit: Dynamic Camera Zoom & Unprojection Accuracy (R4)', () => {
+  it('Starts closer to the hero while preserving explicit zoom preferences', async () => {
+    const { Camera } = await import('../../src/core/camera.js');
+    assertEqual(new Camera().zoom, 1.25);
+    assertEqual(new Camera({ zoom: 0.8 }).zoom, 0.8);
+  });
   it('TC-ZOOM-01: Default zoom resolution reads camera.zoom when zoom argument is omitted or null', async () => {
     const { module: iso } = await resolveModule('core/isometric');
 
