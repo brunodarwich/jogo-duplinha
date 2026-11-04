@@ -490,7 +490,7 @@ export class MinionUnit extends Entity {
     const drewSprite = drawChibiSprite(ctx, sprite, sx, sy + 5 * zoom, spriteSize, spriteSize, {
       isMoving,
       flipX,
-      phaseOffset: (this.x + this.y) * 0.02
+      phaseOffset: this.id.length % 4
     });
 
     if (!drewSprite) {

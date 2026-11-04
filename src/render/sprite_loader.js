@@ -40,6 +40,20 @@ export const SPRITE_PATHS = {
 
 const imageCache = new Map();
 const spriteLevels = new WeakMap();
+const spriteKeys = new WeakMap();
+
+// Every mobile character has four square frames in a 2x2 atlas.
+const walkKeys = new Set(Object.keys(SPRITE_PATHS).filter(key => /^(hero_|minion_|boss_)/.test(key)));
+for (const key of walkKeys) {
+  SPRITE_PATHS[`${key}_walk`] = SPRITE_PATHS[key].replace('.png', '_walk.png');
+}
+
+export function getWalkFrame(now, isMoving, phaseOffset = 0) {
+  if (!isMoving) return 0;
+  const time = Number.isFinite(now) ? now : 0;
+  const phase = Number.isFinite(phaseOffset) ? phaseOffset : 0;
+  return ((Math.floor(time / 125 + phase) % 4) + 4) % 4;
+}
 
 // Reduce large illustrations in stages instead of discarding most source pixels
 // in one draw. Retain enough detail for the actual device pixel ratio and zoom.
@@ -107,6 +121,7 @@ export function getSprite(key) {
   let entry = imageCache.get(key);
   if (!entry) {
     const img = new Image();
+    spriteKeys.set(img, key);
     entry = { img, loaded: false, error: false, callbacks: [] };
     img.onload = () => {
       entry.loaded = true;
@@ -252,16 +267,40 @@ export function getStructureSprite(tier = 'outer', team = 'allied') {
 
 /**
  * Renders a transparent PNG Chibi sprite anchored at ground coordinates (sx, sy)
- * with subtle idle breathing / walk bobbing and horizontal facing flip.
+ * with a four-pose walk loop and horizontal facing flip. Static images remain
+ * available while atlases load or when an atlas cannot be fetched.
  * Returns true if the sprite image was drawn, false if fallback should run.
  */
 export function drawChibiSprite(ctx, img, sx, sy, drawW, drawH, options = {}) {
   if (!ctx || !img || typeof ctx.drawImage !== 'function') return false;
 
-  const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+  const now = options.now ?? (typeof performance !== 'undefined' ? performance.now() : Date.now());
   const isMoving = !!options.isMoving;
   const flipX = !!options.flipX;
   const phaseOffset = options.phaseOffset || 0;
+  const key = spriteKeys.get(img);
+  const walk = walkKeys.has(key) ? getSprite(`${key}_walk`) : null;
+
+  if (walk) {
+    const atlas = getRenderSprite(walk, drawW * 2, drawH * 2);
+    const frame = getWalkFrame(now, isMoving, phaseOffset);
+    const frameW = atlas.width / 2;
+    const frameH = atlas.height / 2;
+    const sourceX = (frame % 2) * frameW;
+    const sourceY = Math.floor(frame / 2) * frameH;
+    ctx.save();
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    if (typeof ctx.translate === 'function') {
+      ctx.translate(sx, sy);
+      if (typeof ctx.scale === 'function') ctx.scale(flipX ? -1 : 1, 1);
+      ctx.drawImage(atlas, sourceX, sourceY, frameW, frameH, -drawW / 2, -drawH * 0.90, drawW, drawH);
+    } else {
+      ctx.drawImage(atlas, sourceX, sourceY, frameW, frameH, sx - drawW / 2, sy - drawH * 0.90, drawW, drawH);
+    }
+    ctx.restore();
+    return true;
+  }
 
   // Walk bounce vs idle breathing
   const bobY = isMoving

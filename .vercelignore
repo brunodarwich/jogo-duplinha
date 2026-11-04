@@ -4,3 +4,9 @@ JOGAR.bat
 tests/
 .agents/
 *.md
+tools/
+tasks/
+.sprite-sources.json
+.playwright-cli/
+shop-items-preview.png
+zoom-preview.png

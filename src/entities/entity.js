@@ -783,7 +783,7 @@ export class MinionEntity extends Entity {
     const flipX = Math.cos(this.facing || 0) < -0.1;
 
     const drewSprite = drawChibiSprite(ctx, sprite, sx, sy + 4 * zoom, size, size, {
-      isMoving: true,
+      isMoving: this.isMoving,
       flipX
     });
 

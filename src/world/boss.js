@@ -229,6 +229,7 @@ export class StoneColossusBoss extends Entity {
   update(dt = 0.01667, entities = [], manager = null, simulation = null) {
     if (!this.isAlive()) return;
 
+    this.isMoving = false;
     this.slamTimer = Math.max(0, this.slamTimer - dt);
 
     // Target scanning: nearest allied hero or unit
@@ -286,6 +287,7 @@ export class StoneColossusBoss extends Entity {
 
     // Movement down lane toward allied base
     if (nearestTarget && minDist > 80) {
+      this.isMoving = dt > 0;
       const dx = nearestTarget.x - this.x;
       const dy = nearestTarget.y - this.y;
       const step = this.speed * dt;
@@ -298,6 +300,7 @@ export class StoneColossusBoss extends Entity {
       const dy = 400 - this.y;
       const d = Math.hypot(dx, dy);
       if (d > 50) {
+        this.isMoving = dt > 0;
         const step = this.speed * dt;
         this.x += (dx / d) * step;
         this.y += (dy / d) * step;
@@ -327,7 +330,7 @@ export class StoneColossusBoss extends Entity {
     const spriteSize = 115 * zoom;
     const flipX = Math.cos(this.facing || 0) < -0.1;
     const drewSprite = drawChibiSprite(ctx, sprite, sx, sy + 8 * zoom, spriteSize, spriteSize, {
-      isMoving: true,
+      isMoving: this.isMoving,
       flipX
     });
 
@@ -413,6 +416,7 @@ export class AbyssalBehemothBoss extends Entity {
   update(dt = 0.01667, entities = [], manager = null, simulation = null) {
     if (!this.isAlive()) return;
 
+    this.isMoving = false;
     this.acidTimer = Math.max(0, this.acidTimer - dt);
     this.roarTimer = Math.max(0, this.roarTimer - dt);
 
@@ -481,6 +485,7 @@ export class AbyssalBehemothBoss extends Entity {
 
     // Movement
     if (nearestTarget && minDist > 100) {
+      this.isMoving = dt > 0;
       const dx = nearestTarget.x - this.x;
       const dy = nearestTarget.y - this.y;
       const step = this.speed * dt;
@@ -511,7 +516,7 @@ export class AbyssalBehemothBoss extends Entity {
     const spriteSize = 132 * zoom;
     const flipX = Math.cos(this.facing || 0) < -0.1;
     const drewSprite = drawChibiSprite(ctx, sprite, sx, sy + 9 * zoom, spriteSize, spriteSize, {
-      isMoving: true,
+      isMoving: this.isMoving,
       flipX
     });
 
