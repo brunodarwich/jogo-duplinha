@@ -1,0 +1,158 @@
+{
+  "tool": "built-in image_gen",
+  "transparent_background": true,
+  "sourceReferenceRevision": "22b5553",
+  "basePrompt": "Use case: stylized-concept. Asset type: production fantasy MOBA walk animation sprite sheet. Create EXACTLY FOUR full-body poses of ONE identical character in a perfectly regular 2 columns by 2 rows grid, equal square cells, transparent background. Read order top-left, top-right, bottom-left, bottom-right = walk cycle contact left foot forward, passing left foot under body, contact right foot forward, passing right foot under body. Feet visibly alternate; arms and held equipment subtly counter-swing. Every pose faces 3/4 front toward screen RIGHT, identical camera, costume, anatomy, scale and position. Extremely squat chibi EXACTLY 1.5 HEADS tall: crown-to-chin head is TWO THIRDS of crown-to-sole height, entire torso and stubby feet below chin only ONE THIRD. NO neck, tiny body, oversized expressive head, tiny mitten hands. Polished 2D hand-painted game art, dark silhouette outlines, clean cel shaded volumes, readable at 78px. Each full figure including weapons fits within central 84% of its own square cell, foot baseline at 90% cell height; align head and feet across frames, leave transparent margins. No ground shadows, pedestal, background, scenery, text, labels, borders, grid lines, watermark. Exactly 4 poses, no extra figures.",
+  "assembly": "Concatenate basePrompt and promptSuffix for the exact generation prompt.",
+  "assets": [
+    {
+      "key": "hero_knight",
+      "static": "assets/sprites/heroes/knight.png",
+      "atlas": "assets/sprites/heroes/knight_walk.png",
+      "promptSuffix": "\nCharacter: Silver armored guardian knight, massive round enclosed helmet with blue plume, gold trim, bright cyan eyes, blue tabard, short silver sword in left of image and blue gold shield in right.",
+      "referenceImages": [
+        "assets/sprites/heroes/knight.png"
+      ],
+      "generatedSource": "exec-65159b1f-f29d-49a5-9cf8-ada167236ea8.png"
+    },
+    {
+      "key": "hero_sorceress",
+      "static": "assets/sprites/heroes/sorceress.png",
+      "atlas": "assets/sprites/heroes/sorceress_walk.png",
+      "promptSuffix": "\nInput image: character identity reference. Preserve its colors and equipment; redesign with required extreme 1.5 head anatomy.\nCharacter: Female elemental sorceress, copper bob hair, giant red pointed wizard hat with gold trim, amber eyes, tiny red gold robe, flame orb staff on left and small blue ice crystal on right.",
+      "referenceImages": [
+        "assets/sprites/heroes/sorceress.png"
+      ],
+      "generatedSource": "exec-fa3aad25-ea84-4e08-8bdb-27c8e5353ff2.png"
+    },
+    {
+      "key": "hero_ranger",
+      "static": "assets/sprites/heroes/ranger.png",
+      "atlas": "assets/sprites/heroes/ranger_walk.png",
+      "promptSuffix": "\nInput image: character identity reference. Preserve its colors and equipment; redesign with required extreme 1.5 head anatomy.\nCharacter: Male elven ranger with huge green gold hood, brown tousled hair, pointed ears, hazel eyes, tiny green leather outfit, quiver, wooden bow in right of image.",
+      "referenceImages": [
+        "assets/sprites/heroes/ranger.png"
+      ],
+      "generatedSource": "exec-4b9553dc-aa48-431e-ba79-6a2fd93c0eac.png"
+    },
+    {
+      "key": "hero_assassin",
+      "static": "assets/sprites/heroes/assassin.png",
+      "atlas": "assets/sprites/heroes/assassin_walk.png",
+      "promptSuffix": "\nInput image: character identity reference. Preserve its colors and equipment; redesign with required extreme 1.5 head anatomy.\nCharacter: Female masked assassin, huge violet hood with silver trim, short silver hair, purple eyes, tiny fully covered black violet leather outfit, green curved dagger in each hand.",
+      "referenceImages": [
+        "assets/sprites/heroes/assassin.png"
+      ],
+      "generatedSource": "exec-ee6379fc-fcd3-40ba-88af-a7c13e82cdf9.png"
+    },
+    {
+      "key": "hero_cleric",
+      "static": "assets/sprites/heroes/cleric.png",
+      "atlas": "assets/sprites/heroes/cleric_walk.png",
+      "promptSuffix": "\nInput image: character identity reference. Preserve its colors and equipment; redesign with required extreme 1.5 head anatomy.\nCharacter: Male light cleric, huge fluffy ivory hair, gold sun circlet, amber eyes, tiny white gold robe, gold sun staff at left and small closed gold sun book at right.",
+      "referenceImages": [
+        "assets/sprites/heroes/cleric.png"
+      ],
+      "generatedSource": "exec-5d1ae41a-034f-4d1d-b6fc-768f1d4e1e4c.png"
+    },
+    {
+      "key": "minion_melee_allied",
+      "static": "assets/sprites/minions/minion_melee_allied.png",
+      "atlas": "assets/sprites/minions/minion_melee_allied_walk.png",
+      "promptSuffix": "\nInput image 1: character identity and equipment reference. Input image 2: only illustration style, chibi proportions and 2x2 walk layout reference, do not copy knight identity.\nCharacter: Allied tiny silver armored swordsman, enormous round silver helmet with cyan plume, blue tabard, blue round shield with silver diamond, short silver sword.",
+      "referenceImages": [
+        "assets/sprites/minions/minion_melee_allied.png",
+        "assets/sprites/heroes/knight_walk.png"
+      ],
+      "generatedSource": "exec-592a0fd9-b2be-48d4-8732-6d2e5521343a.png"
+    },
+    {
+      "key": "minion_ranged_allied",
+      "static": "assets/sprites/minions/minion_ranged_allied.png",
+      "atlas": "assets/sprites/minions/minion_ranged_allied_walk.png",
+      "promptSuffix": "\nInput image 1: character identity and equipment reference. Input image 2: only illustration style, chibi proportions and 2x2 walk layout reference, do not copy knight identity.\nCharacter: Allied tiny blue hooded mage, enormous cyan hood with gold trim, face hidden in dark navy with bright cyan eyes, tiny blue gold robe, wood staff with cyan orb, small blue round shield.",
+      "referenceImages": [
+        "assets/sprites/minions/minion_ranged_allied.png",
+        "assets/sprites/heroes/knight_walk.png"
+      ],
+      "generatedSource": "exec-1faa1baf-a6e1-46b5-b815-01b9f8082611.png"
+    },
+    {
+      "key": "minion_cannon_allied",
+      "static": "assets/sprites/minions/minion_cannon_allied.png",
+      "atlas": "assets/sprites/minions/minion_cannon_allied_walk.png",
+      "promptSuffix": "\nInput image 1: character identity and equipment reference. Input image 2: only illustration style, chibi proportions and 2x2 walk layout reference, do not copy knight identity.\nCharacter: Allied tiny silver armored blue plume soldier PUSHING a blue gold two-wheeled cannon. Soldier anatomy 1.5 heads, huge helmet, miniature body visible behind cannon. Four poses with alternating boot steps and clearly rotating gold wheel spokes, cannon stable and pointing right.",
+      "referenceImages": [
+        "assets/sprites/minions/minion_cannon_allied.png",
+        "assets/sprites/heroes/knight_walk.png"
+      ],
+      "generatedSource": "exec-d60de50a-a632-419f-8ac9-06f5570c520f.png"
+    },
+    {
+      "key": "minion_melee_enemy",
+      "static": "assets/sprites/minions/minion_melee_enemy.png",
+      "atlas": "assets/sprites/minions/minion_melee_enemy_walk.png",
+      "promptSuffix": "\nInput image 1: character identity and equipment reference. Input image 2: only illustration style, chibi proportions and 2x2 walk layout reference, do not copy knight identity.\nCharacter: Enemy tiny black iron armored swordsman, enormous dark helmet with two curved brown horns, pale yellow eyes, tiny crimson tabard, spiked crimson shield, short dark sword.",
+      "referenceImages": [
+        "assets/sprites/minions/minion_melee_enemy.png",
+        "assets/sprites/heroes/knight_walk.png"
+      ],
+      "generatedSource": "exec-f28b809b-8991-4b02-97e9-2fd3e0fef7ea.png"
+    },
+    {
+      "key": "minion_ranged_enemy",
+      "static": "assets/sprites/minions/minion_ranged_enemy.png",
+      "atlas": "assets/sprites/minions/minion_ranged_enemy_walk.png",
+      "promptSuffix": "\nInput image 1: character identity and equipment reference. Input image 2: only illustration style, chibi proportions and 2x2 walk layout reference, do not copy knight identity.\nCharacter: Enemy tiny crimson hooded mage, enormous red hood trimmed in gold, dark shadow face and yellow orange eyes, tiny crimson gold robe, wooden staff topped with red flame orb.",
+      "referenceImages": [
+        "assets/sprites/minions/minion_ranged_enemy.png",
+        "assets/sprites/heroes/knight_walk.png"
+      ],
+      "generatedSource": "exec-ba988edb-5992-42dd-9bb3-81d6c2dc0e29.png"
+    },
+    {
+      "key": "minion_cannon_enemy",
+      "static": "assets/sprites/minions/minion_cannon_enemy.png",
+      "atlas": "assets/sprites/minions/minion_cannon_enemy_walk.png",
+      "promptSuffix": "\nInput image 1: character identity and equipment reference. Input image 2: only illustration style, chibi proportions and 2x2 walk layout reference, do not copy knight identity.\nCharacter: Enemy tiny black iron armored horned soldier PUSHING a crimson orange two-wheeled cannon. Soldier anatomy 1.5 heads with enormous horned helmet and miniature body visible behind cannon. Four poses with alternating boot steps and rotating orange wheel spokes, cannon stable and pointing right.",
+      "referenceImages": [
+        "assets/sprites/minions/minion_cannon_enemy.png",
+        "assets/sprites/heroes/knight_walk.png"
+      ],
+      "generatedSource": "exec-971410f4-adcc-4313-ad0b-126a101f32c9.png"
+    },
+    {
+      "key": "boss_colossus",
+      "static": "assets/sprites/bosses/colossus.png",
+      "atlas": "assets/sprites/bosses/colossus_walk.png",
+      "promptSuffix": "\nInput image 1: character identity and equipment reference. Input image 2: only illustration style, chibi proportions and 2x2 walk layout reference, do not copy knight identity.\nCharacter: Stone Colossus, adorable intimidating squat dark slate stone golem with huge boulder HEAD occupying 2/3 of crown-to-sole height, tiny torso and stubby legs only1/3, massive orange magma cracks across head, amber glowing eyes, small glowing orange chest core, tiny fists, no armor or weapon.",
+      "referenceImages": [
+        "assets/sprites/bosses/colossus.png",
+        "assets/sprites/heroes/knight_walk.png"
+      ],
+      "generatedSource": "exec-4d0364ff-0674-450a-8128-db290980067a.png"
+    },
+    {
+      "key": "boss_behemoth",
+      "static": "assets/sprites/bosses/behemoth.png",
+      "atlas": "assets/sprites/bosses/behemoth_walk.png",
+      "promptSuffix": "\nInput image 1: character identity and equipment reference. Input image 2: only illustration style, chibi proportions and 2x2 walk layout reference, do not copy knight identity.\nCharacter: Abyssal Behemoth, adorable intimidating squat purple plated demonic monster, enormous HEAD with two curved black horns, four luminous violet eyes, grin with tiny fangs, tiny torso and stubby legs, small claws dripping lime green acid. HEAD 2/3 total crown-to-sole height, body1/3.",
+      "referenceImages": [
+        "assets/sprites/bosses/behemoth.png",
+        "assets/sprites/heroes/knight_walk.png"
+      ],
+      "generatedSource": "exec-3ca5c8ff-2176-43ba-9746-932b081493e1.png"
+    },
+    {
+      "key": "boss_supreme",
+      "static": "assets/sprites/bosses/nexus_guardian.png",
+      "atlas": "assets/sprites/bosses/nexus_guardian_walk.png",
+      "promptSuffix": "\nInput image 1: character identity and equipment reference. Input image 2: only illustration style, chibi proportions and 2x2 walk layout reference, do not copy knight identity.\nCharacter: Nexus Guardian, adorable intimidating squat dark crimson armored demon knight, enormous black horned helmet with red glowing eyes and floating crimson crown flame, tiny black crimson gold rune armor body, small fiery chest core, holds crimson glowing rune greatsword. HEAD2/3 anatomical height body1/3; sword entirely inside cell.",
+      "referenceImages": [
+        "assets/sprites/bosses/nexus_guardian.png",
+        "assets/sprites/heroes/knight_walk.png"
+      ],
+      "generatedSource": "exec-a80b529a-1399-44fa-9ac1-8899211973c8.png"
+    }
+  ]
+}
