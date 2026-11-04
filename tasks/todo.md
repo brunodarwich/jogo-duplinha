@@ -23,6 +23,6 @@
 ## 5. Publicação (dependências: 4)
 - [x] Revisar diff e registrar prompts e arquivos finais.
 - [x] Commits locais de arte e integração; tag v1.1.0.
-- [ ] Push GitHub: recusado com HTTP 403. A única conta autenticada, Raixu01, tem pull=true e push=false em brunodarwich/jogo-duplinha. Aguardando acesso de escrita ou autenticação de brunodarwich.
+- [x] Push GitHub concluído com a conta brunodarwich: branch main e tag v1.1.0 publicadas em brunodarwich/jogo-duplinha.
 - [x] Deploy Vercel em https://jogo-duplinha-blush.vercel.app (dpl_5rkjYQFpvCTZKeQbFxYLpwC85Fk1).
 - [x] Verificar jogo e sprites em produção: HTTP 200 e SHA-256 idêntico ao workspace para index, renderizador e os 14 atlas; tela inicial abre no Chrome.
