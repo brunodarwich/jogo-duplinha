@@ -1,0 +1,454 @@
+{
+  "tool": "built-in image_gen",
+  "transparent_background": true,
+  "displayScale": 1.6,
+  "groundAnchor": 0.72,
+  "frameSize": 384,
+  "assets": [
+    {
+      "key": "knight_attack",
+      "reference": "assets/sprites/heroes/knight.png",
+      "source": "C:\\Users\\user\\.codex\\generated_images\\01a1a90d-7fcc-7382-a659-a9ce90a26c06\\exec-1cfb6bdc-1ec4-46f3-86e5-beb9acd1d338.png",
+      "atlas": "assets/sprites/heroes/knight_attack.png",
+      "prompt": "Use case: stylized-concept. Asset type: production MOBA combat animation sprite sheet. Use the input character as strict identity reference: preserve face, costume, colors, equipment, 2D cel shading and enormous-head tiny-body 1.5 heads tall chibi proportions. Exactly FOUR full-body poses of this ONE character in regular 2 columns x 2 rows grid on genuinely transparent background. Reading order top-left, top-right, bottom-left, bottom-right: anticipation, execution, peak action, recovery. Camera elevated three-quarter front facing screen RIGHT. Same anatomy scale and ground anchor in every cell. Each character and weapon completely contained in its own cell with generous transparent margins; feet baseline 90% cell height. Dynamic distinct limb and weapon poses, small localized effects only. No text, grid lines, scenery, pedestal, shadows, extra characters or watermark. Action: Basic sword attack: draw sword back, swing sword forward, short silver slash arc, settle into guard. Shield held firmly."
+    },
+    {
+      "key": "knight_skill_q",
+      "reference": "assets/sprites/heroes/knight.png",
+      "source": "C:\\Users\\user\\.codex\\generated_images\\01a1a90d-7fcc-7382-a659-a9ce90a26c06\\exec-2f7633bf-e0f8-411b-8e0c-360925bd79ad.png",
+      "atlas": "assets/sprites/heroes/knight_skill_q.png",
+      "prompt": "Use case: stylized-concept. Asset type: production MOBA combat animation sprite sheet. Use the input character as strict identity reference: preserve face, costume, colors, equipment, 2D cel shading and enormous-head tiny-body 1.5 heads tall chibi proportions. Exactly FOUR full-body poses of this ONE character in regular 2 columns x 2 rows grid on genuinely transparent background. Reading order top-left, top-right, bottom-left, bottom-right: anticipation, execution, peak action, recovery. Camera elevated three-quarter front facing screen RIGHT. Same anatomy scale and ground anchor in every cell. Each character and weapon completely contained in its own cell with generous transparent margins; feet baseline 90% cell height. Dynamic distinct limb and weapon poses, small localized effects only. No text, grid lines, scenery, pedestal, shadows, extra characters or watermark. Action: Shield slam: pull blue shield back, thrust shield forcefully forward, cyan impact flare at shield rim, recover guard."
+    },
+    {
+      "key": "knight_skill_w",
+      "reference": "assets/sprites/heroes/knight.png",
+      "source": "C:\\Users\\user\\.codex\\generated_images\\01a1a90d-7fcc-7382-a659-a9ce90a26c06\\exec-33136797-2cb1-4d4c-a625-0d51bbc2f737.png",
+      "atlas": "assets/sprites/heroes/knight_skill_w.png",
+      "prompt": "Use case: stylized-concept. Asset type: production MOBA combat animation sprite sheet. Use the input character as strict identity reference: preserve face, costume, colors, equipment, 2D cel shading and enormous-head tiny-body 1.5 heads tall chibi proportions. Exactly FOUR full-body poses of this ONE character in regular 2 columns x 2 rows grid on genuinely transparent background. Reading order top-left, top-right, bottom-left, bottom-right: anticipation, execution, peak action, recovery. Camera elevated three-quarter front facing screen RIGHT. Same anatomy scale and ground anchor in every cell. Each character and weapon completely contained in its own cell with generous transparent margins; feet baseline 90% cell height. Dynamic distinct limb and weapon poses, small localized effects only. No text, grid lines, scenery, pedestal, shadows, extra characters or watermark. Action: Taunt and protective barrier: brace feet, raise shield boldly outward, small blue protective halo around armor, settle confidently."
+    },
+    {
+      "key": "knight_skill_e",
+      "reference": "assets/sprites/heroes/knight.png",
+      "source": "C:\\Users\\user\\.codex\\generated_images\\01a1a90d-7fcc-7382-a659-a9ce90a26c06\\exec-ceb2e65c-d7bc-47e7-aac3-44fd2169beca.png",
+      "atlas": "assets/sprites/heroes/knight_skill_e.png",
+      "prompt": "Use case: stylized-concept. Asset type: production MOBA combat animation sprite sheet. Use the input character as strict identity reference: preserve face, costume, colors, equipment, 2D cel shading and enormous-head tiny-body 1.5 heads tall chibi proportions. Exactly FOUR full-body poses of this ONE character in regular 2 columns x 2 rows grid on genuinely transparent background. Reading order top-left, top-right, bottom-left, bottom-right: anticipation, execution, peak action, recovery. Camera elevated three-quarter front facing screen RIGHT. Same anatomy scale and ground anchor in every cell. Each character and weapon completely contained in its own cell with generous transparent margins; feet baseline 90% cell height. Dynamic distinct limb and weapon poses, small localized effects only. No text, grid lines, scenery, pedestal, shadows, extra characters or watermark. Action: Sweeping cleave: wind sword to side, broad horizontal sword sweep, bright compact blue crescent slash, recover."
+    },
+    {
+      "key": "knight_skill_r",
+      "reference": "assets/sprites/heroes/knight.png",
+      "source": "C:\\Users\\user\\.codex\\generated_images\\01a1a90d-7fcc-7382-a659-a9ce90a26c06\\exec-2a2b764c-2cea-477b-a49b-3e5c284d8678.png",
+      "atlas": "assets/sprites/heroes/knight_skill_r.png",
+      "prompt": "Use case: stylized-concept. Asset type: production MOBA combat animation sprite sheet. Use the input character as strict identity reference: preserve face, costume, colors, equipment, 2D cel shading and enormous-head tiny-body 1.5 heads tall chibi proportions. Exactly FOUR full-body poses of this ONE character in regular 2 columns x 2 rows grid on genuinely transparent background. Reading order top-left, top-right, bottom-left, bottom-right: anticipation, execution, peak action, recovery. Camera elevated three-quarter front facing screen RIGHT. Same anatomy scale and ground anchor in every cell. Each character and weapon completely contained in its own cell with generous transparent margins; feet baseline 90% cell height. Dynamic distinct limb and weapon poses, small localized effects only. No text, grid lines, scenery, pedestal, shadows, extra characters or watermark. Action: Fortress ultimate: crouch behind shield, raise sword and shield high, radiant deep blue fortified aura with gold sparks, settle in heroic guard."
+    },
+    {
+      "key": "sorceress_attack",
+      "reference": "assets/sprites/heroes/sorceress.png",
+      "source": "C:\\Users\\user\\.codex\\generated_images\\01a1a90d-7fcc-7382-a659-a9ce90a26c06\\exec-ea833ff1-1154-45a2-9086-ffeffc300fae.png",
+      "atlas": "assets/sprites/heroes/sorceress_attack.png",
+      "prompt": "Use case: stylized-concept. Asset type: production MOBA combat animation sprite sheet. Use the input character as strict identity reference: preserve face, costume, colors, equipment, 2D cel shading and enormous-head tiny-body 1.5 heads tall chibi proportions. Exactly FOUR full-body poses of this ONE character in regular 2 columns x 2 rows grid on genuinely transparent background. Reading order top-left, top-right, bottom-left, bottom-right: anticipation, execution, peak action, recovery. Camera elevated three-quarter front facing screen RIGHT. Same anatomy scale and ground anchor in every cell. Each character and weapon completely contained in its own cell with generous transparent margins; feet baseline 90% cell height. Dynamic distinct limb and weapon poses, small localized effects only. No text, grid lines, scenery, pedestal, shadows, extra characters or watermark. Action: Basic magic attack: draw flame staff back, thrust staff forward, small orange spark leaving staff tip, recover. Keep all glow and trails fully inside each cell, away from cell borders."
+    },
+    {
+      "key": "sorceress_skill_q",
+      "reference": "assets/sprites/heroes/sorceress.png",
+      "source": "C:\\Users\\user\\.codex\\generated_images\\01a1a90d-7fcc-7382-a659-a9ce90a26c06\\exec-c40c8c61-1c17-44dc-9700-b2b79e554bab.png",
+      "atlas": "assets/sprites/heroes/sorceress_skill_q.png",
+      "prompt": "Use case: stylized-concept. Asset type: production MOBA combat animation sprite sheet. Use the input character as strict identity reference: preserve face, costume, colors, equipment, 2D cel shading and enormous-head tiny-body 1.5 heads tall chibi proportions. Exactly FOUR full-body poses of this ONE character in regular 2 columns x 2 rows grid on genuinely transparent background. Reading order top-left, top-right, bottom-left, bottom-right: anticipation, execution, peak action, recovery. Camera elevated three-quarter front facing screen RIGHT. Same anatomy scale and ground anchor in every cell. Each character and weapon completely contained in its own cell with generous transparent margins; feet baseline 90% cell height. Dynamic distinct limb and weapon poses, small localized effects only. No text, grid lines, scenery, pedestal, shadows, extra characters or watermark. Action: Fireball: gather orange fire at staff, push staff forward, bright compact fireball at staff tip, recover. Keep all glow and trails fully inside each cell, away from cell borders."
+    },
+    {
+      "key": "sorceress_skill_w",
+      "reference": "assets/sprites/heroes/sorceress.png",
+      "source": "C:\\Users\\user\\.codex\\generated_images\\01a1a90d-7fcc-7382-a659-a9ce90a26c06\\exec-34b4b387-eb88-4d20-8042-b8b078bbb0f9.png",
+      "atlas": "assets/sprites/heroes/sorceress_skill_w.png",
+      "prompt": "Use case: stylized-concept. Asset type: production MOBA combat animation sprite sheet. Use the input character as strict identity reference: preserve face, costume, colors, equipment, 2D cel shading and enormous-head tiny-body 1.5 heads tall chibi proportions. Exactly FOUR full-body poses of this ONE character in regular 2 columns x 2 rows grid on genuinely transparent background. Reading order top-left, top-right, bottom-left, bottom-right: anticipation, execution, peak action, recovery. Camera elevated three-quarter front facing screen RIGHT. Same anatomy scale and ground anchor in every cell. Each character and weapon completely contained in its own cell with generous transparent margins; feet baseline 90% cell height. Dynamic distinct limb and weapon poses, small localized effects only. No text, grid lines, scenery, pedestal, shadows, extra characters or watermark. Action: Blizzard: raise ice crystal hand, sweep crystal outward, blue white frost and ice shards around raised hand, recover. Keep all glow and trails fully inside each cell, away from cell borders."
+    },
+    {
+      "key": "sorceress_skill_e",
+      "reference": "assets/sprites/heroes/sorceress.png",
+      "source": "C:\\Users\\user\\.codex\\generated_images\\01a1a90d-7fcc-7382-a659-a9ce90a26c06\\exec-7c0393b9-3c67-4f25-bbc6-a35f1b70949a.png",
+      "atlas": "assets/sprites/heroes/sorceress_skill_e.png",
+      "prompt": "Use case: stylized-concept. Asset type: production MOBA combat animation sprite sheet. Use the input character as strict identity reference: preserve face, costume, colors, equipment, 2D cel shading and enormous-head tiny-body 1.5 heads tall chibi proportions. Exactly FOUR full-body poses of this ONE character in regular 2 columns x 2 rows grid on genuinely transparent background. Reading order top-left, top-right, bottom-left, bottom-right: anticipation, execution, peak action, recovery. Camera elevated three-quarter front facing screen RIGHT. Same anatomy scale and ground anchor in every cell. Each character and weapon completely contained in its own cell with generous transparent margins; feet baseline 90% cell height. Dynamic distinct limb and weapon poses, small localized effects only. No text, grid lines, scenery, pedestal, shadows, extra characters or watermark. Action: Arcane blink: crouch and pull cloak inward, twist in violet arcane wisps, silhouette veiled by small purple sparkle trail, reappear in poised stance. Keep all glow and trails fully inside each cell, away from cell borders."
+    },
+    {
+      "key": "sorceress_skill_r",
+      "reference": "assets/sprites/heroes/sorceress.png",
+      "source": "C:\\Users\\user\\.codex\\generated_images\\01a1a90d-7fcc-7382-a659-a9ce90a26c06\\exec-593eec36-e52d-4d38-a503-2ca6d31f41bf.png",
+      "atlas": "assets/sprites/heroes/sorceress_skill_r.png",
+      "prompt": "Use case: stylized-concept. Asset type: production MOBA combat animation sprite sheet. Use the input character as strict identity reference: preserve face, costume, colors, equipment, 2D cel shading and enormous-head tiny-body 1.5 heads tall chibi proportions. Exactly FOUR full-body poses of this ONE character in regular 2 columns x 2 rows grid on genuinely transparent background. Reading order top-left, top-right, bottom-left, bottom-right: anticipation, execution, peak action, recovery. Camera elevated three-quarter front facing screen RIGHT. Same anatomy scale and ground anchor in every cell. Each character and weapon completely contained in its own cell with generous transparent margins; feet baseline 90% cell height. Dynamic distinct limb and weapon poses, small localized effects only. No text, grid lines, scenery, pedestal, shadows, extra characters or watermark. Action: Meteor ultimate: prepare staff at chest, raise staff diagonally beside face, summon a SMALL compact orange-red meteor orb beside staff tip at shoulder height, lower staff and recover. IMPORTANT: every full pose INCLUDING effects fits within central 65% of its own square cell. Large completely empty transparent gutters separate all four cells. Absolutely NO effects above head or below feet and NO content bleeding into neighboring cells. Keep the exact same chibi sorceress identity from reference."
+    },
+    {
+      "key": "ranger_attack",
+      "reference": "assets/sprites/heroes/ranger.png",
+      "source": "C:\\Users\\user\\.codex\\generated_images\\01a1a90d-7fcc-7382-a659-a9ce90a26c06\\exec-259e367f-5a78-49b3-81da-db76f9bf86e7.png",
+      "atlas": "assets/sprites/heroes/ranger_attack.png",
+      "prompt": "Use case: stylized-concept. Asset type: production MOBA combat animation sprite sheet. Use the input character as strict identity reference: preserve face, costume, colors, equipment, 2D cel shading and enormous-head tiny-body 1.5 heads tall chibi proportions. Exactly FOUR full-body poses of this ONE character in regular 2 columns x 2 rows grid on genuinely transparent background. Reading order top-left, top-right, bottom-left, bottom-right: anticipation, execution, peak action, recovery. Camera elevated three-quarter front facing screen RIGHT. Same anatomy scale and ground anchor in every cell. Each character and weapon completely contained in its own cell with generous transparent margins; feet baseline 90% cell height. Dynamic distinct limb and weapon poses, small localized effects only. No text, grid lines, scenery, pedestal, shadows, extra characters or watermark. Action: Basic arrow shot: lift wooden bow, draw single arrow to cheek, release arrow with short pale trail, lower bow. Keep all glow and trails fully inside each cell, away from cell borders."
+    },
+    {
+      "key": "ranger_skill_q",
+      "reference": "assets/sprites/heroes/ranger.png",
+      "source": "C:\\Users\\user\\.codex\\generated_images\\01a1a90d-7fcc-7382-a659-a9ce90a26c06\\exec-a7897dcd-6100-4cd5-8a46-1d4ded31cc5e.png",
+      "atlas": "assets/sprites/heroes/ranger_skill_q.png",
+      "prompt": "Use case: stylized-concept. Asset type: production MOBA combat animation sprite sheet. Use the input character as strict identity reference: preserve face, costume, colors, equipment, 2D cel shading and enormous-head tiny-body 1.5 heads tall chibi proportions. Exactly FOUR full-body poses of this ONE character in regular 2 columns x 2 rows grid on genuinely transparent background. Reading order top-left, top-right, bottom-left, bottom-right: anticipation, execution, peak action, recovery. Camera elevated three-quarter front facing screen RIGHT. Same anatomy scale and ground anchor in every cell. Each character and weapon completely contained in its own cell with generous transparent margins; feet baseline 90% cell height. Dynamic distinct limb and weapon poses, small localized effects only. No text, grid lines, scenery, pedestal, shadows, extra characters or watermark. Action: Piercing arrow: brace wooden bow, pull bright green charged arrow taut, release narrow green energy arrow, recover. Keep all glow and trails fully inside each cell, away from cell borders.",
+      "frameBoxes": [
+        {
+          "left": 0,
+          "top": 0,
+          "right": 0.5,
+          "bottom": 0.5,
+          "centerX": 0.25
+        },
+        {
+          "left": 0.5,
+          "top": 0,
+          "right": 1,
+          "bottom": 0.5,
+          "centerX": 0.75
+        },
+        {
+          "left": 0,
+          "top": 0.5,
+          "right": 0.55,
+          "bottom": 1,
+          "centerX": 0.25
+        },
+        {
+          "left": 0.55,
+          "top": 0.5,
+          "right": 1,
+          "bottom": 1,
+          "centerX": 0.75
+        }
+      ]
+    },
+    {
+      "key": "ranger_skill_w",
+      "reference": "assets/sprites/heroes/ranger.png",
+      "source": "C:\\Users\\user\\.codex\\generated_images\\01a1a90d-7fcc-7382-a659-a9ce90a26c06\\exec-d429fbda-11f6-4d96-95e1-419797f95311.png",
+      "atlas": "assets/sprites/heroes/ranger_skill_w.png",
+      "prompt": "Use case: stylized-concept. Asset type: production MOBA combat animation sprite sheet. Use the input character as strict identity reference: preserve face, costume, colors, equipment, 2D cel shading and enormous-head tiny-body 1.5 heads tall chibi proportions. Exactly FOUR full-body poses of this ONE character in regular 2 columns x 2 rows grid on genuinely transparent background. Reading order top-left, top-right, bottom-left, bottom-right: anticipation, execution, peak action, recovery. Camera elevated three-quarter front facing screen RIGHT. Same anatomy scale and ground anchor in every cell. Each character and weapon completely contained in its own cell with generous transparent margins; feet baseline 90% cell height. Dynamic distinct limb and weapon poses, small localized effects only. No text, grid lines, scenery, pedestal, shadows, extra characters or watermark. Action: Arrow rain: angle wooden bow upward, draw a fan of three arrows, release volley upward with small green trails, recover. Keep all glow and trails fully inside each cell, away from cell borders.",
+      "frameBoxes": [
+        {
+          "left": 0,
+          "top": 0,
+          "right": 0.5,
+          "bottom": 0.43,
+          "centerX": 0.25
+        },
+        {
+          "left": 0.5,
+          "top": 0,
+          "right": 1,
+          "bottom": 0.43,
+          "centerX": 0.75
+        },
+        {
+          "left": 0,
+          "top": 0.43,
+          "right": 0.55,
+          "bottom": 1,
+          "centerX": 0.25
+        },
+        {
+          "left": 0.55,
+          "top": 0.43,
+          "right": 1,
+          "bottom": 1,
+          "centerX": 0.75
+        }
+      ]
+    },
+    {
+      "key": "ranger_skill_e",
+      "reference": "assets/sprites/heroes/ranger.png",
+      "source": "C:\\Users\\user\\.codex\\generated_images\\01a1a90d-7fcc-7382-a659-a9ce90a26c06\\exec-d1b96fcd-5269-4cdb-8f57-88a42ec374a3.png",
+      "atlas": "assets/sprites/heroes/ranger_skill_e.png",
+      "prompt": "Use case: stylized-concept. Asset type: production MOBA combat animation sprite sheet. Use the input character as strict identity reference: preserve face, costume, colors, equipment, 2D cel shading and enormous-head tiny-body 1.5 heads tall chibi proportions. Exactly FOUR full-body poses of this ONE character in regular 2 columns x 2 rows grid on genuinely transparent background. Reading order top-left, top-right, bottom-left, bottom-right: anticipation, execution, peak action, recovery. Camera elevated three-quarter front facing screen RIGHT. Same anatomy scale and ground anchor in every cell. Each character and weapon completely contained in its own cell with generous transparent margins; feet baseline 90% cell height. Dynamic distinct limb and weapon poses, small localized effects only. No text, grid lines, scenery, pedestal, shadows, extra characters or watermark. Action: Acrobatic leap: low crouch with bow tucked, nimble tucked-leg sideward leap within cell, extend feet to land with green streak, regain stance. No ground shadow. Keep all glow and trails fully inside each cell, away from cell borders."
+    },
+    {
+      "key": "ranger_skill_r",
+      "reference": "assets/sprites/heroes/ranger.png",
+      "source": "C:\\Users\\user\\.codex\\generated_images\\01a1a90d-7fcc-7382-a659-a9ce90a26c06\\exec-eaba2e1a-ce6a-4673-8336-8c551164419c.png",
+      "atlas": "assets/sprites/heroes/ranger_skill_r.png",
+      "prompt": "Use case: stylized-concept. Asset type: production MOBA combat animation sprite sheet. Use the input character as strict identity reference: preserve face, costume, colors, equipment, 2D cel shading and enormous-head tiny-body 1.5 heads tall chibi proportions. Exactly FOUR full-body poses of this ONE character in regular 2 columns x 2 rows grid on genuinely transparent background. Reading order top-left, top-right, bottom-left, bottom-right: anticipation, execution, peak action, recovery. Camera elevated three-quarter front facing screen RIGHT. Same anatomy scale and ground anchor in every cell. Each character and weapon completely contained in its own cell with generous transparent margins; feet baseline 90% cell height. Dynamic distinct limb and weapon poses, small localized effects only. No text, grid lines, scenery, pedestal, shadows, extra characters or watermark. Action: Sniper ultimate: steady low stance, draw golden charged arrow with fully extended bow, release brilliant thin gold energy shot, recover. Keep all glow and trails fully inside each cell, away from cell borders.",
+      "frameBoxes": [
+        {
+          "left": 0,
+          "top": 0,
+          "right": 0.5,
+          "bottom": 0.5,
+          "centerX": 0.25
+        },
+        {
+          "left": 0.5,
+          "top": 0,
+          "right": 1,
+          "bottom": 0.5,
+          "centerX": 0.75
+        },
+        {
+          "left": 0,
+          "top": 0.5,
+          "right": 0.55,
+          "bottom": 1,
+          "centerX": 0.25
+        },
+        {
+          "left": 0.55,
+          "top": 0.5,
+          "right": 1,
+          "bottom": 1,
+          "centerX": 0.75
+        }
+      ]
+    },
+    {
+      "key": "assassin_attack",
+      "reference": "assets/sprites/heroes/assassin.png",
+      "source": "C:\\Users\\user\\.codex\\generated_images\\01a1a90d-7fcc-7382-a659-a9ce90a26c06\\exec-1e56026a-5369-48d5-8afe-e9fd0b9530bf.png",
+      "atlas": "assets/sprites/heroes/assassin_attack.png",
+      "prompt": "Use case: stylized-concept. Asset type: production MOBA combat animation sprite sheet. Use the input character as strict identity reference: preserve face, costume, colors, equipment, 2D cel shading and enormous-head tiny-body 1.5 heads tall chibi proportions. Exactly FOUR full-body poses of this ONE character in regular 2 columns x 2 rows grid on genuinely transparent background. Reading order top-left, top-right, bottom-left, bottom-right: anticipation, execution, peak action, recovery. Camera elevated three-quarter front facing screen RIGHT. Same anatomy scale and ground anchor in every cell. Each character and weapon completely contained in its own cell with generous transparent margins; feet baseline 90% cell height. Dynamic distinct limb and weapon poses, small localized effects only. No text, grid lines, scenery, pedestal, shadows, extra characters or watermark. Action: Basic twin-dagger attack: draw green daggers back, slash forward, short crossed silver green blade trails, recover. Keep all glow and trails fully inside each cell, away from cell borders."
+    },
+    {
+      "key": "assassin_skill_q",
+      "reference": "assets/sprites/heroes/assassin.png",
+      "source": "C:\\Users\\user\\.codex\\generated_images\\01a1a90d-7fcc-7382-a659-a9ce90a26c06\\exec-1ec49b18-adc0-46c9-8e15-d1d0bdeb6a61.png",
+      "atlas": "assets/sprites/heroes/assassin_skill_q.png",
+      "prompt": "Use case: stylized-concept. Asset type: production MOBA combat animation sprite sheet. Use the input character as strict identity reference: preserve face, costume, colors, equipment, 2D cel shading and enormous-head tiny-body 1.5 heads tall chibi proportions. Exactly FOUR full-body poses of this ONE character in regular 2 columns x 2 rows grid on genuinely transparent background. Reading order top-left, top-right, bottom-left, bottom-right: anticipation, execution, peak action, recovery. Camera elevated three-quarter front facing screen RIGHT. Same anatomy scale and ground anchor in every cell. Each character and weapon completely contained in its own cell with generous transparent margins; feet baseline 90% cell height. Dynamic distinct limb and weapon poses, small localized effects only. No text, grid lines, scenery, pedestal, shadows, extra characters or watermark. Action: Shadow step: crouch with daggers ready, twist into purple shadow wisps, lunge out with forward dagger and compact violet trail, recover. Keep all glow and trails fully inside each cell, away from cell borders.",
+      "frameBoxes": [
+        {
+          "left": 0,
+          "top": 0,
+          "right": 0.5,
+          "bottom": 0.5,
+          "centerX": 0.25
+        },
+        {
+          "left": 0.5,
+          "top": 0,
+          "right": 1,
+          "bottom": 0.5,
+          "centerX": 0.75
+        },
+        {
+          "left": 0,
+          "top": 0.5,
+          "right": 0.55,
+          "bottom": 1,
+          "centerX": 0.25
+        },
+        {
+          "left": 0.55,
+          "top": 0.5,
+          "right": 1,
+          "bottom": 1,
+          "centerX": 0.75
+        }
+      ]
+    },
+    {
+      "key": "assassin_skill_w",
+      "reference": "assets/sprites/heroes/assassin.png",
+      "source": "C:\\Users\\user\\.codex\\generated_images\\01a1a90d-7fcc-7382-a659-a9ce90a26c06\\exec-80828d03-023f-4a92-b25a-cf29cd590338.png",
+      "atlas": "assets/sprites/heroes/assassin_skill_w.png",
+      "prompt": "Use case: stylized-concept. Asset type: production MOBA combat animation sprite sheet. Use the input character as strict identity reference: preserve face, costume, colors, equipment, 2D cel shading and enormous-head tiny-body 1.5 heads tall chibi proportions. Exactly FOUR full-body poses of this ONE character in regular 2 columns x 2 rows grid on genuinely transparent background. Reading order top-left, top-right, bottom-left, bottom-right: anticipation, execution, peak action, recovery. Camera elevated three-quarter front facing screen RIGHT. Same anatomy scale and ground anchor in every cell. Each character and weapon completely contained in its own cell with generous transparent margins; feet baseline 90% cell height. Dynamic distinct limb and weapon poses, small localized effects only. No text, grid lines, scenery, pedestal, shadows, extra characters or watermark. Action: Poison blades: raise two green daggers, coat blade edges in vivid emerald poison, slash both daggers outward with short green trails, recover. Keep all glow and trails fully inside each cell, away from cell borders."
+    },
+    {
+      "key": "assassin_skill_e",
+      "reference": "assets/sprites/heroes/assassin.png",
+      "source": "C:\\Users\\user\\.codex\\generated_images\\01a1a90d-7fcc-7382-a659-a9ce90a26c06\\exec-8da7e6c0-2f11-441b-8b43-a240520a8e9a.png",
+      "atlas": "assets/sprites/heroes/assassin_skill_e.png",
+      "prompt": "Use case: stylized-concept. Asset type: production MOBA combat animation sprite sheet. Use the input character as strict identity reference: preserve face, costume, colors, equipment, 2D cel shading and enormous-head tiny-body 1.5 heads tall chibi proportions. Exactly FOUR full-body poses of this ONE character in regular 2 columns x 2 rows grid on genuinely transparent background. Reading order top-left, top-right, bottom-left, bottom-right: anticipation, execution, peak action, recovery. Camera elevated three-quarter front facing screen RIGHT. Same anatomy scale and ground anchor in every cell. Each character and weapon completely contained in its own cell with generous transparent margins; feet baseline 90% cell height. Dynamic distinct limb and weapon poses, small localized effects only. No text, grid lines, scenery, pedestal, shadows, extra characters or watermark. Action: Shadow shroud: fold arms and daggers close, pull violet cloak across body, wrap body in compact violet smoke with face readable, recover. Keep all glow and trails fully inside each cell, away from cell borders."
+    },
+    {
+      "key": "assassin_skill_r",
+      "reference": "assets/sprites/heroes/assassin.png",
+      "source": "C:\\Users\\user\\.codex\\generated_images\\01a1a90d-7fcc-7382-a659-a9ce90a26c06\\exec-ab297d2c-b019-46ae-92df-f3329f1e2466.png",
+      "atlas": "assets/sprites/heroes/assassin_skill_r.png",
+      "prompt": "Use case: stylized-concept. Asset type: production MOBA combat animation sprite sheet. Use the input character as strict identity reference: preserve face, costume, colors, equipment, 2D cel shading and enormous-head tiny-body 1.5 heads tall chibi proportions. Exactly FOUR full-body poses of this ONE character in regular 2 columns x 2 rows grid on genuinely transparent background. Reading order top-left, top-right, bottom-left, bottom-right: anticipation, execution, peak action, recovery. Camera elevated three-quarter front facing screen RIGHT. Same anatomy scale and ground anchor in every cell. Each character and weapon completely contained in its own cell with generous transparent margins; feet baseline 90% cell height. Dynamic distinct limb and weapon poses, small localized effects only. No text, grid lines, scenery, pedestal, shadows, extra characters or watermark. Action: Deadly dance ultimate: coil with daggers at sides, dynamic spinning twin-dagger slash, crossed violet emerald arcs around body, land in low ready stance. Keep all glow and trails fully inside each cell, away from cell borders.",
+      "frameBoxes": [
+        {
+          "left": 0,
+          "top": 0,
+          "right": 0.5,
+          "bottom": 0.5,
+          "centerX": 0.25
+        },
+        {
+          "left": 0.5,
+          "top": 0,
+          "right": 1,
+          "bottom": 0.5,
+          "centerX": 0.75
+        },
+        {
+          "left": 0,
+          "top": 0.5,
+          "right": 0.55,
+          "bottom": 1,
+          "centerX": 0.25
+        },
+        {
+          "left": 0.55,
+          "top": 0.5,
+          "right": 1,
+          "bottom": 1,
+          "centerX": 0.75
+        }
+      ]
+    },
+    {
+      "key": "cleric_attack",
+      "reference": "assets/sprites/heroes/cleric.png",
+      "source": "C:\\Users\\user\\.codex\\generated_images\\01a1a90d-7fcc-7382-a659-a9ce90a26c06\\exec-23f03797-7a2f-46ac-aff2-2aa752a4caa1.png",
+      "atlas": "assets/sprites/heroes/cleric_attack.png",
+      "prompt": "Use case: stylized-concept. Asset type: production MOBA combat animation sprite sheet. Use the input character as strict identity reference: preserve face, costume, colors, equipment, 2D cel shading and enormous-head tiny-body 1.5 heads tall chibi proportions. Exactly FOUR full-body poses of this ONE character in regular 2 columns x 2 rows grid on genuinely transparent background. Reading order top-left, top-right, bottom-left, bottom-right: anticipation, execution, peak action, recovery. Camera elevated three-quarter front facing screen RIGHT. Same anatomy scale and ground anchor in every cell. Each character and weapon completely contained in its own cell with generous transparent margins; feet baseline 90% cell height. Dynamic distinct limb and weapon poses, small localized effects only. No text, grid lines, scenery, pedestal, shadows, extra characters or watermark. Action: Basic holy bolt: bring solar staff near book, aim staff forward, small gold light bolt at staff tip, recover. Keep all glow and trails fully inside each cell, away from cell borders.",
+      "frameBoxes": [
+        {
+          "left": 0,
+          "top": 0,
+          "right": 0.5,
+          "bottom": 0.5,
+          "centerX": 0.25
+        },
+        {
+          "left": 0.5,
+          "top": 0,
+          "right": 1,
+          "bottom": 0.5,
+          "centerX": 0.75
+        },
+        {
+          "left": 0,
+          "top": 0.5,
+          "right": 0.55,
+          "bottom": 1,
+          "centerX": 0.25
+        },
+        {
+          "left": 0.55,
+          "top": 0.5,
+          "right": 1,
+          "bottom": 1,
+          "centerX": 0.75
+        }
+      ]
+    },
+    {
+      "key": "cleric_skill_q",
+      "reference": "assets/sprites/heroes/cleric.png",
+      "source": "C:\\Users\\user\\.codex\\generated_images\\01a1a90d-7fcc-7382-a659-a9ce90a26c06\\exec-62580c78-ee5f-4b3e-a19b-21dc5145ad4f.png",
+      "atlas": "assets/sprites/heroes/cleric_skill_q.png",
+      "prompt": "Use case: stylized-concept. Asset type: production MOBA combat animation sprite sheet. Use the input character as strict identity reference: preserve face, costume, colors, equipment, 2D cel shading and enormous-head tiny-body 1.5 heads tall chibi proportions. Exactly FOUR full-body poses of this ONE character in regular 2 columns x 2 rows grid on genuinely transparent background. Reading order top-left, top-right, bottom-left, bottom-right: anticipation, execution, peak action, recovery. Camera elevated three-quarter front facing screen RIGHT. Same anatomy scale and ground anchor in every cell. Each character and weapon completely contained in its own cell with generous transparent margins; feet baseline 90% cell height. Dynamic distinct limb and weapon poses, small localized effects only. No text, grid lines, scenery, pedestal, shadows, extra characters or watermark. Action: Holy light: open sacred book, raise free hand in blessing beside staff, warm gold healing glow flowing from palm, recover. Keep all glow and trails fully inside each cell, away from cell borders.",
+      "frameBoxes": [
+        {
+          "left": 0,
+          "top": 0,
+          "right": 0.5,
+          "bottom": 0.5,
+          "centerX": 0.25
+        },
+        {
+          "left": 0.5,
+          "top": 0,
+          "right": 1,
+          "bottom": 0.5,
+          "centerX": 0.75
+        },
+        {
+          "left": 0,
+          "top": 0.5,
+          "right": 0.55,
+          "bottom": 1,
+          "centerX": 0.25
+        },
+        {
+          "left": 0.55,
+          "top": 0.5,
+          "right": 1,
+          "bottom": 1,
+          "centerX": 0.75
+        }
+      ]
+    },
+    {
+      "key": "cleric_skill_w",
+      "reference": "assets/sprites/heroes/cleric.png",
+      "source": "C:\\Users\\user\\.codex\\generated_images\\01a1a90d-7fcc-7382-a659-a9ce90a26c06\\exec-8e9407c5-1a81-4282-959a-c59dfe786113.png",
+      "atlas": "assets/sprites/heroes/cleric_skill_w.png",
+      "prompt": "Use case: stylized-concept. Asset type: production MOBA combat animation sprite sheet. Use the input character as strict identity reference: preserve face, costume, colors, equipment, 2D cel shading and enormous-head tiny-body 1.5 heads tall chibi proportions. Exactly FOUR full-body poses of this ONE character in regular 2 columns x 2 rows grid on genuinely transparent background. Reading order top-left, top-right, bottom-left, bottom-right: anticipation, execution, peak action, recovery. Camera elevated three-quarter front facing screen RIGHT. Same anatomy scale and ground anchor in every cell. Each character and weapon completely contained in its own cell with generous transparent margins; feet baseline 90% cell height. Dynamic distinct limb and weapon poses, small localized effects only. No text, grid lines, scenery, pedestal, shadows, extra characters or watermark. Action: Radiant sanctuary: hold open book to chest, extend solar staff, compact gold protective ring around body, recover. Keep all glow and trails fully inside each cell, away from cell borders.",
+      "frameBoxes": [
+        {
+          "left": 0,
+          "top": 0,
+          "right": 0.5,
+          "bottom": 0.43,
+          "centerX": 0.25
+        },
+        {
+          "left": 0.5,
+          "top": 0,
+          "right": 1,
+          "bottom": 0.43,
+          "centerX": 0.75
+        },
+        {
+          "left": 0,
+          "top": 0.43,
+          "right": 0.55,
+          "bottom": 1,
+          "centerX": 0.25
+        },
+        {
+          "left": 0.55,
+          "top": 0.43,
+          "right": 1,
+          "bottom": 1,
+          "centerX": 0.75
+        }
+      ]
+    },
+    {
+      "key": "cleric_skill_e",
+      "reference": "assets/sprites/heroes/cleric.png",
+      "source": "C:\\Users\\user\\.codex\\generated_images\\01a1a90d-7fcc-7382-a659-a9ce90a26c06\\exec-ba901c70-195f-4bd8-b64b-11d4257b9f3a.png",
+      "atlas": "assets/sprites/heroes/cleric_skill_e.png",
+      "prompt": "Use case: stylized-concept. Asset type: production MOBA combat animation sprite sheet. Use the input character as strict identity reference: preserve face, costume, colors, equipment, 2D cel shading and enormous-head tiny-body 1.5 heads tall chibi proportions. Exactly FOUR full-body poses of this ONE character in regular 2 columns x 2 rows grid on genuinely transparent background. Reading order top-left, top-right, bottom-left, bottom-right: anticipation, execution, peak action, recovery. Camera elevated three-quarter front facing screen RIGHT. Same anatomy scale and ground anchor in every cell. Each character and weapon completely contained in its own cell with generous transparent margins; feet baseline 90% cell height. Dynamic distinct limb and weapon poses, small localized effects only. No text, grid lines, scenery, pedestal, shadows, extra characters or watermark. Action: Solar judgment: grip solar staff firmly, point staff forward, bright compact sunburst at tip with gold rays, recover. Keep all glow and trails fully inside each cell, away from cell borders.",
+      "frameBoxes": [
+        {
+          "left": 0,
+          "top": 0,
+          "right": 0.5,
+          "bottom": 0.5,
+          "centerX": 0.25
+        },
+        {
+          "left": 0.5,
+          "top": 0,
+          "right": 1,
+          "bottom": 0.5,
+          "centerX": 0.75
+        },
+        {
+          "left": 0,
+          "top": 0.5,
+          "right": 0.55,
+          "bottom": 1,
+          "centerX": 0.25
+        },
+        {
+          "left": 0.55,
+          "top": 0.5,
+          "right": 1,
+          "bottom": 1,
+          "centerX": 0.75
+        }
+      ]
+    },
+    {
+      "key": "cleric_skill_r",
+      "reference": "assets/sprites/heroes/cleric.png",
+      "source": "C:\\Users\\user\\.codex\\generated_images\\01a1a90d-7fcc-7382-a659-a9ce90a26c06\\exec-cf5332db-01e3-47a7-ae05-c0e12b8ca583.png",
+      "atlas": "assets/sprites/heroes/cleric_skill_r.png",
+      "prompt": "Use case: stylized-concept. Asset type: production MOBA combat animation sprite sheet. Use the input character as strict identity reference: preserve face, costume, colors, equipment, 2D cel shading and enormous-head tiny-body 1.5 heads tall chibi proportions. Exactly FOUR full-body poses of this ONE character in regular 2 columns x 2 rows grid on genuinely transparent background. Reading order top-left, top-right, bottom-left, bottom-right: anticipation, execution, peak action, recovery. Camera elevated three-quarter front facing screen RIGHT. Same anatomy scale and ground anchor in every cell. Each character and weapon completely contained in its own cell with generous transparent margins; feet baseline 90% cell height. Dynamic distinct limb and weapon poses, small localized effects only. No text, grid lines, scenery, pedestal, shadows, extra characters or watermark. Action: Divine miracle ultimate: prepare sacred book and staff, raise both hands in prayer with staff upright beside face, a SMALL THIN gold halo behind head and a few tiny white-gold rays around shoulders, lower hands and settle peacefully. CRITICAL: FOUR SMALL isolated sprites, each fits fully in central 65% of its own cell INCLUDING all effects. Large empty transparent gutters between poses. NO large circular aura around body, NO background glow, NO overflowing effects. Preserve original cleric's huge head, tiny body, white gold clothes, sun staff and book."
+    }
+  ]
+}
