@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.0] - 2026-11-04
+
+### Added
+- Ataques básicos e quatro habilidades com poses próprias para cada um dos cinco heróis: 25 sequências de combate transparentes.
+- Ações visuais sincronizadas entre jogadores, com reprodução única e retorno ao movimento ou repouso.
+
 ## [1.1.0] - 2026-11-04
 
 ### Added

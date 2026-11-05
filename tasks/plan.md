@@ -1,21 +1,20 @@
-# Plano: personagens chibi e ciclos de movimento
+# Plano: animações de combate dos cinco heróis
 
-Refazer os cinco heróis, seis soldados e três chefes em chibi de 1,5 cabeças, preservando cores, equipamentos e identificação. Gerar imagens com image_gen integrado e transparência real. Cada personagem terá quatro poses de caminhada em uma grade 2x2; reprodução em loop de quatro quadros, pose neutra ao parar e espelhamento horizontal conforme direção.
+Criar 25 atlas com image_gen integrado: ataque básico e Q/W/E/R para cada herói. Preservar identidade, estilo chibi e PNG transparente. Integrar ações visuais sem alterar regras de combate; sincronizar sequência e tempo decorrido entre jogadores.
 
-## Sequência
-1. Gerar e revisar os ciclos dos heróis; integrar o primeiro ciclo ao renderizador.
-2. Gerar e revisar os seis soldados e os três chefes no mesmo padrão.
-3. Integrar todos os ciclos, preservar retratos estáticos e fallback para falha de carregamento; verificar transição parado/movendo e ancoragem dos pés.
-4. Executar testes automatizados e inspeção visual no navegador; revisar diff e tamanho dos arquivos.
-5. Commit e push no GitHub; deploy no projeto Vercel existente e verificação HTTP dos assets publicados.
+## Etapas
+1. Gerar e conferir as cinco ações do Cavaleiro no renderizador real.
+2. Integrar ciclo único, prioridade das habilidades, encerramento na morte, fallback e rede.
+3. Gerar e empacotar as outras vinte ações; revisar 100 poses no navegador.
+4. Validar arquivos e suíte completa, revisar diff e registrar prompts.
+5. Commit, publicação no GitHub, deploy Vercel e verificação dos arquivos publicados.
 
-## Critérios
-- Cabeça com aproximadamente dois terços da altura anatômica, corpo e pernas com um terço; equipamentos não entram nessa medição.
-- Quatro poses distintas com passos alternados, mesma escala e ponto de apoio, sem cenário ou texto.
-- Estruturas, regras de combate e rede preservadas. Animações são puramente visuais.
-- Testes completos aprovados, sprites acessíveis em produção e jogo iniciando.
+## Aceitação
+- Todos os 25 atlas têm quatro poses em grade 2x2, RGBA 768x768 e quadros de 384px.
+- Ataques duram até 400ms, limitados pelo intervalo de ataque; Q/W/E duram 500ms; R dura 700ms.
+- Habilidades substituem ações; ataques não interrompem habilidades; morte encerra ações.
+- Atualizações repetidas de rede não reiniciam as poses. Clientes antigos continuam aceitos.
+- npm test passa; imagens e código publicados correspondem ao workspace.
 
-## Riscos e recuperação
-Variações entre quadros exigem revisão visual. Preservar sprites anteriores como fallback; deploy anterior pode ser promovido novamente e commit pode ser revertido. Não incluir arquivos locais alheios à tarefa.
-
-Tarefas em tasks/todo.md. Publicação autorizada pelo pedido do usuário e continuação da execução.
+## Recuperação
+Antes da alteração: dpl_5rkjYQFpvCTZKeQbFxYLpwC85Fk1, https://jogo-duplinha-lmrxgmmg5-raixu01s-projects.vercel.app. Em regressão de produção, promover esse deploy novamente e reverter os commits da mudança.

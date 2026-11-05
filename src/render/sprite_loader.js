@@ -4,6 +4,7 @@
  */
 
 import { worldToScreen } from '../core/isometric.js';
+import { HERO_ACTIONS, HERO_ACTION_DISPLAY_SCALE, HERO_ACTION_GROUND_ANCHOR } from './hero_action.js';
 
 export const SPRITE_PATHS = {
   // 5 Chibi Heroes (1.5 heads proportion, transparent PNG)
@@ -46,6 +47,11 @@ const spriteKeys = new WeakMap();
 const walkKeys = new Set(Object.keys(SPRITE_PATHS).filter(key => /^(hero_|minion_|boss_)/.test(key)));
 for (const key of walkKeys) {
   SPRITE_PATHS[`${key}_walk`] = SPRITE_PATHS[key].replace('.png', '_walk.png');
+}
+for (const hero of ['knight', 'sorceress', 'ranger', 'assassin', 'cleric']) {
+  for (const action of HERO_ACTIONS) {
+    SPRITE_PATHS[`hero_${hero}_${action}`] = `assets/sprites/heroes/${hero}_${action}.png`;
+  }
 }
 
 export function getWalkFrame(now, isMoving, phaseOffset = 0) {
@@ -267,7 +273,7 @@ export function getStructureSprite(tier = 'outer', team = 'allied') {
 
 /**
  * Renders a transparent PNG Chibi sprite anchored at ground coordinates (sx, sy)
- * with a four-pose walk loop and horizontal facing flip. Static images remain
+ * with four-pose combat actions, a walk loop and horizontal facing flip. Static images remain
  * available while atlases load or when an atlas cannot be fetched.
  * Returns true if the sprite image was drawn, false if fallback should run.
  */
@@ -279,11 +285,18 @@ export function drawChibiSprite(ctx, img, sx, sy, drawW, drawH, options = {}) {
   const flipX = !!options.flipX;
   const phaseOffset = options.phaseOffset || 0;
   const key = spriteKeys.get(img);
-  const walk = walkKeys.has(key) ? getSprite(`${key}_walk`) : null;
+  const action = options.action;
+  const combat = key?.startsWith('hero_') && action && HERO_ACTIONS.includes(action.action)
+    ? getSprite(`${key}_${action.action}`) : null;
+  const sheet = combat || (walkKeys.has(key) ? getSprite(`${key}_walk`) : null);
 
-  if (walk) {
-    const atlas = getRenderSprite(walk, drawW * 2, drawH * 2);
-    const frame = getWalkFrame(now, isMoving, phaseOffset);
+  if (sheet) {
+    // Extra transparent space lets spell effects extend without shrinking heroes.
+    const renderW = combat ? drawW * HERO_ACTION_DISPLAY_SCALE : drawW;
+    const renderH = combat ? drawH * HERO_ACTION_DISPLAY_SCALE : drawH;
+    const groundAnchor = combat ? HERO_ACTION_GROUND_ANCHOR : 0.90;
+    const atlas = getRenderSprite(sheet, renderW * 2, renderH * 2);
+    const frame = combat ? action.frame : getWalkFrame(now, isMoving, phaseOffset);
     const frameW = atlas.width / 2;
     const frameH = atlas.height / 2;
     const sourceX = (frame % 2) * frameW;
@@ -294,9 +307,9 @@ export function drawChibiSprite(ctx, img, sx, sy, drawW, drawH, options = {}) {
     if (typeof ctx.translate === 'function') {
       ctx.translate(sx, sy);
       if (typeof ctx.scale === 'function') ctx.scale(flipX ? -1 : 1, 1);
-      ctx.drawImage(atlas, sourceX, sourceY, frameW, frameH, -drawW / 2, -drawH * 0.90, drawW, drawH);
+      ctx.drawImage(atlas, sourceX, sourceY, frameW, frameH, -renderW / 2, -renderH * groundAnchor, renderW, renderH);
     } else {
-      ctx.drawImage(atlas, sourceX, sourceY, frameW, frameH, sx - drawW / 2, sy - drawH * 0.90, drawW, drawH);
+      ctx.drawImage(atlas, sourceX, sourceY, frameW, frameH, sx - renderW / 2, sy - renderH * groundAnchor, renderW, renderH);
     }
     ctx.restore();
     return true;

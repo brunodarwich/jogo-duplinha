@@ -25,6 +25,7 @@ import { HeroProjectile } from './combat/projectile.js';
 import { calculateKillXp, resolveMinionXpDistribution } from './systems/leveling.js';
 import { STARTING_GOLD, accruePassiveGold, TOWER_BOUNTY, BOSS_BOUNTY, SUPREME_BOUNTY } from './systems/economy.js';
 import { preloadAllSprites } from './render/sprite_loader.js';
+import { startHeroAction, serializeHeroAction, receiveHeroAction } from './render/hero_action.js';
 
 export class GameSimulation {
   /**
@@ -647,6 +648,7 @@ export class GameSimulation {
         hero.respawn();
       }
     }
+    receiveHeroAction(hero, data.visualAction);
   }
 
   handleRemoteCast(data) {
@@ -662,7 +664,8 @@ export class GameSimulation {
 
     this.executeHeroSkill(data.slot, ability, {
       targetX: data.targetX,
-      targetY: data.targetY
+      targetY: data.targetY,
+      visualAction: data.visualAction
     }, caster);
   }
 
@@ -1011,6 +1014,9 @@ export class GameSimulation {
       : (!hero.isDead && (typeof hero.hp !== 'number' || hero.hp > 0));
     if (!isHeroAlive) return;
     if (hero.isLocalPlayer && typeof hero.canCast === 'function' && !hero.canCast()) return;
+    if (!['Q', 'W', 'E', 'R'].includes(slot)) return;
+    if (cmd.visualAction) receiveHeroAction(hero, cmd.visualAction);
+    else startHeroAction(hero, `skill_${slot.toLowerCase()}`);
 
     const targetX = cmd.targetX ?? hero.x;
     const targetY = cmd.targetY ?? hero.y;
@@ -1042,7 +1048,8 @@ export class GameSimulation {
         targetX,
         targetY,
         originX: hero.x,
-        originY: hero.y
+        originY: hero.y,
+        visualAction: serializeHeroAction(hero)
       });
     }
 
@@ -1431,6 +1438,7 @@ export class GameSimulation {
 
   executeHeroBasicAttack(hero, target) {
     if (!hero || !target || !target.isAlive()) return;
+    if (hero.isLocalPlayer) startHeroAction(hero, 'attack');
 
     const isMelee = (hero.attackRange || 130) <= 180;
     const isCrit = Math.random() < (hero.critChance || 0);
@@ -1648,6 +1656,7 @@ export class GameSimulation {
       if (this.network && !this.network.isSoloMode && this.playerHero) {
         this.network.broadcast({
           type: 'HERO_UPDATE',
+          visualAction: serializeHeroAction(this.playerHero),
           id: this.playerHero.id,
           heroId: this.playerHero.heroId,
           name: this.playerHero.name,

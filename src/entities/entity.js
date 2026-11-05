@@ -1,4 +1,5 @@
 import { STARTING_GOLD } from '../systems/economy.js';
+import { getHeroAction, clearHeroAction } from '../render/hero_action.js';
 /**
  * Entity Base Architecture.
  * Standardized coordinate space, depth sorting, collision radii, and procedural 2.5D rendering.
@@ -548,6 +549,7 @@ export class HeroEntity extends Entity {
    * and initializes level-scaled respawn countdown.
    */
   die() {
+    clearHeroAction(this);
     this.hp = 0;
     this.isDeadState = true;
     this.stop();
@@ -566,6 +568,7 @@ export class HeroEntity extends Entity {
    * reset velocity, cleansed crowd control effects, and cleared hold/attack states.
    */
   respawn() {
+    clearHeroAction(this);
     this.x = 400;
     this.y = 400;
     this.z = 0;
@@ -694,6 +697,7 @@ export class HeroEntity extends Entity {
     const spriteH = 78 * zoom;
     const flipX = (fx - sx) < -1.5;
     const drewSprite = drawChibiSprite(ctx, sprite, sx, sy + 6 * zoom, spriteW, spriteH, {
+      action: getHeroAction(this),
       isMoving: this.isMoving,
       flipX
     });

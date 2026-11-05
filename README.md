@@ -39,6 +39,8 @@ A câmera inicia em 125% para destacar o herói. O painel de zoom no canto super
 
 ## 🛡️ Os 5 Heróis Jogáveis
 
+Cada herói possui animações próprias de ataque básico e Q/W/E/R, totalizando 25 sequências com quatro poses transparentes. As ações acompanham o combate e são sincronizadas entre jogadores, retornando à caminhada ou ao repouso ao terminar. Imagens, prompts e detalhes estão em `assets/sprites/combat-prompts.json` e `assets/sprites/ANIMATIONS.md`.
+
 | Herói | Papel | Habilidades (Q / W / E / R) | Estilo de Jogo |
 |---|---|---|---|
 | **Cavaleiro Guardião** | Tanque / Controle | Golpe de Escudo, Provocação em Área, Cutilada, Fortaleza Inabalável | Alta resistência, atordoamento e criação de barreiras protetoras. |
@@ -84,8 +86,8 @@ A câmera inicia em 125% para destacar o herói. O painel de zoom no canto super
 
 ## 🧪 Testes Automatizados
 
-Para rodar a suíte completa com **269 testes automatizados** (testes unitários, matemáticos, de combate, economia, UI, UX, VFX, SFX e simulações E2E completas):
+Para rodar a suíte completa com **284 testes automatizados** (testes unitários, matemáticos, de combate, economia, UI, UX, VFX, SFX e simulações E2E completas):
 ```bash
 npm test
 ```
-Resultados certificados: **269/269 testes aprovados com 100% de sucesso em 36 suítes!**
+Resultados certificados: **284/284 testes aprovados em 38 arquivos de teste!**

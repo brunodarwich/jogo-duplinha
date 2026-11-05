@@ -4,6 +4,7 @@
  */
 
 import { generateRoomCode, sanitizeRoomCode, MAX_PLAYERS } from './protocol.js';
+import { serializeHeroAction } from '../render/hero_action.js';
 
 export const DEFAULT_ICE_SERVERS = [
   { urls: 'stun:stun.l.google.com:19302' },
@@ -469,6 +470,7 @@ export class PeerNetwork {
     if (!hero) return null;
     return {
       type: 'HERO_UPDATE',
+      visualAction: serializeHeroAction(hero),
       id: hero.id,
       heroId: hero.heroId,
       name: hero.name,

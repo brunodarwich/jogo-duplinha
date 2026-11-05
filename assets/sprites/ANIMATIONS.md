@@ -1,5 +1,15 @@
 # Personagens chibi animados
 
+## Combate dos heróis
+
+Os cinco heróis têm atlas próprios para ataque básico e Q/W/E/R: `heroes/<heroi>_attack.png` e `heroes/<heroi>_skill_<q|w|e|r>.png`. Cada atlas RGBA de 768×768 contém quatro quadros de 384×384 em ordem superior esquerdo, superior direito, inferior esquerdo, inferior direito: preparação, execução, impacto e recuperação. Os prompts completos e referências estão em [combat-prompts.json](combat-prompts.json).
+
+As ações reproduzem uma vez: ataque em até 400 ms, limitado pelo intervalo de ataque; Q/W/E em 500 ms; R em 700 ms. Habilidades substituem ações anteriores e não são interrompidas visualmente por ataques básicos. Ao terminar, o herói volta ao movimento ou repouso. Morte e renascimento limpam a ação. Dano, projéteis e movimentação continuam imediatos conforme as regras existentes.
+
+`HERO_UPDATE` e `CAST_SKILL` incluem o campo opcional `visualAction: { sequence, action, durationMs, elapsedMs }`. A sequência crescente por herói impede que atualizações repetidas reiniciem a animação. O tempo decorrido é relativo, sem exigir relógios sincronizados. Pacotes antigos sem o campo continuam aceitos. Ações inválidas ou antigas são ignoradas.
+
+`tools/build-combat-atlases.mjs assets/sprites/combat-prompts.json` empacota as poses geradas com imagegen integrado, sem sintetizar arte. Requer sharp, como o empacotador de caminhada. Os contornos opacos localizam o corpo para manter a altura compatível com a referência; os efeitos usam margem adicional. Atlas de combate são desenhados em 160% do tamanho do quadro normal, com apoio em 72%, compensando as margens transparentes. O fallback é caminhada, seguido do sprite estático.
+
 14 personagens refeitos com image_gen integrado, com fundo realmente transparente, cabeça com cerca de dois terços da altura anatômica e corpo/pernas com um terço (1,5 cabeças). Cores e equipamentos identificam cada herói, equipe e chefe.
 
 ## Arquivos e reprodução
