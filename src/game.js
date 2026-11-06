@@ -8,8 +8,8 @@ import { Camera } from './core/camera.js';
 import { GameLoop, FIXED_TIMESTEP } from './core/loop.js';
 import { InputManager, CommandType } from './core/input.js';
 import { HeroEntity } from './entities/entity.js';
-import { HERO_DEFINITIONS, calculateHeroStatsAtLevel, getHeroKit } from './entities/heroes.js';
-import { HeroInventory } from './systems/items.js';
+import { HERO_DEFINITIONS, calculateHeroStatsAtLevel, getHeroKit, getSkillRuntime, validateSkillCast } from './entities/heroes.js';
+import { HeroInventory, ITEM_CATALOG } from './systems/items.js';
 import { ShopUI } from './ui/shop_ui.js';
 import { Renderer } from './render/renderer.js';
 import { ParticleSystem } from './render/particles.js';
@@ -44,6 +44,7 @@ export class GameSimulation {
     this.network = options.network || null;
     this.remoteHeroes = new Map();
     this.netSyncAccumulator = 0;
+    this.domCleanups = [];
 
     // Core systems
     this.camera = new Camera({
@@ -266,6 +267,11 @@ export class GameSimulation {
     } else if (reason === 'cc' || reason === 'crowd_control') {
       text = 'Impossibilitado!';
       color = '#c084fc';
+    } else if (reason === 'unlearned') {
+      text = 'Aprenda a habilidade primeiro!';
+      color = '#fbbf24';
+    } else if (reason === 'invalid_target') {
+      text = 'Alvo inválido!';
     }
 
     if (this.particles && typeof this.particles.addFloatingText === 'function') {
@@ -301,20 +307,35 @@ export class GameSimulation {
 
         // Rich tooltip listeners
         if (this.tooltip) {
-          btn.addEventListener('mouseenter', () => {
+          const listen = (event, callback) => {
+            btn.addEventListener(event, callback);
+            this.domCleanups.push(() => btn.removeEventListener?.(event, callback));
+          };
+          listen('mouseenter', () => {
             const currentAb = this.playerHero?.abilities?.[key] || ab;
             this.tooltip.showAbilityTooltip(currentAb, this.playerHero, btn);
           });
-          btn.addEventListener('mouseleave', () => {
+          listen('mouseleave', () => {
             this.tooltip.hide();
           });
+          listen('focus', () => {
+            this.tooltip.showAbilityTooltip(this.playerHero?.abilities?.[key] || ab, this.playerHero, btn);
+          });
+          listen('blur', () => this.tooltip.hide());
         }
       }
     }
   }
 
-  handleCommand(cmd) {
-    if (!cmd) return;
+  handleCommand(cmd, hero = this.playerHero, fromNetwork = false) {
+    if (!cmd || typeof cmd.type !== 'string') return false;
+    const localTypes = ['CENTER_CAMERA', 'CYCLE_PERSPECTIVE', 'TOGGLE_SHOP', 'CLOSE_MODALS', 'PLAN', '/plan'];
+    if (!fromNetwork && this.network?.authoritativeWorld && !this.network.isSoloMode && !this.isHost && !localTypes.includes(cmd.type)) {
+      const outgoing = { ...cmd, targetId: cmd.targetEntity?.id || cmd.targetId || cmd.targetEntityId };
+      delete outgoing.targetEntity;
+      return this.network.sendCommand(outgoing)?.success !== false;
+    }
+    if ((this.isVictory || this.isDefeat) && !localTypes.includes(cmd.type)) return false;
 
     if (cmd.type === CommandType.CYCLE_PERSPECTIVE || cmd.type === 'CYCLE_PERSPECTIVE') {
       if (this.camera && typeof this.camera.cyclePerspective === 'function') {
@@ -323,23 +344,24 @@ export class GameSimulation {
       return;
     }
 
-    if (!this.playerHero) return;
-    const isHeroAlive = typeof this.playerHero.isAlive === 'function'
-      ? this.playerHero.isAlive()
-      : (!this.playerHero.isDead && (typeof this.playerHero.hp !== 'number' || this.playerHero.hp > 0));
-    if (!isHeroAlive) return;
+    if (!hero) return false;
+    const isHeroAlive = typeof hero.isAlive === 'function'
+      ? hero.isAlive()
+      : (!hero.isDead && (typeof hero.hp !== 'number' || hero.hp > 0));
+    if (!isHeroAlive) return false;
 
     switch (cmd.type) {
       case CommandType.MOVE_TO: {
-        this.playerHero.setAttackTarget(null);
-        this.playerHero.attackMoveDestination = null;
-        this.playerHero.holdPosition = false;
-        const walkable = this.map.findNearestWalkable(cmd.x, cmd.y, this.playerHero.radius);
-        this.playerHero.moveTo(walkable.x, walkable.y);
+        if (!Number.isFinite(cmd.x) || !Number.isFinite(cmd.y)) return false;
+        hero.setAttackTarget(null);
+        hero.attackMoveDestination = null;
+        hero.holdPosition = false;
+        const walkable = this.map.findNearestWalkable(cmd.x, cmd.y, hero.radius);
+        hero.moveTo(walkable.x, walkable.y);
         // Visual tactile indicator: concentric waves + reticle
-        if (typeof this.particles.emitMoveIndicator === 'function') {
+        if (!cmd.silent && typeof this.particles.emitMoveIndicator === 'function') {
           this.particles.emitMoveIndicator(walkable.x, walkable.y, '#10b981', false);
-        } else {
+        } else if (!cmd.silent) {
           this.particles.emit('ring', {
             x: walkable.x,
             y: walkable.y,
@@ -358,9 +380,10 @@ export class GameSimulation {
           target = this.entities.find(e => e.id === cmd.targetId);
         }
 
+        if (target && target.team === hero.team) return false;
         if (target && (typeof target.isAlive === 'function' ? target.isAlive() : target.hp > 0)) {
-          this.playerHero.setAttackTarget(target);
-          if (typeof this.particles.emitMoveIndicator === 'function') {
+          hero.setAttackTarget(target);
+          if (!cmd.silent && typeof this.particles.emitMoveIndicator === 'function') {
             this.particles.emitMoveIndicator(target.x, target.y, '#ef4444', true);
           } else {
             this.particles.emit('ring', {
@@ -373,11 +396,12 @@ export class GameSimulation {
             });
           }
         } else if (cmd.attackMove) {
-          this.playerHero.setAttackTarget(null);
-          this.playerHero.attackMoveDestination = { x: cmd.targetX, y: cmd.targetY };
-          const walkable = this.map.findNearestWalkable(cmd.targetX, cmd.targetY, this.playerHero.radius);
-          this.playerHero.moveTo(walkable.x, walkable.y, true);
-          if (typeof this.particles.emitMoveIndicator === 'function') {
+          if (!Number.isFinite(cmd.targetX) || !Number.isFinite(cmd.targetY)) return false;
+          hero.setAttackTarget(null);
+          hero.attackMoveDestination = { x: cmd.targetX, y: cmd.targetY };
+          const walkable = this.map.findNearestWalkable(cmd.targetX, cmd.targetY, hero.radius);
+          hero.moveTo(walkable.x, walkable.y, true);
+          if (!cmd.silent && typeof this.particles.emitMoveIndicator === 'function') {
             this.particles.emitMoveIndicator(walkable.x, walkable.y, '#ef4444', true);
           } else {
             this.particles.emit('ring', {
@@ -390,11 +414,12 @@ export class GameSimulation {
             });
           }
         } else {
-          this.playerHero.setAttackTarget(null);
+          hero.setAttackTarget(null);
           const targetX = cmd.targetX ?? cmd.x;
           const targetY = cmd.targetY ?? cmd.y;
-          this.playerHero.moveTo(targetX, targetY);
-          if (typeof this.particles.emitMoveIndicator === 'function') {
+          if (!Number.isFinite(targetX) || !Number.isFinite(targetY)) return false;
+          hero.moveTo(targetX, targetY);
+          if (!cmd.silent && typeof this.particles.emitMoveIndicator === 'function') {
             this.particles.emitMoveIndicator(targetX, targetY, '#ef4444', true);
           } else {
             this.particles.emit('ring', {
@@ -413,33 +438,31 @@ export class GameSimulation {
       case CommandType.CAST_ABILITY:
       case CommandType.CAST_SKILL: {
         const slot = cmd.slot || cmd.skill;
-        const ability = this.playerHero.abilities ? this.playerHero.abilities[slot] : null;
+        const ability = hero.abilities ? hero.abilities[slot] : null;
 
-        if (ability && (this.playerHero.mana || 0) >= (ability.manaCost || 0) && (!ability.cooldownRemaining || ability.cooldownRemaining <= 0)) {
-          this.executeHeroSkill(slot, ability, cmd);
-        }
-        break;
+        return this.executeHeroSkill(slot, ability, cmd, hero);
       }
 
       case CommandType.STOP: {
-        this.playerHero.stop();
-        this.playerHero.setAttackTarget(null);
-        this.playerHero.attackMoveDestination = null;
-        this.playerHero.holdPosition = true;
+        hero.stop();
+        hero.setAttackTarget(null);
+        hero.attackMoveDestination = null;
+        hero.holdPosition = true;
         break;
       }
 
       case CommandType.RECALL: {
-        this.playerHero.setAttackTarget(null);
-        this.playerHero.attackMoveDestination = null;
-        if (!this.playerHero.isRecalling) {
-          this.playerHero.stop();
-          this.playerHero.isRecalling = true;
-          this.playerHero.recallElapsed = 0;
+        if (hero.canCast && !hero.canCast()) return false;
+        hero.setAttackTarget(null);
+        hero.attackMoveDestination = null;
+        if (!hero.isRecalling) {
+          hero.stop();
+          hero.isRecalling = true;
+          hero.recallElapsed = 0;
           if (this.sound) {
             this.sound.playRecallStart();
           }
-          this.particles.addFloatingText('Canalizando Recall...', this.playerHero.x, this.playerHero.y, {
+          this.particles.addFloatingText('Canalizando Recall...', hero.x, hero.y, {
             color: '#06b6d4',
             fontSize: 14
           });
@@ -461,19 +484,20 @@ export class GameSimulation {
 
       case CommandType.UPGRADE_ABILITY: {
         const slot = cmd.slot;
-        if (this.playerHero && typeof this.playerHero.upgradeAbility === 'function') {
-          const success = this.playerHero.upgradeAbility(slot);
+        if (hero && typeof hero.upgradeAbility === 'function') {
+          const success = hero.upgradeAbility(slot);
+          if (!success) return false;
           if (success) {
-            this.particles.addFloatingText(`+1 ${slot}!`, this.playerHero.x, this.playerHero.y - 35, {
+            this.particles.addFloatingText(`+1 ${slot}!`, hero.x, hero.y - 35, {
               color: '#fbbf24',
               fontSize: 14
             });
-            if (this.network && !this.network.isSoloMode) {
+            if (this.network && !this.network.isSoloMode && !this.network.authoritativeWorld) {
               this.network.broadcast({
                 type: 'UPGRADE_ABILITY',
-                heroId: this.playerHero.id,
+                heroId: hero.id,
                 slot,
-                newRank: this.playerHero.abilities?.[slot]?.rank || 1
+                newRank: hero.abilities?.[slot]?.rank || 1
               });
             }
           }
@@ -481,17 +505,27 @@ export class GameSimulation {
         break;
       }
 
+      case 'BUY_ITEM':
+      case 'SELL_ITEM':
+        return this.executeShopAction(hero, cmd);
+
+      case 'GOLD':
+        if (hero !== this.playerHero) return false;
+        hero.gold += 1000;
+        this.shopUI?.updateGoldDisplay();
+        break;
+
       case CommandType.SELECT: {
         let target = cmd.targetEntity;
         if (!target && cmd.targetEntityId) {
           target = this.entities.find(e => e.id === cmd.targetEntityId);
         }
-        if (target && this.input && this.input.isHostile(target, this.playerHero)) {
+        if (target && this.input && this.input.isHostile(target, hero)) {
           this.handleCommand({
             type: CommandType.ATTACK_TARGET,
             targetEntity: target,
             targetId: target.id
-          });
+          }, hero, fromNetwork);
         }
         break;
       }
@@ -523,7 +557,41 @@ export class GameSimulation {
         this.spawnExtraWave();
         break;
       }
+      default: return false;
     }
+    return true;
+  }
+
+  handlePlayerCommand(playerId, cmd) {
+    const allowed = ['MOVE_TO', 'ATTACK_TARGET', 'CAST_SKILL', 'CAST_ABILITY', 'STOP', 'RECALL', 'UPGRADE_ABILITY', 'BUY_ITEM', 'SELL_ITEM'];
+    if (!this.isHost || !allowed.includes(cmd?.type)) return false;
+    const hero = this.entities.find(entity => entity.type === 'hero' && entity.id === playerId);
+    if (!hero) return false;
+    // Entity references supplied by a client never cross the authority boundary.
+    const command = { ...cmd };
+    delete command.targetEntity;
+    return this.handleCommand(command, hero, true);
+  }
+
+  executeShopAction(hero, cmd) {
+    if (!hero?.inventoryInstance || Math.hypot(hero.x - 400, hero.y - 400) > 450) return false;
+    const inventory = hero.inventoryInstance;
+    if (cmd.type === 'BUY_ITEM') {
+      const item = ITEM_CATALOG[cmd.itemId];
+      if (!item || hero.gold < item.cost || inventory.isFull()) return false;
+      if (!inventory.addItem(item.id).success) return false;
+      hero.gold -= item.cost;
+      if (hero === this.playerHero) this.sound?.playShopBuy();
+    } else {
+      if (!Number.isInteger(cmd.slot) || cmd.slot < 0 || cmd.slot >= 6) return false;
+      const result = inventory.removeItem(cmd.slot);
+      if (!result.success) return false;
+      hero.gold += result.refund;
+      if (hero === this.playerHero) this.sound?.playShopSell();
+    }
+    hero.inventory = inventory.slots;
+    if (hero === this.playerHero) this.shopUI?.updateGoldDisplay();
+    return true;
   }
 
   spawnRemoteHero(playerData) {
@@ -712,6 +780,7 @@ export class GameSimulation {
   }
 
   spawnExtraWave(broadcast = true) {
+    if (this.network?.authoritativeWorld && !this.network.isSoloMode && !this.isHost) return false;
     if (this.waveSpawner) {
       this.waveSpawner.waveIndex++;
       this.waveSpawner.queueWave(this.waveSpawner.waveIndex);
@@ -732,6 +801,7 @@ export class GameSimulation {
   }
 
   applyBoost(broadcast = true) {
+    if (this.network?.authoritativeWorld && !this.network.isSoloMode && !this.isHost) return false;
     if (!this.playerHero) return;
     this.playerHero.speed = Math.min(600, (this.playerHero.speed || 325) + 120);
     this.playerHero.attackDamage = (this.playerHero.attackDamage || 60) + 60;
@@ -765,6 +835,7 @@ export class GameSimulation {
   }
 
   applyPlan() {
+    if (this.helpUI) { this.helpUI.open(); return; }
     if (!this.playerHero) return;
     this.particles.emit('spark', {
       x: this.playerHero.x,
@@ -1007,19 +1078,35 @@ export class GameSimulation {
     }
   }
 
-  executeHeroSkill(slot, ability, cmd, hero = this.playerHero) {
-    if (!hero) return;
-    const isHeroAlive = typeof hero.isAlive === 'function'
-      ? hero.isAlive()
-      : (!hero.isDead && (typeof hero.hp !== 'number' || hero.hp > 0));
-    if (!isHeroAlive) return;
-    if (hero.isLocalPlayer && typeof hero.canCast === 'function' && !hero.canCast()) return;
-    if (!['Q', 'W', 'E', 'R'].includes(slot)) return;
+  executeHeroSkill(slot, ability, cmd = {}, hero = this.playerHero) {
+    const validation = validateSkillCast(hero, slot, cmd);
+    if (!validation.ok) {
+      if (hero === this.playerHero) this.handleSkillError(slot, validation.reason);
+      return false;
+    }
+    ability = validation.ability;
+    const skill = validation.runtime;
+    let unitTarget = null;
+    if (hero.heroId === 'assassin' && slot === 'Q') {
+      const id = cmd.targetId || cmd.targetEntityId || cmd.targetEntity?.id;
+      unitTarget = id ? this.entities.find(target => target.id === id)
+        : this.findNearestEnemy(cmd.targetX ?? hero.x, cmd.targetY ?? hero.y, 80, hero.team);
+      if (!unitTarget || !unitTarget.isAlive() || unitTarget.team === hero.team ||
+          unitTarget.isUntargetable?.() || unitTarget.isInvulnerable?.() ||
+          Math.hypot(unitTarget.x - hero.x, unitTarget.y - hero.y) > skill.range + (unitTarget.radius || 0)) {
+        if (hero === this.playerHero) this.handleSkillError(slot, 'invalid_target');
+        return false;
+      }
+    }
     if (cmd.visualAction) receiveHeroAction(hero, cmd.visualAction);
     else startHeroAction(hero, `skill_${slot.toLowerCase()}`);
 
-    const targetX = cmd.targetX ?? hero.x;
-    const targetY = cmd.targetY ?? hero.y;
+    let targetX = cmd.targetX ?? hero.x, targetY = cmd.targetY ?? hero.y;
+    const distance = Math.hypot(targetX - hero.x, targetY - hero.y);
+    if (skill.range && distance > skill.range) {
+      targetX = hero.x + (targetX - hero.x) * skill.range / distance;
+      targetY = hero.y + (targetY - hero.y) * skill.range / distance;
+    }
 
     // Orient hero towards skill target on cast
     if (targetX !== hero.x || targetY !== hero.y) {
@@ -1031,7 +1118,7 @@ export class GameSimulation {
 
     // Deduct mana & set cooldown
     hero.mana = Math.max(0, hero.mana - (ability.manaCost || 0));
-    const effectiveCooldown = ability.cooldown * (1 - (hero.cdr || 0));
+    const effectiveCooldown = skill.cooldown * (1 - Math.min(0.4, Math.max(0, hero.cdr || 0)));
     ability.cooldownRemaining = Math.max(1.0, effectiveCooldown);
 
     // Audio SFX skill execution
@@ -1040,7 +1127,7 @@ export class GameSimulation {
     }
 
     // Broadcast if cast by local hero
-    if (hero.isLocalPlayer && this.network && !this.network.isSoloMode) {
+    if (hero.isLocalPlayer && this.network && !this.network.isSoloMode && !this.network.authoritativeWorld) {
       this.network.broadcast({
         type: 'CAST_SKILL',
         heroId: hero.id,
@@ -1062,11 +1149,11 @@ export class GameSimulation {
       if (slot === 'Q') { // Fireball
         this.particles.emit('spark', { x: targetX, y: targetY, count: 30, speed: 180, color: '#f97316' });
         this.particles.emit('ring', { x: targetX, y: targetY, startRadius: 10, maxRadius: 90, color: '#ef4444', life: 0.5 });
-        this.damageEnemiesInRadius(targetX, targetY, 90, 85 + (hero.abilityPower || 0) * 0.75, 'magical');
+        this.damageEnemiesInRadius(targetX, targetY, 90, skill.damage, 'magical', null, hero);
       } else if (slot === 'W') { // Frost Blizzard
         this.particles.emit('ring', { x: targetX, y: targetY, startRadius: 20, maxRadius: 140, color: '#38bdf8', life: 0.8 });
         this.particles.emit('spark', { x: targetX, y: targetY, count: 25, speed: 80, color: '#bae6fd' });
-        this.damageEnemiesInRadius(targetX, targetY, 140, 70 + (hero.abilityPower || 0) * 0.60, 'magical', { slow: 0.5, slowDuration: 2.5 });
+        this.damageEnemiesInRadius(targetX, targetY, 140, skill.damage, 'magical', { slow: 0.5, slowDuration: 2.5 }, hero);
       } else if (slot === 'E') { // Arcane Blink
         this.particles.emit('spark', { x: hero.x, y: hero.y, count: 20, speed: 120, color: '#a855f7' });
         const blinkDest = this.map.findNearestWalkable(targetX, targetY, hero.radius);
@@ -1077,7 +1164,7 @@ export class GameSimulation {
       } else if (slot === 'R') { // Meteor Devastation
         this.particles.emit('ring', { x: targetX, y: targetY, startRadius: 20, maxRadius: 200, color: '#ea580c', life: 1.0 });
         this.particles.emit('spark', { x: targetX, y: targetY, count: 60, speed: 250, color: '#ffedd5' });
-        this.damageEnemiesInRadius(targetX, targetY, 200, 220 + (hero.abilityPower || 0) * 0.95, 'magical', { stun: 1.2 });
+        this.damageEnemiesInRadius(targetX, targetY, 200, skill.damage, 'magical', { stun: 1.2 }, hero);
       }
     } else if (heroId === 'ranger') {
       if (slot === 'Q') { // Piercing Arrow
@@ -1087,84 +1174,81 @@ export class GameSimulation {
           const py = hero.y + Math.sin(angle) * d;
           this.particles.emit('spark', { x: px, y: py, count: 6, speed: 60, color: '#10b981' });
         }
-        this.damageEnemiesInLine(hero.x, hero.y, targetX, targetY, 650, 40, 75 + (hero.attackDamage || 0) * 1.0);
+        this.damageEnemiesInLine(hero.x, hero.y, targetX, targetY, 650, 40, skill.damage, hero);
       } else if (slot === 'W') { // Volley of Arrows
         this.particles.emit('ring', { x: targetX, y: targetY, startRadius: 15, maxRadius: 130, color: '#34d399', life: 0.6 });
-        this.damageEnemiesInRadius(targetX, targetY, 130, 60 + (hero.attackDamage || 0) * 0.70, 'physical', { slow: 0.35, slowDuration: 2.0 });
+        this.damageEnemiesInRadius(targetX, targetY, 130, skill.damage, 'physical', { slow: 0.35, slowDuration: 2.0 }, hero);
       } else if (slot === 'E') { // Acrobatic Dash
         const angle = Math.atan2(targetY - hero.y, targetX - hero.x);
-        const dashDist = 280;
+        const dashDist = Math.min(skill.range, distance);
         const dest = this.map.findNearestWalkable(hero.x + Math.cos(angle) * dashDist, hero.y + Math.sin(angle) * dashDist, hero.radius);
         hero.x = dest.x;
         hero.y = dest.y;
         hero.stop();
-        hero.speed += 80;
-        setTimeout(() => { if (hero) hero.speed = Math.max(hero.speed - 80, 325); }, 2000);
+        hero.skillSpeedBonus = skill.speedBonus;
+        hero.skillSpeedRemaining = skill.duration;
         this.particles.emit('ring', { x: hero.x, y: hero.y, startRadius: 10, maxRadius: 40, color: '#6ee7b7', life: 0.35 });
       } else if (slot === 'R') { // Snipe of Judgment
         const angle = Math.atan2(targetY - hero.y, targetX - hero.x);
         this.particles.emit('ring', { x: targetX, y: targetY, startRadius: 20, maxRadius: 80, color: '#facc15', life: 0.6 });
-        this.damageEnemiesInLine(hero.x, hero.y, targetX, targetY, 900, 50, 240 + (hero.attackDamage || 0) * 1.30);
+        this.damageEnemiesInLine(hero.x, hero.y, targetX, targetY, 900, 50, skill.damage, hero);
       }
     } else if (heroId === 'assassin') {
       if (slot === 'Q') { // Shadow Step
-        const target = this.findNearestEnemy(targetX, targetY, 400);
+        const target = unitTarget;
         if (target) {
-          hero.x = target.x - 30;
-          hero.y = target.y - 30;
+          const destination = this.map.findNearestWalkable(target.x - 30, target.y - 30, hero.radius);
+          hero.x = destination.x;
+          hero.y = destination.y;
           hero.stop();
           this.particles.emit('spark', { x: target.x, y: target.y, count: 25, speed: 140, color: '#a855f7' });
-          target.takeDamage(90 + (hero.attackDamage || 0) * 1.20, 'physical');
+          this.applyHeroHit(hero, target, skill.damage, 'physical');
         }
       } else if (slot === 'W') { // Poison Blades
         this.particles.emit('ring', { x: hero.x, y: hero.y, startRadius: 10, maxRadius: 180, color: '#22c55e', life: 0.4 });
-        this.damageEnemiesInRadius(hero.x, hero.y, 180, 65 + (hero.attackDamage || 0) * 0.75, 'physical');
+        this.damageEnemiesInRadius(hero.x, hero.y, 180, skill.damage, 'physical', null, hero);
       } else if (slot === 'E') { // Smoke Shroud
         this.particles.emit('ring', { x: hero.x, y: hero.y, startRadius: 10, maxRadius: 100, color: '#64748b', life: 0.8 });
         hero.isUntargetableFlag = true;
-        hero.speed += 100;
-        setTimeout(() => {
-          if (hero) {
-            hero.isUntargetableFlag = false;
-            hero.speed = Math.max(hero.speed - 100, 325);
-          }
-        }, 2500);
+        hero.skillSpeedBonus = skill.speedBonus;
+        hero.skillSpeedRemaining = skill.duration;
+        hero.shroudRemaining = skill.duration;
       } else if (slot === 'R') { // Lethal Dance
         this.particles.emit('ring', { x: hero.x, y: hero.y, startRadius: 20, maxRadius: 300, color: '#9333ea', life: 0.8 });
         this.particles.emit('spark', { x: hero.x, y: hero.y, count: 40, speed: 220, color: '#c084fc' });
-        this.damageEnemiesInRadius(hero.x, hero.y, 300, 240 + (hero.attackDamage || 0) * 1.30, 'physical');
+        this.damageEnemiesInRadius(hero.x, hero.y, 300, skill.damage, 'physical', null, hero);
       }
     } else if (heroId === 'cleric') {
       if (slot === 'Q') { // Sacred Light
         this.particles.emit('spark', { x: targetX, y: targetY, count: 20, speed: 120, color: '#fde047' });
-        this.healAlliesInRadius(targetX, targetY, 150, 90 + (hero.abilityPower || 0) * 0.70);
-        this.damageEnemiesInRadius(targetX, targetY, 150, 75 + (hero.abilityPower || 0) * 0.65, 'magical');
+        this.healAlliesInRadius(targetX, targetY, 150, skill.heal, hero);
+        this.damageEnemiesInRadius(targetX, targetY, 150, skill.damage, 'magical', null, hero);
       } else if (slot === 'W') { // Radiant Sanctuary
         this.particles.emit('ring', { x: targetX, y: targetY, startRadius: 20, maxRadius: 150, color: '#fbbf24', life: 1.2 });
-        this.healAlliesInRadius(targetX, targetY, 150, 120 + (hero.abilityPower || 0) * 0.80);
+        this.healAlliesInRadius(targetX, targetY, 150, skill.heal, hero);
       } else if (slot === 'E') { // Solar Judgment
         this.particles.emit('ring', { x: targetX, y: targetY, startRadius: 10, maxRadius: 100, color: '#f59e0b', life: 0.6 });
-        this.damageEnemiesInRadius(targetX, targetY, 100, 80 + (hero.abilityPower || 0) * 0.60, 'magical', { stun: 1.5 });
+        this.damageEnemiesInRadius(targetX, targetY, 100, skill.damage, 'magical', { stun: 1.5 }, hero);
       } else if (slot === 'R') { // Divine Miracle
         this.particles.emit('ring', { x: hero.x, y: hero.y, startRadius: 30, maxRadius: 350, color: '#fef08a', life: 1.5 });
-        this.healAlliesInRadius(hero.x, hero.y, 350, 250 + (hero.abilityPower || 0) * 1.0);
-        hero.barrier = (hero.barrier || 0) + 300 + (hero.abilityPower || 0) * 0.8;
+        this.healAlliesInRadius(hero.x, hero.y, 350, skill.heal, hero);
+        hero.barrier = (hero.barrier || 0) + skill.barrier;
       }
     } else { // Knight Vanguard
       if (slot === 'Q') { // Shield Slam
         this.particles.emit('ring', { x: targetX, y: targetY, startRadius: 10, maxRadius: 80, color: '#38bdf8', life: 0.4 });
-        this.damageEnemiesInRadius(targetX, targetY, 80, 80 + (hero.attackDamage || 0) * 0.60, 'physical', { stun: 1.2 });
+        this.damageEnemiesInRadius(targetX, targetY, 80, skill.damage, 'physical', { stun: 1.2 }, hero);
       } else if (slot === 'W') { // Taunt / Shield Barrier
         this.particles.emit('ring', { x: hero.x, y: hero.y, startRadius: 10, maxRadius: 260, color: '#3b82f6', life: 0.5 });
-        hero.barrier = (hero.barrier || 0) + 120 + (hero.armor || 0) * 1.2;
-        this.damageEnemiesInRadius(hero.x, hero.y, 260, 40 + (hero.armor || 0) * 0.40, 'physical');
+        hero.barrier = (hero.barrier || 0) + skill.barrier;
+        this.damageEnemiesInRadius(hero.x, hero.y, 260, skill.damage, 'physical', null, hero);
       } else if (slot === 'E') { // Cleave
         this.particles.emit('ring', { x: hero.x, y: hero.y, startRadius: 10, maxRadius: 160, color: '#60a5fa', life: 0.4 });
-        this.damageEnemiesInRadius(hero.x, hero.y, 160, 70 + (hero.attackDamage || 0) * 0.85, 'physical');
+        this.damageEnemiesInRadius(hero.x, hero.y, 160, skill.damage, 'physical', null, hero);
       } else if (slot === 'R') { // Heroic Leap Fortress
         this.particles.emit('ring', { x: targetX, y: targetY, startRadius: 20, maxRadius: 280, color: '#1d4ed8', life: 0.9 });
         this.particles.emit('spark', { x: targetX, y: targetY, count: 40, speed: 200, color: '#93c5fd' });
-        this.damageEnemiesInRadius(targetX, targetY, 280, 150 + (hero.attackDamage || 0) * 0.70, 'physical', { slow: 0.5, slowDuration: 3.0 });
+        this.damageEnemiesInRadius(targetX, targetY, 280, skill.damage, 'physical', { slow: 0.5, slowDuration: 3.0 }, hero);
       }
     }
 
@@ -1172,15 +1256,17 @@ export class GameSimulation {
       color: '#38bdf8',
       fontSize: 16
     });
+    return true;
   }
 
-  damageEnemiesInRadius(x, y, radius, damage, type = 'physical', cc = null) {
+  damageEnemiesInRadius(x, y, radius, damage, type = 'physical', cc = null, source = this.playerHero) {
     for (const ent of this.entities) {
       if ((ent.team === 'enemy' || ent.team === 'neutral') && ent.isAlive()) {
         const dist = Math.hypot(ent.x - x, ent.y - y);
         if (dist <= radius + ent.radius) {
-          const dealt = ent.takeDamage(damage, type);
-          if (cc) {
+          const hit = this.applyHeroHit(source, ent, damage, type);
+          if (!hit || !hit.rawDamage) continue;
+          if (cc && !ent.ccImmune && !ent.isDead) {
             const now = Date.now();
             if (cc.stun) {
               ent.stunnedUntil = Math.max(ent.stunnedUntil || 0, now + cc.stun * 1000);
@@ -1206,26 +1292,13 @@ export class GameSimulation {
               }
             }
           }
-          if (ent.isDead && this.playerHero) {
-            let bounty = 25;
-            if (ent.type === 'minion') {
-              const killRes = resolveMinionDeath(ent.subType || 'melee', this.playerHero, this.entities.filter(e => e.team === this.playerHero.team && e.type === 'hero'));
-              bounty = killRes.awardedKillerGold;
-            } else if (ent.type === 'tower') {
-              bounty = TOWER_BOUNTY;
-            } else if (ent.type === 'boss') {
-              bounty = (ent.name?.includes('Supreme') || ent.name?.includes('Guardian')) ? SUPREME_BOUNTY : BOSS_BOUNTY;
-            }
-            this.playerHero.gold = (this.playerHero.gold || 0) + bounty;
-            if (this.shopUI) this.shopUI.updateGoldDisplay();
-            this.awardDeathXp(ent, this.playerHero);
-          }
+
         }
       }
     }
   }
 
-  damageEnemiesInLine(x1, y1, x2, y2, maxDist, width, damage) {
+  damageEnemiesInLine(x1, y1, x2, y2, maxDist, width, damage, source = this.playerHero) {
     const angle = Math.atan2(y2 - y1, x2 - x1);
     for (const ent of this.entities) {
       if ((ent.team === 'enemy' || ent.team === 'neutral') && ent.isAlive()) {
@@ -1235,29 +1308,15 @@ export class GameSimulation {
         const distPerp = Math.abs(-dx * Math.sin(angle) + dy * Math.cos(angle));
 
         if (distAlong >= 0 && distAlong <= maxDist && distPerp <= width + ent.radius) {
-          ent.takeDamage(damage, 'physical');
-          if (ent.isDead && this.playerHero) {
-            let bounty = 25;
-            if (ent.type === 'minion') {
-              const killRes = resolveMinionDeath(ent.subType || 'melee', this.playerHero, this.entities.filter(e => e.team === this.playerHero.team && e.type === 'hero'));
-              bounty = killRes.awardedKillerGold;
-            } else if (ent.type === 'tower') {
-              bounty = TOWER_BOUNTY;
-            } else if (ent.type === 'boss') {
-              bounty = (ent.name?.includes('Supreme') || ent.name?.includes('Guardian')) ? SUPREME_BOUNTY : BOSS_BOUNTY;
-            }
-            this.playerHero.gold = (this.playerHero.gold || 0) + bounty;
-            if (this.shopUI) this.shopUI.updateGoldDisplay();
-            this.awardDeathXp(ent, this.playerHero);
-          }
+          this.applyHeroHit(source, ent, damage, 'physical');
         }
       }
     }
   }
 
-  healAlliesInRadius(x, y, radius, amount) {
+  healAlliesInRadius(x, y, radius, amount, source = this.playerHero) {
     for (const ent of this.entities) {
-      if (ent.team === 'allied' && ent.isAlive()) {
+      if (ent.team === (source?.team || 'allied') && ent.isAlive() && typeof ent.heal === 'function') {
         const dist = Math.hypot(ent.x - x, ent.y - y);
         if (dist <= radius + ent.radius) {
           ent.heal(amount);
@@ -1316,7 +1375,7 @@ export class GameSimulation {
     // Attack cooldown is decremented solely in HeroEntity.update(dt) (single decrement per tick)
 
     // 1. Auto-target acquisition when idle (local player only)
-    if (hero.isLocalPlayer && !hero.attackTarget && !hero.isMoving && !hero.isRecalling && !hero.holdPosition) {
+    if ((hero.isLocalPlayer || (this.isHost && this.network?.authoritativeWorld)) && !hero.attackTarget && !hero.isMoving && !hero.isRecalling && !hero.holdPosition) {
       const searchRadius = Math.max(hero.attackRange + 40, 250);
       const enemy = this.findNearestEnemy(hero.x, hero.y, searchRadius, hero.team);
       if (enemy) {
@@ -1396,7 +1455,7 @@ export class GameSimulation {
         hero.targetFacing = hero.facing;
       }
 
-      if (dist <= effectiveRange) {
+      if (dist <= effectiveRange + 0.001) {
         // Target in range! Stop moving
         hero.isMoving = false;
         hero.targetX = null;
@@ -1412,7 +1471,7 @@ export class GameSimulation {
         }
       } else {
         // Remote heroes' positions and movement are strictly driven by network HERO_UPDATE packets
-        if (!hero.isLocalPlayer) {
+        if (!hero.isLocalPlayer && !(this.isHost && this.network?.authoritativeWorld)) {
           hero.attackTarget = null;
           return;
         }
@@ -1425,9 +1484,10 @@ export class GameSimulation {
           return;
         }
 
-        const step = hero.speed * dt;
-        hero.vx = (dx / dist) * hero.speed;
-        hero.vy = (dy / dist) * hero.speed;
+        const movementSpeed = hero.getMovementSpeed ? hero.getMovementSpeed() : hero.speed;
+        const step = Math.min(dist - effectiveRange, movementSpeed * dt);
+        hero.vx = (dx / dist) * step / dt;
+        hero.vy = (dy / dist) * step / dt;
         hero.x += hero.vx * dt;
         hero.y += hero.vy * dt;
         hero.facing = Math.atan2(dy, dx);
@@ -1438,7 +1498,7 @@ export class GameSimulation {
 
   executeHeroBasicAttack(hero, target) {
     if (!hero || !target || !target.isAlive()) return;
-    if (hero.isLocalPlayer) startHeroAction(hero, 'attack');
+    if (hero.isLocalPlayer || (this.isHost && this.network?.authoritativeWorld)) startHeroAction(hero, 'attack');
 
     const isMelee = (hero.attackRange || 130) <= 180;
     const isCrit = Math.random() < (hero.critChance || 0);
@@ -1595,28 +1655,7 @@ export class GameSimulation {
     // Check if target died from this hit -> award bounty!
     const isTargetDead = target.hp <= 0 || target.isDead;
     if (isTargetDead) {
-      let bounty = 0;
-      if (target.type === 'minion') {
-        const killRes = resolveMinionDeath(target.subType || 'melee', hero, this.entities.filter(e => e.team === hero.team && e.type === 'hero'));
-        bounty = killRes.awardedKillerGold;
-      } else if (target.type === 'tower') {
-        bounty = TOWER_BOUNTY;
-      } else if (target.type === 'boss') {
-        bounty = (target.name?.includes('Supreme') || target.name?.includes('Guardian')) ? SUPREME_BOUNTY : BOSS_BOUNTY;
-      } else if (target.type === 'hero') {
-        bounty = TOWER_BOUNTY;
-      }
-
-      if (bounty > 0 && hero) {
-        hero.gold = (hero.gold || 0) + bounty;
-        if (this.shopUI) this.shopUI.updateGoldDisplay();
-        this.particles.addFloatingText(`+${bounty}g`, target.x, target.y - 35, {
-          color: '#fbbf24',
-          fontSize: 16
-        });
-      }
-
-      this.awardDeathXp(target, hero);
+      this.resolveCombatDeath(target, hero);
 
       if (hero && hero.attackTarget?.id === target.id) {
         const chainRadius = Math.max(hero.attackRange + 150, 500);
@@ -1641,19 +1680,64 @@ export class GameSimulation {
         }
       }
     }
+    return res;
+  }
+
+  resolveCombatDeath(target, killer = null) {
+    if (!target || target.hp > 0 || target.bountyAwarded) return;
+    target.bountyAwarded = true;
+    const source = killer?.type === 'hero' && killer.team !== target.team ? killer : null;
+    const team = source?.team || (target.team === 'allied' ? 'enemy' : 'allied');
+    const teammates = this.entities.filter(e => e.type === 'hero' && e.team === team);
+    const grant = (hero, amount) => {
+      if (!hero || !amount) return;
+      hero.gold = (hero.gold || 0) + amount;
+      if (hero === this.playerHero) this.particles.addFloatingText('+' + amount + 'g', target.x, target.y - 35, { color: '#fbbf24', fontSize: 16 });
+    };
+    if (target.type === 'minion' && source) {
+      const nearby = teammates.filter(hero => hero.isAlive() && Math.hypot(hero.x - target.x, hero.y - target.y) <= 800);
+      const result = resolveMinionDeath(target.subType || 'melee', source, nearby);
+      grant(source, result.awardedKillerGold);
+      for (const assist of result.awardedAssistGold) grant(nearby.find(hero => hero.id === assist.heroId), assist.gold);
+    } else if (target.type === 'tower') {
+      for (const hero of teammates) grant(hero, 350);
+      grant(source, 250);
+    } else if (target.type === 'boss') {
+      const supreme = target === this.bossManager?.supremeBoss || /Supreme|Guardian/.test(target.name || '');
+      if (supreme) grant(source, SUPREME_BOUNTY);
+      else { for (const hero of teammates) grant(hero, 600); grant(source, 300); }
+    } else if (target.type === 'hero') grant(source, TOWER_BOUNTY);
+    this.shopUI?.updateGoldDisplay();
+    this.awardDeathXp(target, source);
   }
 
   update(dt = 0.01667, tickIndex = 0) {
+    if (!Number.isFinite(dt) || dt <= 0) return;
+    if (this.network?.authoritativeWorld && !this.network.isSoloMode && !this.isHost) {
+      if ((this.isVictory || this.isDefeat) && !this._networkOutcomeShown) {
+        this._networkOutcomeShown = true;
+        const victory = this.isVictory;
+        this.sound?.[victory ? 'playVictory' : 'playDefeat']();
+        this.showGameOverModal(victory ? 'VITÓRIA!' : 'DERROTA...', victory ? 'O Nexus inimigo foi destruído pela equipe!' : 'O Nexus aliado foi destruído.', victory ? 'victory' : 'defeat');
+      }
+      this.updatePresentation(dt);
+      return;
+    }
+    if (this.isVictory || this.isDefeat) {
+      this.updatePresentation(dt);
+      this.publishWorldUpdate(dt);
+      return;
+    }
     this.matchTime += dt;
-    if (!this.isVictory && !this.isDefeat && accruePassiveGold(this.playerHero, dt) > 0) {
-      if (this.shopUI) this.shopUI.updateGoldDisplay();
+    for (const hero of this.entities.filter(e => e.type === 'hero')) {
+      if (accruePassiveGold(hero, dt) > 0 && hero === this.playerHero) this.shopUI?.updateGoldDisplay();
     }
 
     // 0. 20Hz Real-Time Network State Sync
     this.netSyncAccumulator = (this.netSyncAccumulator || 0) + dt;
     if (this.netSyncAccumulator >= 0.05) { // 20Hz (every 50ms)
       this.netSyncAccumulator = 0;
-      if (this.network && !this.network.isSoloMode && this.playerHero) {
+      if (this.network && !this.network.isSoloMode && this.playerHero && !this.network.authoritativeWorld) {
         this.network.broadcast({
           type: 'HERO_UPDATE',
           visualAction: serializeHeroAction(this.playerHero),
@@ -1757,6 +1841,14 @@ export class GameSimulation {
           }
         }
 
+        if (ent.skillSpeedRemaining > 0) {
+          ent.skillSpeedRemaining = Math.max(0, ent.skillSpeedRemaining - dt);
+          if (!ent.skillSpeedRemaining) ent.skillSpeedBonus = 0;
+        }
+        if (ent.shroudRemaining > 0) {
+          ent.shroudRemaining = Math.max(0, ent.shroudRemaining - dt);
+          if (!ent.shroudRemaining) ent.isUntargetableFlag = false;
+        }
         ent.update(dt);
 
         const isAliveNow = typeof ent.isAlive === 'function'
@@ -1821,7 +1913,7 @@ export class GameSimulation {
     for (const ent of this.entities) {
       const isDead = typeof ent.isDead === 'function' ? ent.isDead() : !!ent.isDead;
       if ((isDead || (typeof ent.hp === 'number' && ent.hp <= 0)) && !ent.xpAwarded) {
-        this.awardDeathXp(ent, null);
+        this.resolveCombatDeath(ent, this.entities.find(source => source.id === ent.lastDamagerId));
       }
     }
 
@@ -1863,13 +1955,28 @@ export class GameSimulation {
       }
     }
 
-    // 8. Update visual particle effects
+    this.updatePresentation(dt);
+    this.publishWorldUpdate(dt);
+  }
+
+  publishWorldUpdate(dt) {
+    if (!this.network?.authoritativeWorld || this.network.isSoloMode || !this.isHost) return;
+    this._worldSendTimer = (this._worldSendTimer || 0) + dt;
+    if (this._worldSendTimer >= 0.05) {
+      this._worldSendTimer %= 0.05;
+      this.network.publishWorldState?.();
+    }
+  }
+
+  updatePresentation(dt) {
+    // Only presentation and local input advance on a guest.
     this.particles.update(dt);
 
     // 9. Update camera follow
     this.camera.update(dt);
 
     // 10. Update input interactions
+    this.input.entityManager = this.entities;
     this.input.update(dt, this.playerHero, this.entities);
 
     // 11. Update HUD
@@ -1934,7 +2041,7 @@ export class GameSimulation {
     if (this.renderer.ctx) {
       if (this.bossManager) {
         this.bossManager.drawHazards(this.renderer.ctx, this.camera, this.camera.zoom);
-        this.bossManager.drawBossHUD(this.renderer.ctx, this.renderer.viewportWidth, this.renderer.viewportHeight);
+        this.bossManager.drawBossHUD(this.renderer.ctx, this.renderer.viewportWidth, this.renderer.viewportHeight, this.hud.getWorldHUDTop?.() || 100);
       }
       if (this.waveSpawner) {
         this.waveSpawner.drawProjectiles(this.renderer.ctx, this.camera, this.camera.zoom);
@@ -1961,6 +2068,11 @@ export class GameSimulation {
   getState() {
     return {
       matchTime: this.matchTime,
+      waveIndex: this.waveSpawner?.waveIndex || 0,
+      nextWaveTime: this.waveSpawner?.nextWaveTime || 0,
+      nextWaveIn: Math.max(0, (this.waveSpawner?.nextWaveTime || 0) - this.matchTime),
+      networkStatus: this.networkStatus || (this.network?.isSoloMode === false
+        ? (this.isHost ? 'Cooperativo · anfitrião' : (this.worldReady ? 'Cooperativo · conectado' : 'Sincronizando partida…')) : 'Solo'),
       entities: this.entities,
       playerHero: this.playerHero,
       isVictory: this.isVictory,
@@ -1975,6 +2087,25 @@ export class GameSimulation {
   stop() {
     this.loop.stop();
     this.input.unbindEvents();
+    this.helpUI?.destroy();
+    this.virtualJoystick?.destroy();
+    this.zoomCleanup?.();
+    this.hud?.destroy?.();
+    this.shopUI?.destroy?.();
+    this.onCleanup?.();
+    for (const remove of this.domCleanups) remove();
+    this.domCleanups = [];
+    this.tooltip?.hide();
+  }
+
+  onNetworkDisconnect(message) {
+    this.networkStatus = message;
+    this.loop.pause();
+    this.showGameOverModal('CONEXÃO ENCERRADA', message, 'defeat');
+    if (typeof document !== 'undefined') {
+      const button = document.getElementById('endgame-restart-btn');
+      if (button) button.textContent = 'Voltar à seleção';
+    }
   }
 
   pause() {

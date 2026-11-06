@@ -58,6 +58,7 @@ describe('Hero combat animation lifecycle', () => {
   it('starts only executed commands and preserves immediate combat effects', () => {
     const sim = new GameSimulation({ heroClass: 'knight' });
     const hero = sim.playerHero;
+    hero.abilities.Q.rank = 1; // Combat fixtures explicitly learn the skill under test.
     const cmd = { type: CommandType.CAST_SKILL, slot: 'Q', targetX: hero.x, targetY: hero.y };
     hero.mana = 0;
     sim.handleCommand(cmd);
@@ -88,7 +89,10 @@ describe('Hero combat animation lifecycle', () => {
     for (const heroClass of ['knight', 'sorceress', 'ranger', 'assassin', 'cleric']) {
       const sim = new GameSimulation({ heroClass });
       const hero = sim.playerHero;
+      hero.level = 15;
+      if (heroClass === 'assassin') sim.entities.push(new MinionUnit({ team: 'enemy', x: hero.x + 20, y: hero.y, hp: 10000, maxHp: 10000 }));
       for (const slot of ['Q', 'W', 'E', 'R']) {
+        hero.abilities[slot].rank = 1;
         hero.mana = hero.maxMana;
         hero.abilities[slot].cooldownRemaining = 0;
         sim.handleCommand({ type: CommandType.CAST_SKILL, slot, targetX: hero.x, targetY: hero.y });
@@ -107,6 +111,8 @@ describe('Hero combat animation lifecycle', () => {
   it('uses the same action identity in CAST_SKILL and HERO_UPDATE', async () => {
     const { PeerNetwork } = await import('../../src/net/peer_network.js');
     const sim = new GameSimulation({ heroClass: 'knight' });
+    sim.playerHero.level = 6;
+    sim.playerHero.abilities.R.rank = 1;
     const sent = [];
     sim.network = { isSoloMode: false, broadcast: packet => sent.push(packet) };
     sim.handleCommand({ type: CommandType.CAST_SKILL, slot: 'R' });
@@ -115,6 +121,7 @@ describe('Hero combat animation lifecycle', () => {
     const update = PeerNetwork.prototype.serializeHeroState(sim.playerHero);
     assertEqual(update.visualAction.sequence, cast.visualAction.sequence);
     const remote = sim.spawnRemoteHero({ id: 'remote-action', heroId: 'knight' });
+    remote.level = 6; remote.abilities.R.rank = 1;
     sim.handleRemoteCast({ ...cast, heroId: remote.id });
     const startedAt = remote.visualAction.startedAt;
     sim.handleRemoteHeroUpdate({ ...update, id: remote.id });

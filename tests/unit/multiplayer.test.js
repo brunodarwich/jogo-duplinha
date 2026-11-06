@@ -166,6 +166,7 @@ describe('Tier 1 Unit: Multiplayer Architecture & Real-Time Sync', () => {
     assertTrue(!!remoteHero);
 
     // Remote cast Sorceress Fireball (Q)
+    remoteHero.abilities.Q.rank = 1;
     const startMana = remoteHero.mana;
     hostSim.handleRemoteCast({
       heroId: 'player_remote_2',

@@ -329,12 +329,71 @@ export function clericRImmunityDuration(rank) {
 /**
  * Returns ability metadata and kit configuration for each hero.
  */
+export function getSkillRuntime(hero, slot) {
+  const ability = hero?.abilities?.[slot];
+  if (!ability) return null;
+  const rank = Math.max(1, Math.min(slot === 'R' ? 3 : 4, ability.rank || 1));
+  const at = values => values[rank - 1];
+  const ad = hero.attackDamage || 0, ap = hero.abilityPower || hero.ap || 0, armor = hero.armor || 0;
+  const value = { ...ability, damage: 0, heal: 0, barrier: 0, duration: 0, speedBonus: 0 };
+  const id = hero.heroId || 'knight';
+  if (id === 'knight') {
+    if (slot === 'Q') value.damage = knightQDamage(rank, ad);
+    if (slot === 'W') { value.damage = knightWDamage(rank, armor); value.barrier = at([120, 170, 220, 270]) + armor * 1.2; }
+    if (slot === 'E') value.damage = knightEDamage(rank, ad);
+    if (slot === 'R') value.damage = knightRDamage(rank, ad);
+  } else if (id === 'sorceress') {
+    if (slot === 'Q') value.damage = sorceressQDamage(rank, ap).impact;
+    if (slot === 'W') value.damage = sorceressWDamage(rank, ap);
+    if (slot === 'E') { value.range = at([350, 375, 400, 425]); value.cooldown = at([12, 11, 10, 9]); }
+    if (slot === 'R') value.damage = sorceressRDamage(rank, ap);
+  } else if (id === 'ranger') {
+    if (slot === 'Q') value.damage = rangerQDamage(rank, ad);
+    if (slot === 'W') value.damage = at([60, 100, 140, 180]) + ad * 0.7;
+    if (slot === 'E') { value.range = at([280, 300, 320, 340]); value.speedBonus = at([80, 100, 120, 140]); value.duration = 2; }
+    if (slot === 'R') value.damage = at([240, 360, 480]) + ad * 1.3;
+  } else if (id === 'assassin') {
+    if (slot === 'Q') value.damage = at([90, 135, 180, 225]) + ad * 1.2;
+    if (slot === 'W') value.damage = assassinWDamage(rank, ad);
+    if (slot === 'E') { value.speedBonus = at([100, 120, 140, 160]); value.duration = at([2.5, 2.75, 3, 3.25]); }
+    if (slot === 'R') value.damage = assassinRDamage(rank, ad);
+  } else if (id === 'cleric') {
+    if (slot === 'Q') { value.heal = clericQHealing(rank, ap); value.damage = at([75, 115, 155, 195]) + ap * 0.65; }
+    if (slot === 'W') value.heal = at([120, 180, 240, 300]) + ap * 0.8;
+    if (slot === 'E') value.damage = at([80, 130, 180, 230]) + ap * 0.6;
+    if (slot === 'R') { value.heal = at([250, 400, 550]) + ap; value.barrier = at([300, 450, 600]) + ap * 0.8; }
+  }
+  const parts = [];
+  if (value.damage) parts.push(Math.round(value.damage) + ' de dano');
+  if (value.heal) parts.push(Math.round(value.heal) + ' de cura');
+  if (value.barrier) parts.push(Math.round(value.barrier) + ' de barreira');
+  if (value.speedBonus) parts.push('+' + value.speedBonus + ' de velocidade por ' + value.duration + 's');
+  if (id === 'sorceress' && slot === 'E') parts.push('Teleporte de até ' + value.range + ' unidades');
+  if (id === 'assassin' && slot === 'E') parts.push('Fica inalvejável durante o efeito');
+  value.description = parts.join(' · ') + '. ' + ability.description;
+  return value;
+}
+
+export function validateSkillCast(hero, slot, cmd = {}) {
+  const ability = hero?.abilities?.[slot];
+  if (!ability || !['Q', 'W', 'E', 'R'].includes(slot)) return { ok: false, reason: 'invalid' };
+  const rank = ability.rank;
+  if (!Number.isInteger(rank) || rank < 1 || rank > (slot === 'R' ? 3 : 4) ||
+      (slot === 'R' && (hero.level || 1) < [6, 11, 15][rank - 1])) return { ok: false, reason: 'unlearned' };
+  if (hero.isDead || hero.hp <= 0 || (hero.canCast && !hero.canCast())) return { ok: false, reason: 'cc' };
+  if (ability.cooldownRemaining > 0) return { ok: false, reason: 'cooldown' };
+  if ((hero.mana || 0) < (ability.manaCost || 0)) return { ok: false, reason: 'mana' };
+  const targetX = cmd.targetX ?? hero.x, targetY = cmd.targetY ?? hero.y;
+  if (!Number.isFinite(targetX) || !Number.isFinite(targetY)) return { ok: false, reason: 'invalid_target' };
+  return { ok: true, ability, runtime: getSkillRuntime(hero, slot) };
+}
+
 export function getHeroKit(heroId) {
   switch (heroId) {
     case 'sorceress':
       return {
         Q: { id: 'Q', name: 'Bola de Fogo', icon: '🔥', manaCost: 55, cooldown: 6, cooldownRemaining: 0, range: 500, radius: 90, targetingType: 'GROUND_AOE', description: 'Dispara uma esfera flamejante que explode causando dano mágico em área.' },
-        W: { id: 'W', name: 'Nevasca Congelante', icon: '❄️', manaCost: 65, cooldown: 10, cooldownRemaining: 0, range: 450, radius: 140, targetingType: 'GROUND_AOE', description: 'Cria uma tempestade de gelo que desacelera e causa dano contínuo.' },
+        W: { id: 'W', name: 'Nevasca Congelante', icon: '❄️', manaCost: 65, cooldown: 10, cooldownRemaining: 0, range: 450, radius: 140, targetingType: 'GROUND_AOE', description: 'Explosão de gelo em área que causa dano mágico e lentidão por 2,5 segundos.' },
         E: { id: 'E', name: 'Teleporte Arcano', icon: '⚡', manaCost: 70, cooldown: 12, cooldownRemaining: 0, range: 350, targetingType: 'DIRECTIONAL_LINE', description: 'Teleporta instantaneamente para a posição do cursor.' },
         R: { id: 'R', name: 'Meteoro Devastador', icon: '☄️', manaCost: 110, cooldown: 55, cooldownRemaining: 0, range: 600, radius: 200, targetingType: 'GROUND_AOE', description: 'Invoca um meteoro colossal causando dano massivo em grande área.' }
       };
@@ -342,34 +401,34 @@ export function getHeroKit(heroId) {
     case 'ranger':
       return {
         Q: { id: 'Q', name: 'Disparo Perfurante', icon: '🎯', manaCost: 45, cooldown: 5, cooldownRemaining: 0, range: 650, targetingType: 'DIRECTIONAL_LINE', description: 'Dispara uma flecha de alta velocidade que atravessa múltiplos inimigos.' },
-        W: { id: 'W', name: 'Chuva de Flechas', icon: '🌧️', manaCost: 55, cooldown: 9, cooldownRemaining: 0, range: 500, radius: 130, targetingType: 'GROUND_AOE', description: 'Saraivada de flechas em área causando dano contínuo e lentidão.' },
+        W: { id: 'W', name: 'Chuva de Flechas', icon: '🌧️', manaCost: 55, cooldown: 9, cooldownRemaining: 0, range: 500, radius: 130, targetingType: 'GROUND_AOE', description: 'Saraivada em área que causa dano físico e lentidão por 2 segundos.' },
         E: { id: 'E', name: 'Salto Acrobático', icon: '💨', manaCost: 40, cooldown: 8, cooldownRemaining: 0, range: 320, targetingType: 'DIRECTIONAL_LINE', description: 'Cambalhota evasiva com bônus temporário de velocidade de movimento.' },
-        R: { id: 'R', name: 'Tiro do Julgamento', icon: '🌟', manaCost: 100, cooldown: 50, cooldownRemaining: 0, range: 900, targetingType: 'DIRECTIONAL_LINE', description: 'Super tiro de alcance extremo com dano aumentado conforme a vida perdida do alvo.' }
+        R: { id: 'R', name: 'Tiro do Julgamento', icon: '🌟', manaCost: 100, cooldown: 50, cooldownRemaining: 0, range: 900, targetingType: 'DIRECTIONAL_LINE', description: 'Disparo de longo alcance que atravessa alvos e causa dano físico.' }
       };
 
     case 'assassin':
       return {
-        Q: { id: 'Q', name: 'Passo das Sombras', icon: '👤', manaCost: 50, cooldown: 7, cooldownRemaining: 0, range: 400, targetingType: 'TARGET_UNIT', description: 'Surge instantaneamente atrás do alvo desferindo um ataque crítico.' },
-        W: { id: 'W', name: 'Lâminas Envenenadas', icon: '🗡️', manaCost: 45, cooldown: 6, cooldownRemaining: 0, range: 380, targetingType: 'DIRECTIONAL_LINE', description: 'Lança três adagas com veneno que causam sangramento contínuo.' },
+        Q: { id: 'Q', name: 'Passo das Sombras', icon: '👤', manaCost: 50, cooldown: 7, cooldownRemaining: 0, range: 400, targetingType: 'TARGET_UNIT', description: 'Surge atrás de um inimigo ao alcance e desfere um golpe físico.' },
+        W: { id: 'W', name: 'Lâminas Envenenadas', icon: '🗡️', manaCost: 45, cooldown: 6, cooldownRemaining: 0, radius: 180, targetingType: 'SELF_AOE', description: 'Golpe de lâminas em área ao redor da Assassina, causando dano físico.' },
         E: { id: 'E', name: 'Mortalha Sombria', icon: '🌫️', manaCost: 60, cooldown: 14, cooldownRemaining: 0, targetingType: 'SELF_AOE', description: 'Envolve-se em sombras ganhando invisibilidade temporária e velocidade.' },
-        R: { id: 'R', name: 'Dança Letal', icon: '☠️', manaCost: 100, cooldown: 60, cooldownRemaining: 0, radius: 300, targetingType: 'SELF_AOE', description: 'Desfere uma sequência rápida de golpes letais em área com invulnerabilidade.' }
+        R: { id: 'R', name: 'Dança Letal', icon: '☠️', manaCost: 100, cooldown: 60, cooldownRemaining: 0, radius: 300, targetingType: 'SELF_AOE', description: 'Golpe letal em área ao redor da Assassina, causando alto dano físico.' }
       };
 
     case 'cleric':
       return {
-        Q: { id: 'Q', name: 'Luz Sagrada', icon: '✨', manaCost: 50, cooldown: 5, cooldownRemaining: 0, range: 500, targetingType: 'DIRECTIONAL_LINE', description: 'Feixe radiante que cura aliados e queima inimigos atingidos.' },
-        W: { id: 'W', name: 'Santuário Radiante', icon: '💫', manaCost: 65, cooldown: 11, cooldownRemaining: 0, range: 450, radius: 150, targetingType: 'GROUND_AOE', description: 'Cria uma zona sagrada no solo que cura continuamente a equipe.' },
-        E: { id: 'E', name: 'Julgamento Solar', icon: '☀️', manaCost: 60, cooldown: 9, cooldownRemaining: 0, range: 420, radius: 100, targetingType: 'GROUND_AOE', description: 'Explosão de luz solar que cega e atordoa inimigos pegos no centro.' },
-        R: { id: 'R', name: 'Milagre Divino', icon: '🛡️', manaCost: 100, cooldown: 65, cooldownRemaining: 0, radius: 350, targetingType: 'SELF_AOE', description: 'Invoca uma barreira celestial tornando aliados próximos temporariamente invulneráveis.' }
+        Q: { id: 'Q', name: 'Luz Sagrada', icon: '✨', manaCost: 50, cooldown: 5, cooldownRemaining: 0, range: 500, radius: 150, targetingType: 'GROUND_AOE', description: 'Explosão sagrada no ponto escolhido que cura aliados e causa dano mágico aos inimigos.' },
+        W: { id: 'W', name: 'Santuário Radiante', icon: '💫', manaCost: 65, cooldown: 11, cooldownRemaining: 0, range: 450, radius: 150, targetingType: 'GROUND_AOE', description: 'Pulso sagrado que cura imediatamente os aliados na área escolhida.' },
+        E: { id: 'E', name: 'Julgamento Solar', icon: '☀️', manaCost: 60, cooldown: 9, cooldownRemaining: 0, range: 420, radius: 100, targetingType: 'GROUND_AOE', description: 'Explosão solar em área que causa dano mágico e atordoa por 1,5 segundo.' },
+        R: { id: 'R', name: 'Milagre Divino', icon: '🛡️', manaCost: 100, cooldown: 65, cooldownRemaining: 0, radius: 350, targetingType: 'SELF_AOE', description: 'Cura aliados próximos e concede uma barreira ao Clérigo.' }
       };
 
     case 'knight':
     default:
       return {
-        Q: { id: 'Q', name: 'Golpe de Escudo', icon: '💥', manaCost: 50, cooldown: 7, cooldownRemaining: 0, range: 400, targetingType: 'DIRECTIONAL_LINE', description: 'Investe com o escudo causando dano e atordoando inimigos atingidos.' },
-        W: { id: 'W', name: 'Provocação em Área', icon: '📢', manaCost: 60, cooldown: 11, cooldownRemaining: 0, radius: 260, targetingType: 'SELF_AOE', description: 'Grito de guerra que força inimigos a atacarem você e concede armadura.' },
-        E: { id: 'E', name: 'Cutilada Rotativa', icon: '⚔️', manaCost: 40, cooldown: 5, cooldownRemaining: 0, range: 300, radius: 160, targetingType: 'SELF_AOE', description: 'Gira a espada em círculo causando dano adicional a lacaios.' },
-        R: { id: 'R', name: 'Fortaleza Inabalável', icon: '🏰', manaCost: 100, cooldown: 55, cooldownRemaining: 0, range: 450, radius: 280, targetingType: 'GROUND_AOE', description: 'Salta no chão com impacto heróico, erguendo muralhas e desacelerando inimigos.' }
+        Q: { id: 'Q', name: 'Golpe de Escudo', icon: '💥', manaCost: 50, cooldown: 7, cooldownRemaining: 0, range: 400, radius: 80, targetingType: 'GROUND_AOE', description: 'Impacto de escudo no ponto escolhido que causa dano físico e atordoa por 1,2 segundo.' },
+        W: { id: 'W', name: 'Provocação em Área', icon: '📢', manaCost: 60, cooldown: 11, cooldownRemaining: 0, radius: 260, targetingType: 'SELF_AOE', description: 'Grito de guerra que causa dano aos inimigos próximos e concede uma barreira ao Cavaleiro.' },
+        E: { id: 'E', name: 'Cutilada Rotativa', icon: '⚔️', manaCost: 40, cooldown: 5, cooldownRemaining: 0, range: 300, radius: 160, targetingType: 'SELF_AOE', description: 'Gira a espada e causa dano físico aos inimigos próximos.' },
+        R: { id: 'R', name: 'Fortaleza Inabalável', icon: '🏰', manaCost: 100, cooldown: 55, cooldownRemaining: 0, range: 450, radius: 280, targetingType: 'GROUND_AOE', description: 'Impacto em grande área que causa dano físico e lentidão por 3 segundos.' }
       };
   }
 }
