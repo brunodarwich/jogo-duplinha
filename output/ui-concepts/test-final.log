@@ -1,0 +1,652 @@
+
+> jogo-duplinha@2.1.0 test
+> node -c src/main.js && node tests/runner.js
+
+
+[1m======================================================[0m
+[1m  Jogo Duplinha MOBA 2.5D — Automated Test Runner    [0m
+[1m======================================================[0m
+
+Discovered 53 test file(s).
+
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\ability_runtime.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Ability rules in the running simulation[0m
+  [32m✔ PASS[0m rejects an unlearned ultimate without mana, cooldown, damage or animation [2m(3.4ms)[0m
+  [32m✔ PASS[0m validates direct execution as well as commands, including non-local casters [2m(0.7ms)[0m
+  [32m✔ PASS[0m makes damaging ranks stronger for each of the five heroes [2m(4.1ms)[0m
+  [32m✔ PASS[0m makes support healing and protection stronger with rank [2m(0.4ms)[0m
+  [32m✔ PASS[0m clamps ground targets to skill range and rejects non-finite coordinates [2m(0.4ms)[0m
+  [32m✔ PASS[0m credits a remote skill kill once to its caster and respects resistance [2m(2.4ms)[0m
+  [32m✔ PASS[0m scales mobility and expires speed/shroud by simulation time without changing base speed [2m(5.1ms)[0m
+  [32m✔ PASS[0m rejects shadow step outside caster range before consuming resources [2m(0.3ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\accessible_controls.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Keyboard control boundaries[0m
+  [32m✔ PASS[0m Focused button activation does not also open chat or move the camera [2m(0.4ms)[0m
+  [32m✔ PASS[0m Unlearned abilities report their state without entering aiming mode [2m(0.2ms)[0m
+  [32m✔ PASS[0m Names from the network are displayed as text, including markup characters [2m(0.1ms)[0m
+  [32m✔ PASS[0m Stopping UI removes listeners attached to persistent controls [2m(0.3ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\approved_hud.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Approved HUD: boss state and fixed joystick[0m
+  [32m✔ PASS[0m Boss status hides dead bosses and clamps replicated HP [2m(0.1ms)[0m
+  [32m✔ PASS[0m Fixed joystick starts at its center, captures one pointer and ignores other fingers [2m(0.3ms)[0m
+  [32m✔ PASS[0m Releasing movement sends STOP once and resets the thumb even outside the joystick [2m(0.1ms)[0m
+  [32m✔ PASS[0m Tapping without moving never cancels a combat command [2m(0.0ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\boost.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: Boss HUD Robustness & Boost Command Mechanics[0m
+  [32m✔ PASS[0m TC-BST-01: Boss entities have valid names in the DOM HUD presentation [2m(1.1ms)[0m
+  [32m✔ PASS[0m TC-BST-02: GameSimulation applyBoost increases speed, damage, and grants bonus gold [2m(0.4ms)[0m
+  [32m✔ PASS[0m TC-BST-03: GameSimulation handleCommand supports CommandType.TOGGLE_SHOP cleanly [2m(0.3ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\boss.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: Boss Encounters, Phases & Victory/Defeat Triggers[0m
+  [32m✔ PASS[0m TC-BOS-01: Wave 5 Stone Colossus attributes and tower damage reduction [2m(3.4ms)[0m
+  [32m✔ PASS[0m TC-BOS-02: Wave 10 Abyssal Behemoth attributes and 2.0s silence [2m(3.0ms)[0m
+  [32m✔ PASS[0m TC-BOS-03: Supreme Boss Nexus Guardian 12000 HP and 500g bounty [2m(2.6ms)[0m
+  [32m✔ PASS[0m TC-BOS-04: Supreme Boss phase transitions at 66% and 33% HP thresholds [2m(2.1ms)[0m
+  [32m✔ PASS[0m TC-BOS-05: Supreme Boss active shield completely blocks damage [2m(2.4ms)[0m
+  [32m✔ PASS[0m TC-BOS-06: Destroying the Enemy Nexus wins regardless of Supreme Boss life [2m(2.0ms)[0m
+  [32m✔ PASS[0m TC-BOS-07: DEFEAT triggered immediately when Allied Nexus drops to 0 HP [2m(2.4ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\cc.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: Crowd Control State Machine Matrix[0m
+  [32m✔ PASS[0m TC-CC-01: Stun disables canMove, canAttack, canCast, and breaks channel [2m(1.8ms)[0m
+  [32m✔ PASS[0m TC-CC-02: Root disables canMove, but permits canAttack and canCast [2m(1.4ms)[0m
+  [32m✔ PASS[0m TC-CC-03: Silence disables canCast, permits canMove, and breaks channel [2m(1.4ms)[0m
+  [32m✔ PASS[0m TC-CC-04: Taunt disables canMove, canCast, sets tauntTargetId, and breaks channel [2m(1.5ms)[0m
+  [32m✔ PASS[0m TC-CC-05: Slow reduces speed without breaking channel; cleanse restores speed [2m(1.5ms)[0m
+  [32m✔ PASS[0m TC-CC-06: Concurrent CC applies non-stacking maximum duration rule [2m(1.5ms)[0m
+  [32m✔ PASS[0m TC-CC-07: Expired CC automatically restores all action capabilities [2m(1.9ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\combat.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: Combat Damage Mitigation & Combat Formulas[0m
+  [32m✔ PASS[0m TC-CMB-01: Armor mitigation reduces physical damage: 100/(100 + Armor) [2m(1.6ms)[0m
+  [32m✔ PASS[0m TC-CMB-02: Magic Resistance mitigates magical damage accurately [2m(1.4ms)[0m
+  [32m✔ PASS[0m TC-CMB-03: True Damage bypasses Armor and Magic Resistance completely [2m(1.3ms)[0m
+  [32m✔ PASS[0m TC-CMB-04: Critical strike scales raw damage by multiplier (2.0x) [2m(1.4ms)[0m
+  [32m✔ PASS[0m TC-CMB-05: Lifesteal restores health proportional to actual damage dealt [2m(1.6ms)[0m
+  [32m✔ PASS[0m TC-CMB-06: Effective Health formula accurately reflects resistance scaling [2m(1.3ms)[0m
+  [32m✔ PASS[0m TC-CMB-07: Lethal damage reduces HP to 0 and attributes killerId [2m(1.5ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\command_authority.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Authoritative game commands[0m
+  [32m✔ PASS[0m moves the identified remote hero without changing the local player [2m(0.6ms)[0m
+  [32m✔ PASS[0m validates remote purchases and upgrades on the owning hero [2m(0.5ms)[0m
+  [32m✔ PASS[0m never advances the guest world or gold without host snapshots [2m(2.8ms)[0m
+  [32m✔ PASS[0m removes tooltip listeners when a match is stopped [2m(0.8ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\damage_runtime.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Runtime unified damage and lifecycle[0m
+  [32m✔ PASS[0m mitigates once, absorbs a barrier once and cancels recall on a real hero [2m(0.3ms)[0m
+  [32m✔ PASS[0m calls the lethal hero lifecycle once and ignores malformed or repeated damage [2m(0.3ms)[0m
+  [32m✔ PASS[0m respects structure hierarchy and both forms of guardian shield [2m(0.1ms)[0m
+  [32m✔ PASS[0m minion melee and projectile damage respect hero armor [2m(0.3ms)[0m
+  [32m✔ PASS[0m tower projectiles preserve colossus reduction and apply armor only once [2m(0.1ms)[0m
+  [32m✔ PASS[0m boss direct attacks and persistent hazards use physical and magical mitigation [2m(0.3ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\death_stress.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: Adversarial Stress Testing — Hero Death & Resurrection Lifecycle[0m
+  [32m✔ PASS[0m TC-CHALLENGE-01: Overkill damage and repeated lethal damage while dead preserve state invariants [2m(3.7ms)[0m
+  [32m✔ PASS[0m TC-CHALLENGE-02: 300 simulation ticks while dead enforce strict state invariants [2m(3.8ms)[0m
+  [32m✔ PASS[0m TC-CHALLENGE-03: sim.entities preserves dead hero across 100 simulation ticks during dynamic cleanup [2m(15.9ms)[0m
+  [32m✔ PASS[0m TC-CHALLENGE-04: Exact resurrection invariants at (400, 400) with complete CC cleanse [2m(3.9ms)[0m
+  [32m✔ PASS[0m TC-CHALLENGE-05: Ability cooldowns decay while dead and maintain decay upon resurrection [2m(3.1ms)[0m
+  [32m✔ PASS[0m TC-CHALLENGE-06: Level-scaling respawn formula across levels 1-18 for all 5 hero archetypes [2m(5.5ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\economy.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: Gold Economy, Passive Income & Objective Bounties[0m
+  [32m✔ PASS[0m TC-ECO-01: Initializes each player with exactly 1200 starting gold [2m(1.5ms)[0m
+  [32m✔ PASS[0m TC-ECO-02: Passive gold accrual delivers exactly 10 gold per second [2m(1.3ms)[0m
+  [32m✔ PASS[0m TC-ECO-03: Minion last-hits increment gold pouch correctly [2m(1.1ms)[0m
+  [32m✔ PASS[0m TC-ECO-04: Tower destruction awards 250g killer bonus and 350g team bounty [2m(1.1ms)[0m
+  [32m✔ PASS[0m TC-ECO-05: Mini-Boss awards 300g killer bonus and 600g team bounty [2m(1.3ms)[0m
+  [32m✔ PASS[0m TC-ECO-06: Supreme Boss awards 1500g bounty to killer [2m(1.2ms)[0m
+  [32m✔ PASS[0m TC-ECO-07: Passive gold accrual continues steadily regardless of player state [2m(1.2ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\economy_flow.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Accelerated live economy[0m
+  [32m✔ PASS[0m Allows purchases at the nexus spawn and rejects the combat lane [2m(0.1ms)[0m
+  [32m✔ PASS[0m Funds a mid-tier item or a three-piece starting loadout [2m(0.1ms)[0m
+  [32m✔ PASS[0m Preserves fractional income and purchases without restoring spent gold [2m(0.1ms)[0m
+  [32m✔ PASS[0m Applies income in the real game loop, including death, and stops after victory [2m(1.2ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\heroes.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: 5 Hero Base Stats, Growth & Skill Damage Calculations[0m
+  [32m✔ PASS[0m TC-HERO-01: Validates Level 1 base stats for all 5 heroes [2m(1.8ms)[0m
+  [32m✔ PASS[0m TC-HERO-02: Validates Level 12 growth formula matching spec table [2m(2.0ms)[0m
+  [32m✔ PASS[0m TC-HERO-03: Cavaleiro Guardião skills damage and barrier scaling [2m(2.1ms)[0m
+  [32m✔ PASS[0m TC-HERO-04: Feiticeira Elemental skills damage and bounce decay [2m(1.9ms)[0m
+  [32m✔ PASS[0m TC-HERO-05: Patrulheiro Arqueiro distance crit passive and pierce falloff [2m(1.9ms)[0m
+  [32m✔ PASS[0m TC-HERO-06: Sombra Assassina backstab true damage & Death Mark detonation [2m(2.3ms)[0m
+  [32m✔ PASS[0m TC-HERO-07: Clérigo da Luz holy heal amplification on low HP [2m(1.8ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\hero_action.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Hero combat animation lifecycle[0m
+  [32m✔ PASS[0m ships all 25 RGBA action atlases with four 384px frames [2m(6.9ms)[0m
+  [32m✔ PASS[0m renders action frames before walking, preserves facing and falls back on failed action images [2m(3.3ms)[0m
+  [32m✔ PASS[0m starts only executed commands and preserves immediate combat effects [2m(0.7ms)[0m
+  [32m✔ PASS[0m connects basic attacks and Q/W/E/R for every hero [2m(3.8ms)[0m
+  [32m✔ PASS[0m uses the same action identity in CAST_SKILL and HERO_UPDATE [2m(1.0ms)[0m
+  [32m✔ PASS[0m plays once, respects attack speed and returns to locomotion [2m(0.3ms)[0m
+  [32m✔ PASS[0m lets skills replace actions while basic attacks cannot interrupt skills [2m(0.1ms)[0m
+  [32m✔ PASS[0m syncs elapsed time once and rejects stale, invalid and legacy packets [2m(0.1ms)[0m
+  [32m✔ PASS[0m clears actions on death without allowing repeated packets to revive them [2m(0.1ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\hud_banners.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: Dynamic Event Banners & HUD Polish (M1 / R1)[0m
+  [32m✔ PASS[0m TC-BNR-01: EventBannerManager initialization and headless safety [2m(1.5ms)[0m
+  [32m✔ PASS[0m TC-BNR-02: Banner creation for each event type with corresponding priorities [2m(2.2ms)[0m
+  [32m✔ PASS[0m TC-BNR-03: Priority Queue correctly sorts events by priority (1 to 6) [2m(1.8ms)[0m
+  [32m✔ PASS[0m TC-BNR-04: Higher priority banner preempts currently active lower priority banner [2m(2.4ms)[0m
+(node:22356) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+  [32m✔ PASS[0m TC-BNR-05: Timeout dismissal and queue progression [2m(217.5ms)[0m
+  [32m✔ PASS[0m TC-BNR-06: DOM rendering when document container is present [2m(3.6ms)[0m
+  [32m✔ PASS[0m TC-BNR-07: HUDController Low HP critical pulse class application [2m(3.4ms)[0m
+  [32m✔ PASS[0m TC-BNR-08: HUDController Ability ready-burst detection on cooldown expiry [2m(3.0ms)[0m
+  [32m✔ PASS[0m TC-BNR-09: ShopUI formatStatChips and inventory slot tier synchronization [2m(2.2ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\hud_objectives.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Contextual match objectives[0m
+  [32m✔ PASS[0m Keeps the boss bar under the compact toolbar regardless of collapsed details or a corner minimap [2m(0.1ms)[0m
+  [32m✔ PASS[0m Advances from outer tower to inner tower to vulnerable Nexus [2m(0.2ms)[0m
+  [32m✔ PASS[0m Uses replicated wave timing and identifies the next boss wave [2m(0.0ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\imports.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: ES Module Static Import & Export Integrity[0m
+  [32m✔ PASS[0m TC-IMP-01: All named imports across src/ must match existing exports [2m(58.6ms)[0m
+  [32m✔ PASS[0m TC-IMP-02: All JavaScript source files in src/ have valid syntax [2m(2.61s)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\input.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: Input Dispatch & Command System[0m
+  [32m✔ PASS[0m TC-INP-01: Right-click on ground dispatches MOVE_TO command [2m(2.5ms)[0m
+  [32m✔ PASS[0m TC-INP-02: Right-click on enemy unit dispatches ATTACK_TARGET command [2m(2.1ms)[0m
+  [32m✔ PASS[0m TC-INP-03: Pressing Q initiates skill targeting when mana and cooldown allow [2m(2.6ms)[0m
+  [32m✔ PASS[0m TC-INP-04: Left-click during targeting confirms and dispatches CAST_SKILL [2m(2.5ms)[0m
+  [32m✔ PASS[0m TC-INP-05: Right-click or Escape cancels active targeting mode [2m(2.7ms)[0m
+  [32m✔ PASS[0m TC-INP-06: S and H keys dispatch STOP command and clear channels [2m(2.9ms)[0m
+  [32m✔ PASS[0m TC-INP-07: Clamps out-of-bounds mouse coordinates to map boundaries [0, 3200] [2m(1.8ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\inventory.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: 6-Slot Inventory, 18 Items & Stat Recomputation[0m
+  [32m✔ PASS[0m TC-INV-01: Initializes with exactly 6 empty slots [2m(0.8ms)[0m
+  [32m✔ PASS[0m TC-INV-02: Item catalog contains 18 items with valid stats across 3 tiers [2m(0.8ms)[0m
+  [32m✔ PASS[0m TC-INV-03: Equipping item recalculates hero stats and updates current/max HP [2m(0.8ms)[0m
+  [32m✔ PASS[0m TC-INV-04: Selling item refunds 70% of cost and recalculates stats [2m(0.9ms)[0m
+  [32m✔ PASS[0m TC-INV-05: Cooldown Reduction (CDR) is strictly clamped at 40% cap [2m(0.8ms)[0m
+  [32m✔ PASS[0m TC-INV-06: Selling +HP item clamps current HP when current HP > new Max HP [2m(0.9ms)[0m
+  [32m✔ PASS[0m TC-INV-07: Full inventory prevents adding 7th item and returns error [2m(1.1ms)[0m
+  [32m✔ PASS[0m TC-INV-08: recalculateHeroStats helper delegates to inventory instance [2m(1.7ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\isometric.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: 2:1 Dimetric Isometric Projection & Math[0m
+  [32m✔ PASS[0m TC-ISO-01: Projects ground origin (0, 0, 0) to viewport center [2m(1.7ms)[0m
+  [32m✔ PASS[0m TC-ISO-02: Round-trip invertibility: screenToWorld(worldToScreen(x, y)) [2m(2.0ms)[0m
+  [32m✔ PASS[0m TC-ISO-03: Elevation Wz reduces screen Y without altering screen X [2m(1.5ms)[0m
+  [32m✔ PASS[0m TC-ISO-04: Camera translation shifts screen projection inversely [2m(1.3ms)[0m
+  [32m✔ PASS[0m TC-ISO-05: Zoom factor scales offsets from screen center [2m(1.4ms)[0m
+  [32m✔ PASS[0m TC-ISO-06: DepthKey Wx + Wy provides monotonic depth order [2m(2.6ms)[0m
+  [32m✔ PASS[0m TC-ISO-07: Sanitizes NaN and non-finite inputs gracefully [2m(1.8ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\leveling.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: Player Leveling & Progression System (Levels 1-15)[0m
+  [32m✔ PASS[0m TC-LVL-01: Validates XP curve requirements and cumulative totals up to level 15 [2m(1.2ms)[0m
+  [32m✔ PASS[0m TC-LVL-02: Incremental and burst XP transitions clamp cleanly at Level 15 [2m(4.8ms)[0m
+  [32m✔ PASS[0m TC-LVL-03: Validates stat scaling across all 15 levels and proportional HP/Mana restoration [2m(5.9ms)[0m
+  [32m✔ PASS[0m TC-LVL-04: Skill point allocation rules, level gating on R, and 15-point total cap [2m(4.2ms)[0m
+  [32m✔ PASS[0m TC-LVL-05: Minion proximity XP distribution within 800 units and last-hit bonus [2m(1.4ms)[0m
+  [32m✔ PASS[0m TC-LVL-06: Tower, Boss, and Enemy Hero kill XP formulas [2m(1.1ms)[0m
+  [32m✔ PASS[0m TC-LVL-07: Ctrl + Q/W/E/R triggers UPGRADE_ABILITY command in InputDispatcher and GameSimulation [2m(9.0ms)[0m
+  [32m✔ PASS[0m TC-LVL-08: Level-up VFX callback emits floating text and ring/spark particles [2m(6.6ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\loading_screen.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Promotional loading screen readiness[0m
+  [32m✔ PASS[0m waits for the promotional artwork and real sprite preparation before enabling entry [2m(5.1ms)[0m
+  [32m✔ PASS[0m falls back after image failure and completes only after the fallback is decoded [2m(0.4ms)[0m
+  [32m✔ PASS[0m allows entry when both image requests fail and clears image listeners [2m(0.0ms)[0m
+  [32m✔ PASS[0m does not transition before ready and runs completion only once [2m(0.1ms)[0m
+  [32m✔ PASS[0m bounds artwork failure time instead of holding the loading screen indefinitely [2m(14.6ms)[0m
+  [32m✔ PASS[0m keeps native controls in charge of Enter and Space and accepts a ready background shortcut once [2m(0.2ms)[0m
+  [32m✔ PASS[0m cancels pending artwork and delayed tips when a splash is destroyed [2m(15.6ms)[0m
+  [32m✔ PASS[0m does not label the arena ready while sprites completed but artwork is still pending [2m(0.2ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\lobby_lifecycle.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Lobby lifecycle[0m
+  [32m✔ PASS[0m A failed host registration keeps Start disabled and explains the failure [2m(0.3ms)[0m
+  [32m✔ PASS[0m Changing mode disconnects the previous room and restores lobby callbacks [2m(0.2ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\m1_adversarial.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: M1 Adversarial Stress & Empirical Challenge[0m
+  [32m✔ PASS[0m ADV-M1-01: Massive simultaneous event spam (100 events) maintains queue integrity and priority hierarchy [2m(2.1ms)[0m
+  [32m✔ PASS[0m ADV-M1-02: Strict priority preemption and re-queueing (Priority 1 pre-empts Priority 6, cascading chains) [2m(1.6ms)[0m
+  [32m✔ PASS[0m ADV-M1-03: Defensive resilience with null, undefined, and empty parameters [2m(1.9ms)[0m
+  [32m✔ PASS[0m ADV-M1-04: Timeout cancellation and leak safety with clear() in active and exiting states [2m(365.4ms)[0m
+  [32m✔ PASS[0m ADV-M1-05: Sound callback fault-tolerance (throwing errors inside sound handler) [2m(5.6ms)[0m
+  [32m✔ PASS[0m ADV-M1-06: ShopUI formatStatChips defensive handling with edge-case attributes [2m(4.6ms)[0m
+  [32m✔ PASS[0m ADV-M1-07: HUDController resilience with null, dead, or corrupted hero states [2m(6.3ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\m1_math.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: Milestone 1 Engine Foundation & Isometric Math[0m
+  [32m✔ PASS[0m TC-M1-01: Baseline worldToScreen and screenToWorld invertibility identity [2m(0.1ms)[0m
+  [32m✔ PASS[0m TC-M1-02: Round-trip projection across various arbitrary world coordinates and zoom factors [2m(0.1ms)[0m
+  [32m✔ PASS[0m TC-M1-03: Z-elevation reduces screen Y proportionally without affecting screen X [2m(0.0ms)[0m
+  [32m✔ PASS[0m TC-M1-04: Camera centering projects target world location to viewport center [2m(0.1ms)[0m
+  [32m✔ PASS[0m TC-M1-05: Camera exponential lerp smoothing and boundary clamping [0, 3200] [2m(0.1ms)[0m
+  [32m✔ PASS[0m TC-M1-06: Deterministic GameLoop fixed-timestep updates and spiral-of-death cap [2m(0.2ms)[0m
+  [32m✔ PASS[0m TC-M1-07: Dynamic Y-Depth sorting with stable ID tie-breaking [2m(12.3ms)[0m
+  [32m✔ PASS[0m TC-M1-08: InputDispatcher smart right-click and boundary clamping [2m(0.4ms)[0m
+  [32m✔ PASS[0m TC-M1-09: Q/W/E/R targeting state machine, cast confirm, cancel and Stop [2m(0.7ms)[0m
+  [32m✔ PASS[0m TC-M1-10: Minimap coordinate conversion round-trip and scaling [2m(0.2ms)[0m
+  [32m✔ PASS[0m TC-M1-11: Match timer formatting helper [2m(0.0ms)[0m
+  [32m✔ PASS[0m TC-M1-12: Headless 7-pass rendering execution on mock Canvas 2D context [2m(11.1ms)[0m
+  [32m✔ PASS[0m TC-ROB-01: Camera update with non-finite target coordinates prevents NaN poisoning [2m(0.3ms)[0m
+  [32m✔ PASS[0m TC-ROB-02: GameLoop step() ignores non-finite and non-positive deltaMs [2m(0.2ms)[0m
+  [32m✔ PASS[0m TC-ROB-03: InputManager pickEntity prioritizes Enemy Tower over Neutral Creep [2m(0.1ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\minion.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: Minion Wave Timers, Composition & Leash AI[0m
+  [32m✔ PASS[0m TC-MIN-01: Waves 1 and 2 spawn standard 3 Melee + 3 Ranged minions [2m(6.5ms)[0m
+  [32m✔ PASS[0m TC-MIN-02: Every 3rd wave (Cannon wave) includes 1 Siege Minion (7 units) [2m(6.1ms)[0m
+  [32m✔ PASS[0m TC-MIN-03: Lane waypoint array contains ordered progression WP0..WP6 [2m(7.8ms)[0m
+  [32m✔ PASS[0m TC-MIN-04: AI leash disengages when pulled >400 units away from waypoint [2m(7.3ms)[0m
+  [32m✔ PASS[0m TC-MIN-05: Hero last-hit grants full gold bounty for Melee, Ranged, and Cannon [2m(6.8ms)[0m
+  [32m✔ PASS[0m TC-MIN-06: Non-hero last-hit (tower/creep) grants 0 gold to players [2m(4.4ms)[0m
+  [32m✔ PASS[0m TC-MIN-07: Proximity assist awards 30% of bounty to nearby allied heroes [2m(7.0ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\movement_cc.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Runtime crowd control and effective movement[0m
+  [32m✔ PASS[0m stun and root suspend a queued hero move, then permit it to resume [2m(0.6ms)[0m
+  [32m✔ PASS[0m slow scales actual movement including a temporary bonus without mutating speed [2m(0.4ms)[0m
+  [32m✔ PASS[0m silence does not stop walking and death clears movement effects [2m(0.2ms)[0m
+  [32m✔ PASS[0m idle expiry clears stale slow strength and a full slow cannot snap to a nearby target [2m(0.1ms)[0m
+  [32m✔ PASS[0m each minion type stops under stun and resumes its lane with slow expiring [2m(0.7ms)[0m
+  [32m✔ PASS[0m stun blocks minion attacks, while root allows an in-range attack [2m(0.2ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\multiplayer.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: Multiplayer Architecture & Real-Time Sync[0m
+  [32m✔ PASS[0m TC-MP-01: Handshake exchanges JOIN_REQUEST, JOIN_ACCEPT, assigns client ID and shares roster [2m(36.1ms)[0m
+  [32m✔ PASS[0m TC-MP-02: Live hero selection and match start synchronization [2m(62.4ms)[0m
+  [32m✔ PASS[0m TC-MP-03: GameSimulation spawns both local hero and remote HeroEntity from roster [2m(2.5ms)[0m
+  [32m✔ PASS[0m TC-MP-04: 20Hz HERO_UPDATE state sync interpolates position and updates status [2m(1.6ms)[0m
+  [32m✔ PASS[0m TC-MP-05: CAST_SKILL and /boost chat commands synchronize effects between players [2m(0.9ms)[0m
+  [32m✔ PASS[0m TC-MP-06: Late-joining client immediately receives START_MATCH if host already launched match [2m(25.5ms)[0m
+  [32m✔ PASS[0m TC-MP-07: Remote hero position is immune to autonomous local pursuit during combat update [2m(0.6ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\onboarding.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Guide preferences[0m
+  [32m✔ PASS[0m Uses system motion preference until the player makes an explicit choice [2m(0.0ms)[0m
+  [32m✔ PASS[0m Motion setting removes shake without changing simulation or hiding indicators [2m(0.2ms)[0m
+  [32m✔ PASS[0m Skipping the guide persists completion and it remains manually reopenable [2m(0.2ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\player_attack.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: Player Hero Basic Attack & Combat Engine[0m
+  [32m✔ PASS[0m TC-ATK-01: Melee hero basic attack damages enemy in range and incurs attack cooldown [2m(1.7ms)[0m
+  [32m✔ PASS[0m TC-ATK-02: Hero pursues moving enemy when out of range until effective range is reached [2m(2.4ms)[0m
+  [32m✔ PASS[0m TC-ATK-03: Slaying enemy minion with basic attack grants full gold bounty and clears target [2m(0.9ms)[0m
+  [32m✔ PASS[0m TC-ATK-04: Ranged hero (Ranger) basic attack spawns projectile that travels and hits target [2m(2.1ms)[0m
+  [32m✔ PASS[0m TC-ATK-05: Lifesteal on basic attack restores hero health [2m(0.7ms)[0m
+  [32m✔ PASS[0m TC-ATK-06: Idle hero automatically acquires and attacks nearby enemy within range [2m(0.5ms)[0m
+  [32m✔ PASS[0m TC-ATK-07: STOP command (S/H) halts hero and prevents idle auto-attack [2m(0.3ms)[0m
+  [32m✔ PASS[0m TC-ATK-08: Attack-move (attackMove: true) moves and engages enemies along the path [2m(0.6ms)[0m
+  [32m✔ PASS[0m TC-ATK-09: /plan and /boost commands execute cleanly without error [2m(0.6ms)[0m
+  [32m✔ PASS[0m TC-ATK-10: 2.5D screen/sprite picking detects click on elevated body of minion [2m(0.2ms)[0m
+  [32m✔ PASS[0m TC-ATK-11: Left-click (button 0) on hostile entity dispatches ATTACK_TARGET command [2m(0.3ms)[0m
+  [32m✔ PASS[0m TC-ATK-12: Silenced hero or unit can still perform basic attacks [2m(0.1ms)[0m
+  [32m✔ PASS[0m TC-ATK-13: Taunted entity can still move to engage the taunter [2m(0.2ms)[0m
+  [32m✔ PASS[0m TC-ATK-14: Basic attack hit does not apply double damage [2m(0.2ms)[0m
+  [32m✔ PASS[0m TC-ATK-15: Basic attack damage absorbs from barrier before reducing health [2m(0.2ms)[0m
+  [32m✔ PASS[0m TC-ATK-16: Hero spells successfully damage neutral monsters and creeps [2m(0.2ms)[0m
+  [32m✔ PASS[0m TC-ATK-17: findNearestEnemy ignores invulnerable structures and prioritizes units [2m(0.2ms)[0m
+  [32m✔ PASS[0m TC-ATK-18: Ranged hero stops at attack range boundary and attacks from afar without entering melee [2m(2.2ms)[0m
+  [32m✔ PASS[0m TC-ATK-19: Melee hero navigates all the way to target position and attacks in melee range [2m(3.0ms)[0m
+  [32m✔ PASS[0m TC-ATK-20: Hero continuously pursues target that moves away [2m(1.1ms)[0m
+  [32m✔ PASS[0m TC-ATK-21: Right-drag started on hostile target protects attack command from MOVE_TO override [2m(0.6ms)[0m
+  [32m✔ PASS[0m TC-ATK-22: Slaying first monster in a camp automatically chains attack to next nearby monster [2m(0.9ms)[0m
+  [32m✔ PASS[0m TC-ATK-23: Melee hero advances to and strikes second monster after first dies [2m(2.6ms)[0m
+  [32m✔ PASS[0m TC-ATK-24: STOP command halts hero and cancels combat chaining to other monsters [2m(0.5ms)[0m
+  [32m✔ PASS[0m TC-ATK-25: Basic attack cooldown recovers at exactly 1.0s per second during sim.update [2m(0.5ms)[0m
+  [32m✔ PASS[0m TC-ATK-26: Hero in attack-move resumes movement to destination after slaying intermediate enemy and clears on arrival [2m(1.6ms)[0m
+  [32m✔ PASS[0m TC-ATK-27: Crowd control (stun/root) halts hero pursuit of enemy target [2m(2.6ms)[0m
+  [32m✔ PASS[0m TC-ATK-28: Hero facing orientation updates toward skill target point on ability cast [2m(1.1ms)[0m
+  [32m✔ PASS[0m TC-INP-08: A key in InputDispatcher dispatches ATTACK_TARGET for ground attack-move and enemy target [2m(0.2ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\presentation.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Snapshot presentation interpolation[0m
+  [32m✔ PASS[0m Smooths drawing between snapshots without changing authoritative position [2m(0.1ms)[0m
+  [32m✔ PASS[0m Does not interpolate a teleport, static structure or local simulation entity [2m(0.1ms)[0m
+  [32m✔ PASS[0m An expired action on a cached view does not hide the next cast [2m(0.1ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\protocol.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: WebRTC Protocol, Room Codes & Solo Mode Fallback[0m
+  [32m✔ PASS[0m TC-NET-01: Generates 6-character Base32 room codes matching Crockford alphabet [2m(3.5ms)[0m
+  [32m✔ PASS[0m TC-NET-02: Sanitizes room code input converting to uppercase and trimming whitespace [2m(3.9ms)[0m
+  [32m✔ PASS[0m TC-NET-03: Handshake admits up to 3 players assigning sequential IDs [2m(2.3ms)[0m
+  [32m✔ PASS[0m TC-NET-04: Rejects 4th player join request when lobby reaches 3 players [2m(1.9ms)[0m
+  [32m✔ PASS[0m TC-NET-05: Disconnect detection triggers when peer heartbeat exceeds 6000ms [2m(2.7ms)[0m
+  [32m✔ PASS[0m TC-NET-06: Solo Mode fallback executes commands locally with zero latency [2m(2.5ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\recall.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: 5.0-Second Recall Channeling & Interruption Logic[0m
+  [32m✔ PASS[0m TC-REC-01: Initiates 5000ms channeling state when off cooldown [2m(1.8ms)[0m
+  [32m✔ PASS[0m TC-REC-02: Completes after 5000ms uninterrupted and teleports hero to fountain [2m(1.9ms)[0m
+  [32m✔ PASS[0m TC-REC-03: Taking damage cancels Recall and imposes 1.0s cooldown penalty [2m(1.5ms)[0m
+  [32m✔ PASS[0m TC-REC-04: Movement order cancels Recall channel [2m(1.5ms)[0m
+  [32m✔ PASS[0m TC-REC-05: Spell cast cancels Recall channel [2m(1.4ms)[0m
+  [32m✔ PASS[0m TC-REC-06: Crowd control (Stun/Taunt/Silence) breaks Recall channel [2m(2.3ms)[0m
+  [32m✔ PASS[0m TC-REC-07: Receiving healing or fountain regen does NOT interrupt Recall [2m(2.4ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\respawn.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: Hero Death & Resurrection System (R1)[0m
+  [32m✔ PASS[0m TC-HERO-08: Level scaling formula calculates 4s + 1s * level [2m(2.4ms)[0m
+  [32m✔ PASS[0m TC-HERO-09: Lethal damage transitions hero into death state with initialized respawn timer [2m(4.3ms)[0m
+  [32m✔ PASS[0m TC-HERO-10: Actions and commands are rejected while dead (moveTo, setAttackTarget, canMove, canAttack, canCast) [2m(4.2ms)[0m
+  [32m✔ PASS[0m TC-HERO-11: Dead hero entities are retained in simulation array during cleanup [2m(7.7ms)[0m
+  [32m✔ PASS[0m TC-HERO-12: Respawn countdown decrements each tick and resurrects hero at Allied Fountain (400, 400) with cleansed status [2m(4.5ms)[0m
+  [32m✔ PASS[0m TC-HERO-13: Ability cooldowns continue ticking while dead [2m(5.1ms)[0m
+  [32m✔ PASS[0m TC-HUD-01: HUDController update reveals death overlay and formats countdown [2m(4.5ms)[0m
+  [32m✔ PASS[0m TC-INPUT-DEAD-01: InputManager suppresses movement, attacks and skills when hero is dead [2m(7.6ms)[0m
+  [32m✔ PASS[0m TC-SIM-DEAD-01: GameSimulation drops commands and emits death and resurrection VFX [2m(12.1ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\rotation.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: Directional Rotation & Camera Perspective (R5)[0m
+  [32m✔ PASS[0m TC-ROT-01: Smooth facing angular lerp towards move destination with shortest-arc wrapping [2m(4.2ms)[0m
+  [32m✔ PASS[0m TC-ROT-02: Hero facing updates on attack targeting and ability aiming [2m(9.5ms)[0m
+  [32m✔ PASS[0m TC-ROT-03: Camera perspective rotation cycling across 90-degree increments [2m(14.3ms)[0m
+  [32m✔ PASS[0m TC-ROT-04: Rotated dimetric coordinate projection and 1:1 round-trip identity across all angles [2m(2.7ms)[0m
+  [32m✔ PASS[0m TC-ROT-05: Rotated painters algorithm depth sorting along camera view axis [2m(2.6ms)[0m
+  [32m✔ PASS[0m TC-ROT-06: Hero visual facing notch projects correctly under camera rotation [2m(6.9ms)[0m
+  [32m✔ PASS[0m TC-ROT-07: Key C and V dispatch CYCLE_PERSPECTIVE in InputDispatcher and InputManager [2m(3.3ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\shop.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: Base Shop Boundary & Fountain Regeneration[0m
+  [32m✔ PASS[0m TC-SHP-01: Permits shop access within 250-unit fountain radius [2m(1.4ms)[0m
+  [32m✔ PASS[0m TC-SHP-02: Denies shop access outside 250-unit fountain radius [2m(1.4ms)[0m
+  [32m✔ PASS[0m TC-SHP-03: Precise boundary validation at exactly 250 units [2m(1.3ms)[0m
+  [32m✔ PASS[0m TC-SHP-04: Rapid fountain regeneration heals +10% HP/s and +10% Mana/s [2m(1.1ms)[0m
+  [32m✔ PASS[0m TC-SHP-05: Fountain regeneration clamps cleanly at Max HP and Max Mana [2m(1.1ms)[0m
+  [32m✔ PASS[0m TC-SHP-06: Fountain regeneration does not apply when hero is outside fountain [2m(1.1ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\sound_engine.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: Procedural Web Audio SFX Engine & Audio Controls (M4 / R4)[0m
+  [32m✔ PASS[0m TC-SND-01: Headless initialization and safe fallback when Web Audio is unavailable [2m(2.0ms)[0m
+  [32m✔ PASS[0m TC-SND-02: Volume control with strict [0, 1] boundary clamping and mute toggling [2m(2.9ms)[0m
+  [32m✔ PASS[0m TC-SND-03: Headless safety across all 18 procedural recipes (safe null return, 0 exceptions) [2m(3.8ms)[0m
+  [32m✔ PASS[0m TC-SND-04: Mock Web Audio API Graph — Master & SFX gain chain and White Noise Buffer [2m(4.7ms)[0m
+  [32m✔ PASS[0m TC-SND-05: Mock Synthesis — UI Click, Hero Attacks, and Combat Hits (Normal & Crit) [2m(4.3ms)[0m
+  [32m✔ PASS[0m TC-SND-06: Mock Synthesis — Q, W, E, R Skills, Level Up Arpeggio and Shop Buy/Sell [2m(4.8ms)[0m
+  [32m✔ PASS[0m TC-SND-07: Mock Synthesis — Recall Channel Lifecycle, Boss Alert, Victory & Defeat [2m(6.1ms)[0m
+  [32m✔ PASS[0m TC-SND-08: Mute and Volume interaction on Mock Web Audio API nodes [2m(3.8ms)[0m
+  [32m✔ PASS[0m TC-SND-09: Autoplay unlock on first user gesture (pointerdown, keydown, touchstart) [2m(8.0ms)[0m
+  [32m✔ PASS[0m TC-SND-10: HUDController Audio Controls & Hotkey M integration [2m(6.4ms)[0m
+  [32m✔ PASS[0m TC-SND-11: Adversarial Stress — 1,000+ Rapid Audio Calls, Null/Extreme Inputs and Memory Stability [2m(6.5ms)[0m
+  [32m✔ PASS[0m TC-SND-12: Defensive Fault Tolerance — Broken AudioContext and LocalStorage Sandbox Exceptions [2m(3.4ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\sound_engine_adversarial.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: Adversarial Stress — SoundEngine Procedural SFX & Web Audio API (M4)[0m
+  [32m✔ PASS[0m TC-ADV-SND-01: Extreme burst spam (1,000+ rapid calls in 1 frame) across all sound recipes [2m(9.1ms)[0m
+  [32m✔ PASS[0m TC-ADV-SND-02: Rapid concurrent toggleMute during sustained sound channeling (recall & victory) [2m(9.1ms)[0m
+  [32m✔ PASS[0m TC-ADV-SND-03: Extreme volume boundary clamping and invalid parameter fuzzing on setVolume [2m(4.2ms)[0m
+  [32m✔ PASS[0m TC-ADV-SND-04: Web Audio node lifecycle audit — 100% stop scheduled & zero orphaned node retention [2m(5.7ms)[0m
+  [32m✔ PASS[0m TC-ADV-SND-05: Headless & DOM-free execution resilience in pure Node.js [2m(3.5ms)[0m
+  [32m✔ PASS[0m TC-ADV-SND-06: LocalStorage sandbox error resilience (SecurityError & QuotaExceededError) [2m(3.3ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\sprite_animation.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Chibi walk animation[0m
+  [32m✔ PASS[0m ships a complete transparent 2x2 atlas for all fourteen characters [2m(5.9ms)[0m
+  [32m✔ PASS[0m advances four frames, loops seamlessly and holds a neutral pose at rest [2m(0.3ms)[0m
+  [32m✔ PASS[0m crops one frame, keeps feet anchored and preserves facing [2m(3.2ms)[0m
+  [32m✔ PASS[0m retains static rendering for unregistered images and procedural fallback when absent [2m(0.2ms)[0m
+  [32m✔ PASS[0m keeps a visible character when its walk atlas fails to load [2m(3.7ms)[0m
+  [32m✔ PASS[0m only marks bosses as walking when their position actually advances [2m(0.8ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\tactile_ux.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: Tactile UX, Movement Wave & Reticle, Adaptive Cursors & Rich Tooltips (M2 / R2)[0m
+  [32m✔ PASS[0m TC-UX-01: emitMoveIndicator generates concentric 2:1 isometric waves and converging reticle markers [2m(3.2ms)[0m
+  [32m✔ PASS[0m TC-UX-02: InputManager adaptive cursor state transitions [2m(3.6ms)[0m
+  [32m✔ PASS[0m TC-UX-03: triggerAbility dispatches onSkillError callback for cooldown, mana and CC [2m(3.1ms)[0m
+  [32m✔ PASS[0m TC-UX-04: GameSimulation skill error triggers HUD vibration and floating combat text [2m(8.3ms)[0m
+  [32m✔ PASS[0m TC-UX-05: HUDController flashAbilityError applies and clears .cast-error-shake class [2m(397.9ms)[0m
+  [32m✔ PASS[0m TC-UX-06: TooltipController real-time AD and AP scaling for all 5 hero archetypes [2m(5.2ms)[0m
+  [32m✔ PASS[0m TC-UX-07: TooltipController item formatting, tier labels and 70% refund calculation [2m(6.0ms)[0m
+  [32m✔ PASS[0m TC-UX-08: TooltipController DOM rendering, boundary clamping and headless safety [2m(5.1ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\tactile_ux_adversarial.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: Adversarial Stress — Tactile UX, Particle Spam, Cursor State Machine & Tooltip Edge Cases (M2)[0m
+  [32m✔ PASS[0m TC-ADV-UX-01: TooltipController with extreme, negative, malformed and missing values [2m(5.6ms)[0m
+  [32m✔ PASS[0m TC-ADV-UX-02: emitMoveIndicator under continuous spam (100 to 1000 clicks) and memory leak safety [2m(9.5ms)[0m
+  [32m✔ PASS[0m TC-ADV-UX-03: Cursor state machine rapid transitions, null entities and dead heroes [2m(5.1ms)[0m
+  [32m✔ PASS[0m TC-ADV-UX-04: onSkillError continuous flood under cooldown, mana deprivation and CC [2m(16.7ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\touch_buttons.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Touch buttons support a second finger without duplicate actions[0m
+  [32m✔ PASS[0m A non-primary touch activates exactly once even when the browser follows with click [2m(0.7ms)[0m
+  [32m✔ PASS[0m A canceled touch does not activate; keyboard activation still works [2m(0.3ms)[0m
+  [32m✔ PASS[0m Consecutive deliberate taps each activate once [2m(0.2ms)[0m
+  [32m✔ PASS[0m Dragging a touch outside the button cancels its activation [2m(0.2ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\touch_controls.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Touch controls follow combat commands[0m
+  [32m✔ PASS[0m Attack without a hostile never spends Q [2m(0.3ms)[0m
+  [32m✔ PASS[0m Attack chooses the nearest living hostile, never an ally [2m(0.1ms)[0m
+  [32m✔ PASS[0m A narrow desktop window is not blocked by an orientation warning [2m(0.2ms)[0m
+  [32m✔ PASS[0m A dismissed portrait recommendation stays dismissed [2m(0.1ms)[0m
+  [32m✔ PASS[0m The browser tap sequence sends one attack command [2m(0.3ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\tower.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: Defensive Tower Aggro Rules & Heat Scaling[0m
+  [32m✔ PASS[0m Final allied nexus unlocks after both towers fall, even with the boss alive [2m(0.6ms)[0m
+  [32m✔ PASS[0m Final enemy nexus unlocks after both towers fall, even with the boss alive [2m(0.1ms)[0m
+  [32m✔ PASS[0m TC-TOW-01: Validates 400-unit attack radius boundary [2m(3.8ms)[0m
+  [32m✔ PASS[0m TC-TOW-02: Call for Help switches tower aggro to enemy hero attacking ally [2m(3.8ms)[0m
+  [32m✔ PASS[0m TC-TOW-03: Prefers closest minion over closest hero when no aggro call occurs [2m(5.5ms)[0m
+  [32m✔ PASS[0m TC-TOW-04: Consecutive hit heat scaling adds +25% damage per shot up to +100% [2m(3.9ms)[0m
+  [32m✔ PASS[0m TC-TOW-05: Heat resets to baseline immediately when target switches [2m(3.5ms)[0m
+  [32m✔ PASS[0m TC-TOW-06: Structure invulnerability hierarchy protects inner towers [2m(4.7ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\vfx_adversarial.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: Adversarial Stress — VFX, Screen Shake, Particle Spam & Projectile Edge Cases (M3)[0m
+  [32m✔ PASS[0m TC-ADV-VFX-01: Camera Trauma Extremes — negative, overflow, dt=0/negative/NaN/huge, and setShakeEnabled toggling [2m(2.8ms)[0m
+  [32m✔ PASS[0m TC-ADV-VFX-02: Particle Buffer Stress & Eviction — spamming 1000+ particles across confetti, trail, cc_ring, and hero hits [2m(29.1ms)[0m
+  [32m✔ PASS[0m TC-ADV-VFX-03: Projectile Edge Cases — null targets, NaN/invalid coordinates, zero distance, and class trails [2m(7.4ms)[0m
+  [32m✔ PASS[0m TC-ADV-VFX-04: Headless Safety & Canvas Robustness — pure Node.js rendering without native Canvas/DOM [2m(12.7ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\vfx_shake.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: Visual FX (VFX), Screen Shake Dynamism & Thematic Hero Particles (M3 / R3)[0m
+  [32m✔ PASS[0m TC-VFX-01: Camera Trauma Model — addTrauma, clamping, decay, and quadratic shake calculation [2m(2.7ms)[0m
+  [32m✔ PASS[0m TC-VFX-02: Camera Shake Displacements respect setShakeEnabled(false) [2m(3.8ms)[0m
+  [32m✔ PASS[0m TC-VFX-03: Renderer applies screen shake transform to Passes 1-6 and preserves static HUD in Pass 7 [2m(6.8ms)[0m
+  [32m✔ PASS[0m TC-VFX-04: Confetti Particles — Angular rotation, sinusoidal oscillation, and capacity eviction [2m(5.0ms)[0m
+  [32m✔ PASS[0m TC-VFX-05: Trail Particles — Short life, drag deceleration, radius decay, zero gravity and projectile emission [2m(5.4ms)[0m
+  [32m✔ PASS[0m TC-VFX-06: CC Ring Particles — Expanding ground ring and suspended orbiting orbs [2m(2.5ms)[0m
+  [32m✔ PASS[0m TC-VFX-07: Hero Attack Hit Presets — Thematic verification for all 5 hero archetypes and critical strikes [2m(3.6ms)[0m
+  [32m✔ PASS[0m TC-VFX-08: Combat Trauma Triggers — Critical hits (0.18), hero death (0.35), towers (0.50), bosses (0.65) & Level Up celebration [2m(10.3ms)[0m
+  [32m✔ PASS[0m TC-VFX-09: Headless Safety & Defensive Edge Cases [2m(10.7ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\world_sync.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Authoritative world snapshots[0m
+  [32m✔ PASS[0m round-trips the playable world while retaining the local hero and real prototypes [2m(5.9ms)[0m
+  [32m✔ PASS[0m ignores stale, duplicate, foreign and malformed snapshots atomically [2m(3.5ms)[0m
+  [32m✔ PASS[0m reconciles entity removals, tower references and a terminal result [2m(1.7ms)[0m
+[1m[36m● Authoritative transport[0m
+  [32m✔ PASS[0m binds hero selection to an accepted guest connection and freezes selection after start [2m(0.3ms)[0m
+  [32m✔ PASS[0m rejects incompatible joins before altering roster and preserves late-entry state [2m(1.1ms)[0m
+  [32m✔ PASS[0m executes commands using connection identity and ignores duplicates and forged state [2m(0.5ms)[0m
+  [32m✔ PASS[0m applies host snapshots and queues commands until the initial world is available [2m(3.0ms)[0m
+  [32m✔ PASS[0m surfaces host loss and clears session resources without retaining old game callbacks [2m(0.3ms)[0m
+[PeerNetwork] Sala criada com código: ROOMB (PeerID: moba-duplinha-ROOMB)
+  [32m✔ PASS[0m cancels room creation and ignores events from a superseded Peer instance [2m(0.8ms)[0m
+[1m[36m● WebRTC transport loss independent of PeerJS close[0m
+[PeerNetwork] Novo canal de dados aberto (2/3)
+  [32m✔ PASS[0m drops a failed guest exactly once even when the data channel still reports open [2m(1.1ms)[0m
+  [32m✔ PASS[0m gives disconnected RTC six seconds to recover and cleans timers on recovery and shutdown [2m(0.3ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\unit\zoom.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 1 Unit: Dynamic Camera Zoom & Unprojection Accuracy (R4)[0m
+  [32m✔ PASS[0m Starts closer to the hero while preserving explicit zoom preferences [2m(0.3ms)[0m
+  [32m✔ PASS[0m TC-ZOOM-01: Default zoom resolution reads camera.zoom when zoom argument is omitted or null [2m(2.0ms)[0m
+  [32m✔ PASS[0m TC-ZOOM-02: Camera zoom clamping strictly enforces [0.6, 1.6] boundaries [2m(2.1ms)[0m
+  [32m✔ PASS[0m TC-ZOOM-03: Camera smoothly interpolates zoom towards targetZoom via exponential decay lerp [2m(2.7ms)[0m
+  [32m✔ PASS[0m TC-ZOOM-04: Non-passive wheel event handling invokes preventDefault and adjusts camera zoom [2m(5.0ms)[0m
+  [32m✔ PASS[0m TC-ZOOM-05: InputDispatcher dynamically resolves effectiveZoom from camera [2m(2.2ms)[0m
+  [32m✔ PASS[0m TC-ZOOM-06: 1,000-Point round-trip unprojection accuracy across 0.6x, 1.0x, 1.6x zoom levels [2m(3.4ms)[0m
+  [32m✔ PASS[0m TC-ZOOM-07: Entity picking precision across different zoom levels [2m(7.9ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\e2e\boundary_cases.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 2 E2E: Boundary & Corner Cases[0m
+  [32m✔ PASS[0m TC-BND-01: Out-of-bounds clicks clamped to canvas viewport and map boundaries [2m(2.4ms)[0m
+  [32m✔ PASS[0m TC-BND-02: Simultaneous actions (Right-click while in targeting mode) [2m(3.4ms)[0m
+  [32m✔ PASS[0m TC-BND-03: 0 gold purchase attempt is cleanly rejected without side effects [2m(2.9ms)[0m
+  [32m✔ PASS[0m TC-BND-04: Purchasing with exactly 6 full slots is rejected without gold deduction [2m(2.9ms)[0m
+  [32m✔ PASS[0m TC-BND-05: 40% CDR clamp when equipping multiple CDR items (total 55%) [2m(1.3ms)[0m
+  [32m✔ PASS[0m TC-BND-06: Recall damage interruption at exactly 4.99 seconds (4990ms) [2m(1.4ms)[0m
+  [32m✔ PASS[0m TC-BND-07: Disconnect timeout boundary (5999ms connected vs 6001ms timed out) [2m(1.5ms)[0m
+  [32m✔ PASS[0m TC-BND-08: Selling +HP item when hero has 1 HP does not cause death [2m(1.5ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\e2e\combinatorial.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 3 E2E: Combinatorial & Cross-Feature Interactions[0m
+  [32m✔ PASS[0m TC-CMB-INTER-01: Knight Taunt under Allied Tower triggers Call for Help and heat ramp [2m(6.2ms)[0m
+  [32m✔ PASS[0m TC-CMB-INTER-02: Sorceress Frost Nova (Root) into Cataclysm (Stun + DoT) with MR mitigation [2m(5.7ms)[0m
+  [32m✔ PASS[0m TC-CMB-INTER-03: Ranger Kite: cleanses Slow with Quick Dash and pierces multiple units [2m(3.2ms)[0m
+  [32m✔ PASS[0m TC-CMB-INTER-04: Assassin Backstab true damage vs high-armor target + Death Mark detonation [2m(3.3ms)[0m
+  [32m✔ PASS[0m TC-CMB-INTER-05: Cleric Sanctuary CC immunity denies Knight Stun and Taunt [2m(1.5ms)[0m
+  [32m✔ PASS[0m TC-CMB-INTER-06: Item AP multiplier (Rabadon) synergizes with base stats and ability scaling [2m(3.6ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\e2e\cooperative_match.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Cooperative match through real simulation commands[0m
+  [32m✔ PASS[0m keeps the selected unit identity when targets overlap and rejects guest training commands [2m(4.5ms)[0m
+  [32m✔ PASS[0m shares purchases, ranks, movement and skill kills across three independent simulations [2m(30.8ms)[0m
+  [32m✔ PASS[0m keeps clients from advancing AI/economy, then converges on terminal state and late-entry state [2m(47.4ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\e2e\m5_final_validation.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 4 E2E: Marco 5 — Final Integration, 60 FPS Stability & System Invariants[0m
+  [32m✔ PASS[0m TC-M5-01: 1,000-Frame GameSimulation Benchmark (60 FPS Stability < 16.6ms/frame) [2m(62.4ms)[0m
+  [32m✔ PASS[0m TC-M5-02: ParticleSystem Memory Containment & FIFO Eviction Invariants [2m(6.0ms)[0m
+  [32m✔ PASS[0m TC-M5-03: SoundEngine Zero-Leak Architecture & Web Audio Lifecycle Invariants [2m(6.3ms)[0m
+  [32m✔ PASS[0m TC-M5-04: Headless Safety & Pure Node.js Environmental Robustness [2m(18.8ms)[0m
+  [32m✔ PASS[0m TC-M5-05: Web Audio Autoplay Policy Compliance & Gesture Unlock [2m(2.9ms)[0m
+  [32m✔ PASS[0m TC-M5-06: Responsive CSS Multi-Resolution Breakpoints & Layout Contracts [2m(1.9ms)[0m
+
+[2m──────────────────────────────────────────────────────[0m
+[1mFile: tests\e2e\real_world_match.test.js[0m
+[2m──────────────────────────────────────────────────────[0m
+[1m[36m● Tier 4 E2E: Real-World Match End-to-End Simulation[0m
+  [32m✔ PASS[0m TC-E2E-MATCH-01: Full match walkthrough from Level 1 spawn to Nexus victory [2m(12.2ms)[0m
+
+[1m======================================================[0m
+[1m                   TEST SUMMARY                       [0m
+[1m======================================================[0m
+Test Files:   53 passed (53 total)
+Total Tests:  358
+Passed:       [32m358[0m
+Failed:       [0m0[0m
+Duration:     5.18s
+[1m======================================================[0m
+
+[1m[32m✔ ALL TEST SUITES PASSED CLEANLY![0m

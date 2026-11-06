@@ -84,6 +84,7 @@ window.addEventListener('DOMContentLoaded', () => {
       // Mobile Virtual Joystick & Touch Controls
       const joystick = new VirtualJoystick(gameSim);
       gameSim.virtualJoystick = joystick;
+      gameSim.hud.setupSettings(gameSim.helpUI, joystick);
 
       // Resize camera and renderer for current canvas
       resizeCanvas();

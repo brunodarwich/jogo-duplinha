@@ -63,17 +63,17 @@ export class ShopUI {
     modal.className = 'shop-modal hidden';
     modal.innerHTML = `
       <div class="shop-backdrop"></div>
-      <div class="shop-window">
+      <div class="shop-window" role="dialog" aria-modal="true" aria-labelledby="shop-title">
         <header class="shop-header">
           <div class="shop-title">
             <span class="shop-icon">🛒</span>
-            <h2>Loja de Itens da Base</h2>
+            <h2 id="shop-title">Loja de Itens da Base</h2>
           </div>
           <div class="shop-player-gold">
             <span class="coin-icon">💰</span>
             <span id="shop-gold-val">1200</span>
           </div>
-          <button id="shop-close-btn" class="shop-close-btn" title="Fechar (P ou ESC)">✖</button>
+          <button id="shop-close-btn" class="shop-close-btn" aria-label="Fechar loja" title="Fechar (P ou ESC)">✖</button>
         </header>
 
         <div class="shop-body">
@@ -123,6 +123,12 @@ export class ShopUI {
       if (e.key === 'Escape' && this.isOpen) {
         this.close();
       }
+      if (e.key !== 'Tab' || !this.isOpen) return;
+      const buttons = [...modal.querySelectorAll('button:not(:disabled)')];
+      const first = buttons[0], last = buttons[buttons.length - 1];
+      if (!modal.contains(document.activeElement)) { e.preventDefault(); first?.focus(); return; }
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
+      if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
     });
 
     // Bind inventory click on bottom HUD to sell or view
@@ -168,18 +174,26 @@ export class ShopUI {
   }
 
   open() {
+    this.gameSim?.virtualJoystick?.cancelMovement();
+    if (!this.isOpen && typeof document !== 'undefined') this.returnFocus = document.activeElement;
     this.isOpen = true;
     if (this.container) {
       this.container.classList.remove('hidden');
     }
     this.updateGoldDisplay();
     this.renderItemsGrid();
+    this.container?.querySelector('#shop-close-btn')?.focus();
+    if (typeof document !== 'undefined') document.querySelector('.hud-info-panel')?.removeAttribute('open');
   }
 
   close() {
     this.isOpen = false;
     if (this.container) {
       this.container.classList.add('hidden');
+    }
+    if (typeof document !== 'undefined') {
+      const target = this.returnFocus?.getClientRects?.().length ? this.returnFocus : document.getElementById('btn-shop-toggle');
+      target?.focus?.();
     }
   }
 
@@ -229,7 +243,8 @@ export class ShopUI {
     const currentGold = hero ? (hero.gold || 0) : 0;
     const items = this.filterItems();
     for (const item of items) {
-      const card = document.createElement('div');
+      const card = document.createElement('button');
+      card.type = 'button';
       const canAfford = currentGold >= item.cost;
       card.className = `shop-item-card tier-${item.tier || 1}${canAfford ? ' can-afford' : ''}`;
 
@@ -263,6 +278,8 @@ export class ShopUI {
     const hero = this.gameSim.playerHero;
     const canAfford = (hero.gold || 0) >= item.cost;
     const insideBase = this.isOpenShopZone();
+    // Avoid replacing the focused buy button again on the next simulation tick.
+    this.lastSelectionState = `${item.id}:${canAfford}:${insideBase}`;
 
     details.innerHTML = `
       <div class="details-content">

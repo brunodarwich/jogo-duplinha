@@ -1,3 +1,4 @@
+import { enableTouchActivation } from './touch_button.js';
 /**
  * HUD & Minimap Controller.
  * Manages player stats, health/mana bars, Q/W/E/R/B ability radial cooldown sweeps,
@@ -37,6 +38,17 @@ export function getObjectiveStatus(state = {}) {
   if (nextWave === 5) detail += ' Colosso na próxima onda.';
   if (nextWave === 10) detail += ' Behemoth na próxima onda.';
   return { objective, detail, wave: 'Próxima onda em ' + formatMatchTime(Math.ceil(Math.max(0, seconds))) };
+}
+
+/** Presentation-only state for the same active boss selected by the previous canvas HUD. */
+export function getBossStatus(bosses = []) {
+  const boss = bosses.find(b => b && (typeof b.isAlive === 'function' ? b.isAlive() : b.hp > 0));
+  if (!boss) return null;
+  const maxHp = Math.max(1, boss.maxHp || 1);
+  const hp = Math.max(0, Math.min(maxHp, boss.hp || 0));
+  const names = { 'Nexus Guardian': 'Guardião do Nexus', 'Stone Colossus': 'Colosso de Pedra', 'Abyssal Behemoth': 'Behemoth Abissal' };
+  return { label: `${names[boss.name] || boss.name || 'Guardião do Nexus'} · Fase ${boss.phase || 1}`,
+    hp: `${Math.ceil(hp)} / ${maxHp}`, ratio: hp / maxHp, shielded: !!boss.shieldActive };
 }
 
 /**
@@ -277,6 +289,12 @@ export class HUDController {
       // Top HUD & Audio
       matchTimer: document.getElementById('match-timer'),
       objective: document.getElementById('hud-objective'),
+      objectiveExpanded: document.getElementById('hud-objective-expanded'),
+      boss: document.getElementById('boss-hud'),
+      bossName: document.getElementById('boss-name'),
+      bossHp: document.getElementById('boss-hp-text'),
+      bossFill: document.getElementById('boss-hp-fill'),
+      bossShield: document.getElementById('boss-shield'),
       objectiveDetail: document.getElementById('hud-objective-detail'),
       nextWave: document.getElementById('hud-next-wave'),
       networkStatus: document.getElementById('hud-network-status'),
@@ -297,6 +315,7 @@ export class HUDController {
       statMr: document.getElementById('stat-mr'),
       statSpeed: document.getElementById('stat-speed'),
       statGold: document.getElementById('stat-gold'),
+      shopGold: document.getElementById('hud-shop-gold'),
 
       // Status Bars
       hpContainer: document.querySelector('.bar-container.hp-bar'),
@@ -361,6 +380,54 @@ export class HUDController {
     if (this.elements.minimapCanvas) {
       this.minimap = new Minimap(this.elements.minimapCanvas);
     }
+    for (const button of document.querySelectorAll('.ability-slot, .ability-levelup-btn')) {
+      enableTouchActivation(button, this.listen.bind(this));
+    }
+    const panels = [...document.querySelectorAll('.hud-info-panel, .hud-settings-panel')];
+    for (const panel of panels) {
+      this.listen(panel.querySelector('summary'), 'click', () => this.cancelMovement?.());
+      this.listen(document, 'pointerdown', e => {
+        if (!panel.contains(e.target)) panel.open = false;
+      });
+      this.listen(panel, 'toggle', () => {
+        if (panel.open) {
+          for (const other of panels) if (other !== panel) other.open = false;
+          this.cancelMovement?.();
+        }
+      });
+      this.listen(panel, 'keydown', e => {
+        if (e.key === 'Escape') {
+          panel.open = false;
+          panel.querySelector('summary')?.focus();
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }, { capture: true });
+    }
+  }
+
+  setupSettings(helpUI, joystick) {
+    this.cancelMovement = () => joystick.cancelMovement();
+    const checkbox = document.getElementById('settings-reduce-motion');
+    if (checkbox) {
+      checkbox.checked = helpUI.reducedMotion;
+      this.listen(checkbox, 'change', () => helpUI.setReducedMotion(checkbox.checked));
+    }
+  }
+
+  updateBoss(bosses) {
+    const view = getBossStatus(bosses);
+    const el = this.elements;
+    if (!el.boss) return;
+    el.boss.hidden = !view;
+    if (!view) return;
+    el.bossName.textContent = view.label;
+    el.bossName.title = view.label;
+    el.bossHp.textContent = view.hp;
+    el.bossFill.style.width = `${view.ratio * 100}%`;
+    el.bossShield.hidden = !view.shielded;
+    el.boss.classList.toggle('shielded', view.shielded);
+    el.boss.querySelector('[role="progressbar"]').setAttribute('aria-valuenow', String(Math.round(view.ratio * 100)));
   }
 
   /**
@@ -450,7 +517,8 @@ export class HUDController {
     // 1. Top HUD
     if (gameState) {
       const view = getObjectiveStatus(gameState);
-      if (this.elements.objective) this.elements.objective.textContent = view.objective;
+      if (this.elements.objective) { this.elements.objective.textContent = view.objective; this.elements.objective.title = view.objective; }
+      if (this.elements.objectiveExpanded) this.elements.objectiveExpanded.textContent = view.objective;
       if (this.elements.objectiveDetail) this.elements.objectiveDetail.textContent = view.detail;
       if (this.elements.nextWave) this.elements.nextWave.textContent = view.wave;
       if (this.elements.networkStatus) this.elements.networkStatus.textContent = gameState.networkStatus || 'Solo';
@@ -461,11 +529,11 @@ export class HUDController {
 
     if (this.elements.alliedTowers && gameState) {
       const count = (gameState.entities || []).filter(e => e.type === 'tower' && e.team === 'allied' && (e.isAlive ? e.isAlive() : e.hp > 0)).length;
-      this.elements.alliedTowers.textContent = `Torres: ${count}`;
+      this.elements.alliedTowers.textContent = String(count);
     }
     if (this.elements.enemyTowers && gameState) {
       const count = (gameState.entities || []).filter(e => e.type === 'tower' && e.team === 'enemy' && (e.isAlive ? e.isAlive() : e.hp > 0)).length;
-      this.elements.enemyTowers.textContent = `Torres: ${count}`;
+      this.elements.enemyTowers.textContent = String(count);
     }
 
     if (!playerHero) return;
@@ -485,6 +553,7 @@ export class HUDController {
     if (this.elements.statMr) this.elements.statMr.textContent = String(Math.round(playerHero.magicResist || 0));
     if (this.elements.statSpeed) this.elements.statSpeed.textContent = String(Math.round(playerHero.speed || 300));
     if (this.elements.statGold) this.elements.statGold.textContent = String(Math.floor(playerHero.gold || 0));
+    if (this.elements.shopGold) this.elements.shopGold.textContent = String(Math.floor(playerHero.gold || 0));
 
     // 4. HP, Mana and XP Bars
     const hpRatio = Math.max(0, Math.min(1, (playerHero.hp || 0) / (playerHero.maxHp || 1)));
@@ -687,8 +756,8 @@ export class HUDController {
 
   getWorldHUDTop() {
     if (typeof document === 'undefined') return 112;
-    const panels = [document.querySelector('.top-hud'), document.querySelector('.objective-hud')];
-    return Math.max(72, ...panels.map(panel => panel?.getBoundingClientRect?.().bottom || 0)) + 12;
+    const toolbar = document.querySelector('.top-hud');
+    return Math.max(48, toolbar?.getBoundingClientRect?.().bottom || 0) + 8;
   }
 }
 

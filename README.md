@@ -10,7 +10,9 @@ A versão **2.1** acrescenta uma tela inicial promocional com os cinco heróis e
 
 O anfitrião mantém um único mundo para a equipe: ondas, torres, chefes, dano, ouro e resultado são compartilhados. Convidados enviam comandos, e a entrada tardia recebe o estado da partida em andamento. Todos precisam recarregar a versão atual antes de entrar na mesma sala; clientes com versões incompatíveis recebem uma mensagem.
 
-O HUD mostra o próximo objetivo e a próxima onda. O botão **?** abre um guia curto e a opção de reduzir movimento/tremor; **Loja** abre os equipamentos. A seleção de heróis e os controles da interface aceitam Tab, Enter e Espaço. No toque, o aviso de orientação pode ser dispensado e ATACAR usa apenas ataque básico.
+O HUD segue a [interface aprovada e o registro de medidas](tasks/hud-design.md): minimapa e placar no alto à esquerda, relógio e objetivo centrais, loja e configurações à direita. Retrato, vida, mana e XP ficam separados dos botões circulares de combate. Os cinco heróis têm quatro ícones ilustrados próprios, com recarga, mana e evolução sobrepostos em código. **Partida** reúne atributos, inventário, próxima onda, rede e zoom; a engrenagem abre áudio, redução de movimento e guia. A loja mostra o saldo; compras e vendas exigem estar na base.
+
+No celular e tablet, o joystick é fixo e permite mover com um dedo enquanto o outro ataca ou mira uma habilidade. Soltar, cancelar, girar a tela ou abrir uma janela encerra o movimento. As orientações horizontal e vertical funcionam sem aviso bloqueante. Desktop preserva mouse e teclado e mantém o botão Atacar disponível.
 
 As habilidades começam sem rank: use **+** para aprender/evoluir Q/W/E. A suprema exige os níveis 6, 11 e 15 para os respectivos ranks. Evolução, defesas e controle de grupo afetam o combate real. Abates concedem ouro ao autor; aliados vivos a até 800 unidades recebem a assistência de 30% prevista para lacaios.
 
@@ -34,7 +36,7 @@ Você também pode abrir o arquivo `index.html` com qualquer servidor local (Liv
 
 ## 🕹️ Controles e Comandos
 
-A câmera inicia em 125% para destacar o herói. O painel de zoom no canto superior direito oferece botões −/+, controle deslizante de 60% a 160% e restauração para 125%. A roda do mouse também ajusta o zoom suavemente.
+A câmera inicia em 125% para destacar o herói. O painel de zoom dentro de **Partida** oferece botões −/+, controle deslizante de 60% a 160% e restauração para 125%. A roda do mouse também ajusta o zoom suavemente.
 
 | Comando | Ação |
 |---|---|
@@ -44,7 +46,7 @@ A câmera inicia em 125% para destacar o herói. O painel de zoom no canto super
 | **E** | Habilidade 3 (Mobilidade / Dash / Cutilada / Julgamento) |
 | **R** | Habilidade Suprema (Meteoro / Fortaleza / Sniper / Dança Letal / Milagre) |
 | **B** | **Recall**: Canaliza por 5 segundos para retornar à base com vida e mana |
-| **P** ou **Clique no Ouro** | Abre a **Loja de Itens** quando estiver dentro da base |
+| **P** ou **Loja** | Abre os itens; comprar/vender exige estar na base |
 | **Clique no Minimapa** | Botão Esquerdo move a câmera; Botão Direito move o herói |
 | **Espaço** | Recentraliza a câmera suavemente no seu herói |
 | **M** | **Áudio / Mute**: Ativa ou desativa os efeitos sonoros procedurais (Web Audio API) |
@@ -105,3 +107,7 @@ Para rodar a suíte completa com **349 testes automatizados** (regras de combate
 npm test
 ```
 Resultado desta versão: **349/349 testes aprovados em 51 arquivos**. Os testes Node não substituem o navegador: foram verificados solo/teclado/toque emulado e WebRTC real em duas/três abas. A tela promocional foi conferida em seis resoluções, com imagem lenta e indisponível. Celular físico e duas máquinas distintas ficam como validação adicional. Os registros estão em tasks/browser-checklist.md e tasks/promo-release.md.
+
+### Verificação do HUD responsivo
+
+`npm test` executa os testes de lógica. Com Playwright e Chrome instalados, `node tools/check-mobile-hud.mjs` verifica sete tamanhos de toque (320×568 a 1440×810), quatro larguras de desktop, limites/sobreposições e áreas de toque, menus, configurações, compra/venda e recursos, cinco heróis, estados de habilidades, dois dedos reais via CDP, cancelamento, rotação e fallback de arte. O teste serve os arquivos locais por interceptação e substitui somente o PeerJS externo para testar solo sem rede. As capturas e as coordenadas medidas ficam em uma pasta temporária impressa ao concluir. Defina `PLAYWRIGHT_MODULE` para usar outra instalação e `HUD_SCREENSHOT_DIR` para escolher o destino. As capturas de referência desta implementação estão em `output/ui-concepts/before/` e `output/ui-concepts/after/`.

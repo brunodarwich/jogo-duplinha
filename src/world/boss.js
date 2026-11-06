@@ -868,48 +868,4 @@ export class BossManager {
     }
   }
 
-  drawBossHUD(ctx, viewportWidth, viewportHeight, topInset = 110) {
-    if (!ctx) return;
-    // Find active boss
-    const activeBoss = this.activeBosses.find(b => b && b.isAlive());
-    if (!activeBoss) return;
-
-    ctx.save();
-    const barWidth = Math.min(400, Math.max(180, viewportWidth - 48));
-    const barHeight = 16;
-    const startX = (viewportWidth - barWidth) / 2;
-    const startY = topInset + 22;
-    const maxHp = activeBoss.maxHp || 1;
-    const ratio = Math.max(0, Math.min(1, (activeBoss.hp || 0) / maxHp));
-
-    // Panel border
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-    ctx.fillRect(startX - 10, startY - 22, barWidth + 20, barHeight + 32);
-    ctx.strokeStyle = '#e11d48';
-    ctx.lineWidth = 1.5;
-    ctx.strokeRect(startX - 10, startY - 22, barWidth + 20, barHeight + 32);
-
-    // Boss Name & Phase
-    ctx.font = 'bold 13px sans-serif';
-    ctx.fillStyle = '#f87171';
-    ctx.textAlign = 'left';
-    const bossName = (activeBoss.name || activeBoss.id || 'CHEFE').toUpperCase();
-    ctx.fillText(`👑 ${bossName} (FASE ${activeBoss.phase || 1})`, startX, startY - 6);
-
-    // HP Bar background
-    ctx.fillStyle = '#1e293b';
-    ctx.fillRect(startX, startY, barWidth, barHeight);
-
-    // HP Bar fill
-    ctx.fillStyle = activeBoss.shieldActive ? '#ea580c' : '#dc2626';
-    ctx.fillRect(startX, startY, barWidth * ratio, barHeight);
-
-    // HP Text
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '10px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(`${Math.round(activeBoss.hp || 0)} / ${maxHp}`, startX + barWidth / 2, startY + 12);
-
-    ctx.restore();
-  }
 }

@@ -3,6 +3,17 @@ import { assertEqual, assertTrue } from '../helpers/assert.js';
 import * as hud from '../../src/ui/hud.js';
 
 describe('Contextual match objectives', () => {
+  it('Keeps the boss bar under the compact toolbar regardless of collapsed details or a corner minimap', () => {
+    const previousDocument = globalThis.document;
+    globalThis.document = { querySelector: selector => ({ getBoundingClientRect: () =>
+      selector === '.top-hud' ? { top: 8, bottom: 62 } : { top: 8, bottom: 96 } }) };
+    try {
+      assertEqual(hud.HUDController.prototype.getWorldHUDTop(), 70);
+    } finally {
+      if (previousDocument === undefined) delete globalThis.document;
+      else globalThis.document = previousDocument;
+    }
+  });
   it('Advances from outer tower to inner tower to vulnerable Nexus', () => {
     const outer = { id: 'outer', type: 'tower', tier: 'outer', team: 'enemy', hp: 100 };
     const inner = { id: 'inner', type: 'tower', tier: 'inner', team: 'enemy', hp: 100 };

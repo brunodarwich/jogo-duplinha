@@ -86,6 +86,8 @@ export class HelpUI {
       document.documentElement.classList.toggle('motion-allowed', !enabled);
       const checkbox = this.dialog?.querySelector('#reduce-motion');
       if (checkbox) checkbox.checked = !!enabled;
+      const settingsCheckbox = document.getElementById('settings-reduce-motion');
+      if (settingsCheckbox) settingsCheckbox.checked = !!enabled;
     }
     if (persist) {
       this.savedMotion = String(!!enabled);
@@ -111,6 +113,8 @@ export class HelpUI {
 
   open() {
     if (!this.dialog || this.dialog.open) return;
+    this.gameSim.virtualJoystick?.cancelMovement();
+    document.querySelectorAll('.hud-info-panel, .hud-settings-panel').forEach(panel => { panel.open = false; });
     this.previousFocus = document.activeElement;
     this.step = 0;
     this.render();

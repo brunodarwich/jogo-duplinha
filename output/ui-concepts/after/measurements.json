@@ -1,0 +1,1376 @@
+{
+  "320x568": {
+    "#minimap-container": {
+      "x": 8,
+      "y": 8,
+      "width": 64,
+      "height": 64
+    },
+    ".hud-match-score": {
+      "x": 8,
+      "y": 84,
+      "width": 88,
+      "height": 32
+    },
+    ".match-timer-container": {
+      "x": 152,
+      "y": 60,
+      "width": 72,
+      "height": 36
+    },
+    "#hud-objective": {
+      "x": 8,
+      "y": 124,
+      "width": 304,
+      "height": 24
+    },
+    "#boss-hud": {
+      "x": 8,
+      "y": 156,
+      "width": 304,
+      "height": 36
+    },
+    ".hud-hero-summary": {
+      "x": 8,
+      "y": 312,
+      "width": 304,
+      "height": 48
+    },
+    "#btn-shop-toggle": {
+      "x": 120,
+      "y": 8,
+      "width": 140,
+      "height": 44
+    },
+    ".hud-info-panel > summary": {
+      "x": 236,
+      "y": 60,
+      "width": 76,
+      "height": 44
+    },
+    ".hud-settings-panel > summary": {
+      "x": 268,
+      "y": 8,
+      "width": 44,
+      "height": 44
+    },
+    ".v-joystick-base": {
+      "x": 8,
+      "y": 448,
+      "width": 96,
+      "height": 96
+    },
+    "#ability-q": {
+      "x": 132,
+      "y": 432,
+      "width": 48,
+      "height": 48
+    },
+    "#ability-w": {
+      "x": 188,
+      "y": 432,
+      "width": 48,
+      "height": 48
+    },
+    "#ability-e": {
+      "x": 132,
+      "y": 496,
+      "width": 48,
+      "height": 48
+    },
+    "#ability-r": {
+      "x": 188,
+      "y": 496,
+      "width": 48,
+      "height": 48
+    },
+    "#ability-b": {
+      "x": 256,
+      "y": 424,
+      "width": 44,
+      "height": 44
+    },
+    "#mobile-attack-btn": {
+      "x": 244,
+      "y": 476,
+      "width": 68,
+      "height": 68
+    },
+    "#btn-upgrade-q": {
+      "x": 112,
+      "y": 372,
+      "width": 44,
+      "height": 44
+    },
+    "#btn-upgrade-w": {
+      "x": 164,
+      "y": 372,
+      "width": 44,
+      "height": 44
+    },
+    "#btn-upgrade-e": {
+      "x": 216,
+      "y": 372,
+      "width": 44,
+      "height": 44
+    }
+  },
+  "390x844": {
+    "#minimap-container": {
+      "x": 8,
+      "y": 8,
+      "width": 64,
+      "height": 64
+    },
+    ".hud-match-score": {
+      "x": 8,
+      "y": 84,
+      "width": 88,
+      "height": 32
+    },
+    ".match-timer-container": {
+      "x": 222,
+      "y": 60,
+      "width": 72,
+      "height": 36
+    },
+    "#hud-objective": {
+      "x": 8,
+      "y": 124,
+      "width": 374,
+      "height": 24
+    },
+    "#boss-hud": {
+      "x": 8,
+      "y": 156,
+      "width": 374,
+      "height": 36
+    },
+    ".hud-hero-summary": {
+      "x": 8,
+      "y": 588,
+      "width": 374,
+      "height": 48
+    },
+    "#btn-shop-toggle": {
+      "x": 190,
+      "y": 8,
+      "width": 140,
+      "height": 44
+    },
+    ".hud-info-panel > summary": {
+      "x": 306,
+      "y": 60,
+      "width": 76,
+      "height": 44
+    },
+    ".hud-settings-panel > summary": {
+      "x": 338,
+      "y": 8,
+      "width": 44,
+      "height": 44
+    },
+    ".v-joystick-base": {
+      "x": 8,
+      "y": 724,
+      "width": 96,
+      "height": 96
+    },
+    "#ability-q": {
+      "x": 202,
+      "y": 708,
+      "width": 48,
+      "height": 48
+    },
+    "#ability-w": {
+      "x": 258,
+      "y": 708,
+      "width": 48,
+      "height": 48
+    },
+    "#ability-e": {
+      "x": 202,
+      "y": 772,
+      "width": 48,
+      "height": 48
+    },
+    "#ability-r": {
+      "x": 258,
+      "y": 772,
+      "width": 48,
+      "height": 48
+    },
+    "#ability-b": {
+      "x": 326,
+      "y": 700,
+      "width": 44,
+      "height": 44
+    },
+    "#mobile-attack-btn": {
+      "x": 314,
+      "y": 752,
+      "width": 68,
+      "height": 68
+    },
+    "#btn-upgrade-q": {
+      "x": 182,
+      "y": 648,
+      "width": 44,
+      "height": 44
+    },
+    "#btn-upgrade-w": {
+      "x": 234,
+      "y": 648,
+      "width": 44,
+      "height": 44
+    },
+    "#btn-upgrade-e": {
+      "x": 286,
+      "y": 648,
+      "width": 44,
+      "height": 44
+    }
+  },
+  "768x1024": {
+    "#minimap-container": {
+      "x": 8,
+      "y": 8,
+      "width": 64,
+      "height": 64
+    },
+    ".hud-match-score": {
+      "x": 8,
+      "y": 84,
+      "width": 88,
+      "height": 32
+    },
+    ".match-timer-container": {
+      "x": 600,
+      "y": 60,
+      "width": 72,
+      "height": 36
+    },
+    "#hud-objective": {
+      "x": 8,
+      "y": 124,
+      "width": 752,
+      "height": 24
+    },
+    "#boss-hud": {
+      "x": 8,
+      "y": 156,
+      "width": 752,
+      "height": 36
+    },
+    ".hud-hero-summary": {
+      "x": 164,
+      "y": 768,
+      "width": 440,
+      "height": 48
+    },
+    "#btn-shop-toggle": {
+      "x": 568,
+      "y": 8,
+      "width": 140,
+      "height": 44
+    },
+    ".hud-info-panel > summary": {
+      "x": 684,
+      "y": 60,
+      "width": 76,
+      "height": 44
+    },
+    ".hud-settings-panel > summary": {
+      "x": 716,
+      "y": 8,
+      "width": 44,
+      "height": 44
+    },
+    ".v-joystick-base": {
+      "x": 8,
+      "y": 904,
+      "width": 96,
+      "height": 96
+    },
+    "#ability-q": {
+      "x": 580,
+      "y": 888,
+      "width": 48,
+      "height": 48
+    },
+    "#ability-w": {
+      "x": 636,
+      "y": 888,
+      "width": 48,
+      "height": 48
+    },
+    "#ability-e": {
+      "x": 580,
+      "y": 952,
+      "width": 48,
+      "height": 48
+    },
+    "#ability-r": {
+      "x": 636,
+      "y": 952,
+      "width": 48,
+      "height": 48
+    },
+    "#ability-b": {
+      "x": 704,
+      "y": 880,
+      "width": 44,
+      "height": 44
+    },
+    "#mobile-attack-btn": {
+      "x": 692,
+      "y": 932,
+      "width": 68,
+      "height": 68
+    },
+    "#btn-upgrade-q": {
+      "x": 560,
+      "y": 828,
+      "width": 44,
+      "height": 44
+    },
+    "#btn-upgrade-w": {
+      "x": 612,
+      "y": 828,
+      "width": 44,
+      "height": 44
+    },
+    "#btn-upgrade-e": {
+      "x": 664,
+      "y": 828,
+      "width": 44,
+      "height": 44
+    }
+  },
+  "1024x768": {
+    "#minimap-container": {
+      "x": 8,
+      "y": 8,
+      "width": 80,
+      "height": 80
+    },
+    ".hud-match-score": {
+      "x": 100,
+      "y": 8,
+      "width": 104,
+      "height": 40
+    },
+    ".match-timer-container": {
+      "x": 472,
+      "y": 8,
+      "width": 80,
+      "height": 36
+    },
+    "#hud-objective": {
+      "x": 392,
+      "y": 52,
+      "width": 240,
+      "height": 20
+    },
+    "#boss-hud": {
+      "x": 372,
+      "y": 80,
+      "width": 280,
+      "height": 36
+    },
+    ".hud-hero-summary": {
+      "x": 8,
+      "y": 584,
+      "width": 224,
+      "height": 48
+    },
+    "#btn-shop-toggle": {
+      "x": 740,
+      "y": 8,
+      "width": 140,
+      "height": 44
+    },
+    ".hud-info-panel > summary": {
+      "x": 888,
+      "y": 8,
+      "width": 76,
+      "height": 44
+    },
+    ".hud-settings-panel > summary": {
+      "x": 972,
+      "y": 8,
+      "width": 44,
+      "height": 44
+    },
+    ".v-joystick-base": {
+      "x": 8,
+      "y": 632,
+      "width": 112,
+      "height": 112
+    },
+    "#ability-q": {
+      "x": 688,
+      "y": 684,
+      "width": 52,
+      "height": 52
+    },
+    "#ability-w": {
+      "x": 748,
+      "y": 676,
+      "width": 52,
+      "height": 52
+    },
+    "#ability-e": {
+      "x": 808,
+      "y": 672,
+      "width": 52,
+      "height": 52
+    },
+    "#ability-r": {
+      "x": 868,
+      "y": 676,
+      "width": 52,
+      "height": 52
+    },
+    "#ability-b": {
+      "x": 952,
+      "y": 600,
+      "width": 48,
+      "height": 48
+    },
+    "#mobile-attack-btn": {
+      "x": 936,
+      "y": 664,
+      "width": 80,
+      "height": 80
+    },
+    "#btn-upgrade-q": {
+      "x": 692,
+      "y": 632,
+      "width": 44,
+      "height": 44
+    },
+    "#btn-upgrade-w": {
+      "x": 752,
+      "y": 624,
+      "width": 44,
+      "height": 44
+    },
+    "#btn-upgrade-e": {
+      "x": 812,
+      "y": 620,
+      "width": 44,
+      "height": 44
+    }
+  },
+  "844x390": {
+    "#minimap-container": {
+      "x": 8,
+      "y": 8,
+      "width": 80,
+      "height": 80
+    },
+    ".hud-match-score": {
+      "x": 100,
+      "y": 8,
+      "width": 104,
+      "height": 40
+    },
+    ".match-timer-container": {
+      "x": 382,
+      "y": 8,
+      "width": 80,
+      "height": 36
+    },
+    "#hud-objective": {
+      "x": 302,
+      "y": 52,
+      "width": 240,
+      "height": 20
+    },
+    "#boss-hud": {
+      "x": 282,
+      "y": 80,
+      "width": 280,
+      "height": 36
+    },
+    ".hud-hero-summary": {
+      "x": 8,
+      "y": 206,
+      "width": 224,
+      "height": 48
+    },
+    "#btn-shop-toggle": {
+      "x": 560,
+      "y": 8,
+      "width": 140,
+      "height": 44
+    },
+    ".hud-info-panel > summary": {
+      "x": 708,
+      "y": 8,
+      "width": 76,
+      "height": 44
+    },
+    ".hud-settings-panel > summary": {
+      "x": 792,
+      "y": 8,
+      "width": 44,
+      "height": 44
+    },
+    ".v-joystick-base": {
+      "x": 8,
+      "y": 254,
+      "width": 112,
+      "height": 112
+    },
+    "#ability-q": {
+      "x": 508,
+      "y": 306,
+      "width": 52,
+      "height": 52
+    },
+    "#ability-w": {
+      "x": 568,
+      "y": 298,
+      "width": 52,
+      "height": 52
+    },
+    "#ability-e": {
+      "x": 628,
+      "y": 294,
+      "width": 52,
+      "height": 52
+    },
+    "#ability-r": {
+      "x": 688,
+      "y": 298,
+      "width": 52,
+      "height": 52
+    },
+    "#ability-b": {
+      "x": 772,
+      "y": 222,
+      "width": 48,
+      "height": 48
+    },
+    "#mobile-attack-btn": {
+      "x": 756,
+      "y": 286,
+      "width": 80,
+      "height": 80
+    },
+    "#btn-upgrade-q": {
+      "x": 512,
+      "y": 254,
+      "width": 44,
+      "height": 44
+    },
+    "#btn-upgrade-w": {
+      "x": 572,
+      "y": 246,
+      "width": 44,
+      "height": 44
+    },
+    "#btn-upgrade-e": {
+      "x": 632,
+      "y": 242,
+      "width": 44,
+      "height": 44
+    }
+  },
+  "1280x800": {
+    "#minimap-container": {
+      "x": 16,
+      "y": 16,
+      "width": 128,
+      "height": 128
+    },
+    ".hud-match-score": {
+      "x": 156,
+      "y": 16,
+      "width": 160,
+      "height": 48
+    },
+    ".match-timer-container": {
+      "x": 580,
+      "y": 16,
+      "width": 120,
+      "height": 44
+    },
+    "#hud-objective": {
+      "x": 480,
+      "y": 68,
+      "width": 320,
+      "height": 24
+    },
+    "#boss-hud": {
+      "x": 400,
+      "y": 100,
+      "width": 480,
+      "height": 48
+    },
+    ".hud-hero-summary": {
+      "x": 200,
+      "y": 680,
+      "width": 360,
+      "height": 88
+    },
+    "#btn-shop-toggle": {
+      "x": 888,
+      "y": 16,
+      "width": 208,
+      "height": 48
+    },
+    ".hud-info-panel > summary": {
+      "x": 1104,
+      "y": 16,
+      "width": 104,
+      "height": 48
+    },
+    ".hud-settings-panel > summary": {
+      "x": 1216,
+      "y": 16,
+      "width": 48,
+      "height": 48
+    },
+    ".v-joystick-base": {
+      "x": 16,
+      "y": 608,
+      "width": 160,
+      "height": 160
+    },
+    "#ability-q": {
+      "x": 712,
+      "y": 672,
+      "width": 88,
+      "height": 88
+    },
+    "#ability-w": {
+      "x": 816,
+      "y": 664,
+      "width": 88,
+      "height": 88
+    },
+    "#ability-e": {
+      "x": 920,
+      "y": 660,
+      "width": 88,
+      "height": 88
+    },
+    "#ability-r": {
+      "x": 1024,
+      "y": 664,
+      "width": 88,
+      "height": 88
+    },
+    "#ability-b": {
+      "x": 1176,
+      "y": 544,
+      "width": 72,
+      "height": 72
+    },
+    "#mobile-attack-btn": {
+      "x": 1128,
+      "y": 632,
+      "width": 136,
+      "height": 136
+    },
+    "#btn-upgrade-q": {
+      "x": 734,
+      "y": 620,
+      "width": 44,
+      "height": 44
+    },
+    "#btn-upgrade-w": {
+      "x": 838,
+      "y": 612,
+      "width": 44,
+      "height": 44
+    },
+    "#btn-upgrade-e": {
+      "x": 942,
+      "y": 608,
+      "width": 44,
+      "height": 44
+    }
+  },
+  "1440x810": {
+    "#minimap-container": {
+      "x": 16,
+      "y": 16,
+      "width": 128,
+      "height": 128
+    },
+    ".hud-match-score": {
+      "x": 156,
+      "y": 16,
+      "width": 160,
+      "height": 48
+    },
+    ".match-timer-container": {
+      "x": 660,
+      "y": 16,
+      "width": 120,
+      "height": 44
+    },
+    "#hud-objective": {
+      "x": 560,
+      "y": 68,
+      "width": 320,
+      "height": 24
+    },
+    "#boss-hud": {
+      "x": 480,
+      "y": 100,
+      "width": 480,
+      "height": 48
+    },
+    ".hud-hero-summary": {
+      "x": 200,
+      "y": 690,
+      "width": 360,
+      "height": 88
+    },
+    "#btn-shop-toggle": {
+      "x": 1048,
+      "y": 16,
+      "width": 208,
+      "height": 48
+    },
+    ".hud-info-panel > summary": {
+      "x": 1264,
+      "y": 16,
+      "width": 104,
+      "height": 48
+    },
+    ".hud-settings-panel > summary": {
+      "x": 1376,
+      "y": 16,
+      "width": 48,
+      "height": 48
+    },
+    ".v-joystick-base": {
+      "x": 16,
+      "y": 618,
+      "width": 160,
+      "height": 160
+    },
+    "#ability-q": {
+      "x": 872,
+      "y": 682,
+      "width": 88,
+      "height": 88
+    },
+    "#ability-w": {
+      "x": 976,
+      "y": 674,
+      "width": 88,
+      "height": 88
+    },
+    "#ability-e": {
+      "x": 1080,
+      "y": 670,
+      "width": 88,
+      "height": 88
+    },
+    "#ability-r": {
+      "x": 1184,
+      "y": 674,
+      "width": 88,
+      "height": 88
+    },
+    "#ability-b": {
+      "x": 1336,
+      "y": 554,
+      "width": 72,
+      "height": 72
+    },
+    "#mobile-attack-btn": {
+      "x": 1288,
+      "y": 642,
+      "width": 136,
+      "height": 136
+    },
+    "#btn-upgrade-q": {
+      "x": 894,
+      "y": 630,
+      "width": 44,
+      "height": 44
+    },
+    "#btn-upgrade-w": {
+      "x": 998,
+      "y": 622,
+      "width": 44,
+      "height": 44
+    },
+    "#btn-upgrade-e": {
+      "x": 1102,
+      "y": 618,
+      "width": 44,
+      "height": 44
+    }
+  },
+  "320x568-all-upgrades": {
+    "#minimap-container": {
+      "x": 8,
+      "y": 8,
+      "width": 64,
+      "height": 64
+    },
+    ".hud-match-score": {
+      "x": 8,
+      "y": 84,
+      "width": 88,
+      "height": 32
+    },
+    ".match-timer-container": {
+      "x": 152,
+      "y": 60,
+      "width": 72,
+      "height": 36
+    },
+    "#hud-objective": {
+      "x": 8,
+      "y": 124,
+      "width": 304,
+      "height": 24
+    },
+    "#boss-hud": {
+      "x": 8,
+      "y": 156,
+      "width": 304,
+      "height": 36
+    },
+    ".hud-hero-summary": {
+      "x": 8,
+      "y": 312,
+      "width": 304,
+      "height": 48
+    },
+    "#btn-shop-toggle": {
+      "x": 120,
+      "y": 8,
+      "width": 140,
+      "height": 44
+    },
+    ".hud-info-panel > summary": {
+      "x": 236,
+      "y": 60,
+      "width": 76,
+      "height": 44
+    },
+    ".hud-settings-panel > summary": {
+      "x": 268,
+      "y": 8,
+      "width": 44,
+      "height": 44
+    },
+    ".v-joystick-base": {
+      "x": 8,
+      "y": 448,
+      "width": 96,
+      "height": 96
+    },
+    "#ability-q": {
+      "x": 132,
+      "y": 432,
+      "width": 48,
+      "height": 48
+    },
+    "#ability-w": {
+      "x": 188,
+      "y": 432,
+      "width": 48,
+      "height": 48
+    },
+    "#ability-e": {
+      "x": 132,
+      "y": 496,
+      "width": 48,
+      "height": 48
+    },
+    "#ability-r": {
+      "x": 188,
+      "y": 496,
+      "width": 48,
+      "height": 48
+    },
+    "#ability-b": {
+      "x": 256,
+      "y": 424,
+      "width": 44,
+      "height": 44
+    },
+    "#mobile-attack-btn": {
+      "x": 244,
+      "y": 476,
+      "width": 68,
+      "height": 68
+    },
+    "#btn-upgrade-q": {
+      "x": 112,
+      "y": 372,
+      "width": 44,
+      "height": 44
+    },
+    "#btn-upgrade-w": {
+      "x": 164,
+      "y": 372,
+      "width": 44,
+      "height": 44
+    },
+    "#btn-upgrade-e": {
+      "x": 216,
+      "y": 372,
+      "width": 44,
+      "height": 44
+    },
+    "#btn-upgrade-r": {
+      "x": 268,
+      "y": 372,
+      "width": 44,
+      "height": 44
+    }
+  },
+  "desktop-320": {
+    "#minimap-container": {
+      "x": 8,
+      "y": 8,
+      "width": 64,
+      "height": 64
+    },
+    ".hud-match-score": {
+      "x": 8,
+      "y": 84,
+      "width": 88,
+      "height": 32
+    },
+    ".match-timer-container": {
+      "x": 152,
+      "y": 60,
+      "width": 72,
+      "height": 36
+    },
+    "#hud-objective": {
+      "x": 8,
+      "y": 124,
+      "width": 304,
+      "height": 24
+    },
+    "#boss-hud": {
+      "x": 8,
+      "y": 156,
+      "width": 304,
+      "height": 36
+    },
+    ".hud-hero-summary": {
+      "x": 8,
+      "y": 554,
+      "width": 304,
+      "height": 48
+    },
+    "#btn-shop-toggle": {
+      "x": 120,
+      "y": 8,
+      "width": 140,
+      "height": 44
+    },
+    ".hud-info-panel > summary": {
+      "x": 236,
+      "y": 60,
+      "width": 76,
+      "height": 44
+    },
+    ".hud-settings-panel > summary": {
+      "x": 268,
+      "y": 8,
+      "width": 44,
+      "height": 44
+    },
+    "#ability-q": {
+      "x": 132,
+      "y": 674,
+      "width": 48,
+      "height": 48
+    },
+    "#ability-w": {
+      "x": 188,
+      "y": 674,
+      "width": 48,
+      "height": 48
+    },
+    "#ability-e": {
+      "x": 132,
+      "y": 738,
+      "width": 48,
+      "height": 48
+    },
+    "#ability-r": {
+      "x": 188,
+      "y": 738,
+      "width": 48,
+      "height": 48
+    },
+    "#ability-b": {
+      "x": 256,
+      "y": 666,
+      "width": 44,
+      "height": 44
+    },
+    "#mobile-attack-btn": {
+      "x": 244,
+      "y": 718,
+      "width": 68,
+      "height": 68
+    },
+    "#btn-upgrade-q": {
+      "x": 112,
+      "y": 614,
+      "width": 44,
+      "height": 44
+    },
+    "#btn-upgrade-w": {
+      "x": 164,
+      "y": 614,
+      "width": 44,
+      "height": 44
+    },
+    "#btn-upgrade-e": {
+      "x": 216,
+      "y": 614,
+      "width": 44,
+      "height": 44
+    }
+  },
+  "desktop-768": {
+    "#minimap-container": {
+      "x": 8,
+      "y": 8,
+      "width": 64,
+      "height": 64
+    },
+    ".hud-match-score": {
+      "x": 8,
+      "y": 84,
+      "width": 88,
+      "height": 32
+    },
+    ".match-timer-container": {
+      "x": 600,
+      "y": 60,
+      "width": 72,
+      "height": 36
+    },
+    "#hud-objective": {
+      "x": 8,
+      "y": 124,
+      "width": 752,
+      "height": 24
+    },
+    "#boss-hud": {
+      "x": 8,
+      "y": 156,
+      "width": 752,
+      "height": 36
+    },
+    ".hud-hero-summary": {
+      "x": 164,
+      "y": 554,
+      "width": 440,
+      "height": 48
+    },
+    "#btn-shop-toggle": {
+      "x": 568,
+      "y": 8,
+      "width": 140,
+      "height": 44
+    },
+    ".hud-info-panel > summary": {
+      "x": 684,
+      "y": 60,
+      "width": 76,
+      "height": 44
+    },
+    ".hud-settings-panel > summary": {
+      "x": 716,
+      "y": 8,
+      "width": 44,
+      "height": 44
+    },
+    "#ability-q": {
+      "x": 580,
+      "y": 674,
+      "width": 48,
+      "height": 48
+    },
+    "#ability-w": {
+      "x": 636,
+      "y": 674,
+      "width": 48,
+      "height": 48
+    },
+    "#ability-e": {
+      "x": 580,
+      "y": 738,
+      "width": 48,
+      "height": 48
+    },
+    "#ability-r": {
+      "x": 636,
+      "y": 738,
+      "width": 48,
+      "height": 48
+    },
+    "#ability-b": {
+      "x": 704,
+      "y": 666,
+      "width": 44,
+      "height": 44
+    },
+    "#mobile-attack-btn": {
+      "x": 692,
+      "y": 718,
+      "width": 68,
+      "height": 68
+    },
+    "#btn-upgrade-q": {
+      "x": 560,
+      "y": 614,
+      "width": 44,
+      "height": 44
+    },
+    "#btn-upgrade-w": {
+      "x": 612,
+      "y": 614,
+      "width": 44,
+      "height": 44
+    },
+    "#btn-upgrade-e": {
+      "x": 664,
+      "y": 614,
+      "width": 44,
+      "height": 44
+    }
+  },
+  "desktop-1024": {
+    "#minimap-container": {
+      "x": 8,
+      "y": 8,
+      "width": 80,
+      "height": 80
+    },
+    ".hud-match-score": {
+      "x": 100,
+      "y": 8,
+      "width": 104,
+      "height": 40
+    },
+    ".match-timer-container": {
+      "x": 472,
+      "y": 8,
+      "width": 80,
+      "height": 36
+    },
+    "#hud-objective": {
+      "x": 392,
+      "y": 52,
+      "width": 240,
+      "height": 20
+    },
+    "#boss-hud": {
+      "x": 372,
+      "y": 80,
+      "width": 280,
+      "height": 36
+    },
+    ".hud-hero-summary": {
+      "x": 8,
+      "y": 626,
+      "width": 224,
+      "height": 48
+    },
+    "#btn-shop-toggle": {
+      "x": 740,
+      "y": 8,
+      "width": 140,
+      "height": 44
+    },
+    ".hud-info-panel > summary": {
+      "x": 888,
+      "y": 8,
+      "width": 76,
+      "height": 44
+    },
+    ".hud-settings-panel > summary": {
+      "x": 972,
+      "y": 8,
+      "width": 44,
+      "height": 44
+    },
+    "#ability-q": {
+      "x": 688,
+      "y": 726,
+      "width": 52,
+      "height": 52
+    },
+    "#ability-w": {
+      "x": 748,
+      "y": 718,
+      "width": 52,
+      "height": 52
+    },
+    "#ability-e": {
+      "x": 808,
+      "y": 714,
+      "width": 52,
+      "height": 52
+    },
+    "#ability-r": {
+      "x": 868,
+      "y": 718,
+      "width": 52,
+      "height": 52
+    },
+    "#ability-b": {
+      "x": 952,
+      "y": 642,
+      "width": 48,
+      "height": 48
+    },
+    "#mobile-attack-btn": {
+      "x": 936,
+      "y": 706,
+      "width": 80,
+      "height": 80
+    },
+    "#btn-upgrade-q": {
+      "x": 692,
+      "y": 674,
+      "width": 44,
+      "height": 44
+    },
+    "#btn-upgrade-w": {
+      "x": 752,
+      "y": 666,
+      "width": 44,
+      "height": 44
+    },
+    "#btn-upgrade-e": {
+      "x": 812,
+      "y": 662,
+      "width": 44,
+      "height": 44
+    }
+  },
+  "desktop-1440": {
+    "#minimap-container": {
+      "x": 16,
+      "y": 16,
+      "width": 128,
+      "height": 128
+    },
+    ".hud-match-score": {
+      "x": 156,
+      "y": 16,
+      "width": 160,
+      "height": 48
+    },
+    ".match-timer-container": {
+      "x": 660,
+      "y": 16,
+      "width": 120,
+      "height": 44
+    },
+    "#hud-objective": {
+      "x": 560,
+      "y": 68,
+      "width": 320,
+      "height": 24
+    },
+    "#boss-hud": {
+      "x": 480,
+      "y": 100,
+      "width": 480,
+      "height": 48
+    },
+    ".hud-hero-summary": {
+      "x": 16,
+      "y": 690,
+      "width": 360,
+      "height": 88
+    },
+    "#btn-shop-toggle": {
+      "x": 1048,
+      "y": 16,
+      "width": 208,
+      "height": 48
+    },
+    ".hud-info-panel > summary": {
+      "x": 1264,
+      "y": 16,
+      "width": 104,
+      "height": 48
+    },
+    ".hud-settings-panel > summary": {
+      "x": 1376,
+      "y": 16,
+      "width": 48,
+      "height": 48
+    },
+    "#ability-q": {
+      "x": 872,
+      "y": 682,
+      "width": 88,
+      "height": 88
+    },
+    "#ability-w": {
+      "x": 976,
+      "y": 674,
+      "width": 88,
+      "height": 88
+    },
+    "#ability-e": {
+      "x": 1080,
+      "y": 670,
+      "width": 88,
+      "height": 88
+    },
+    "#ability-r": {
+      "x": 1184,
+      "y": 674,
+      "width": 88,
+      "height": 88
+    },
+    "#ability-b": {
+      "x": 1336,
+      "y": 554,
+      "width": 72,
+      "height": 72
+    },
+    "#mobile-attack-btn": {
+      "x": 1288,
+      "y": 642,
+      "width": 136,
+      "height": 136
+    },
+    "#btn-upgrade-q": {
+      "x": 894,
+      "y": 630,
+      "width": 44,
+      "height": 44
+    },
+    "#btn-upgrade-w": {
+      "x": 998,
+      "y": 622,
+      "width": 44,
+      "height": 44
+    },
+    "#btn-upgrade-e": {
+      "x": 1102,
+      "y": 618,
+      "width": 44,
+      "height": 44
+    }
+  }
+}

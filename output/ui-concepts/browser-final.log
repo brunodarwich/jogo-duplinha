@@ -1,0 +1,15 @@
+PASS layout 320x568: bounds, targets, layers, menu, settings and shop
+PASS layout 390x844: bounds, targets, layers, menu, settings and shop
+PASS layout 768x1024: bounds, targets, layers, menu, settings and shop
+PASS layout 1024x768: bounds, targets, layers, menu, settings and shop
+PASS layout 844x390: bounds, targets, layers, menu, settings and shop
+PASS layout 1280x800: bounds, targets, layers, menu, settings and shop
+PASS layout 1440x810: bounds, targets, layers, menu, settings and shop
+PASS touch lifecycle, multitouch, upgrade, purchase, sale and resource boundaries
+PASS hero knight: atlas, learning, aim, mana, cooldown, death and recall
+PASS hero sorceress: atlas, learning, aim, mana, cooldown, death and recall
+PASS hero ranger: atlas, learning, aim, mana, cooldown, death and recall
+PASS hero assassin: atlas, learning, aim, mana, cooldown, death and recall
+PASS hero cleric: atlas, learning, aim, mana, cooldown, death and recall
+PASS desktop, keyboard access and missing-art fallback
+Screenshots and measured geometry: output/ui-concepts/after

@@ -476,49 +476,22 @@ describe('Tier 4 E2E: Marco 5 — Final Integration, 60 FPS Stability & System I
   });
 
   it('TC-M5-06: Responsive CSS Multi-Resolution Breakpoints & Layout Contracts', async () => {
-    const cssPath = path.resolve(process.cwd(), 'style.css');
-    assertTrue(fs.existsSync(cssPath), 'style.css must exist at root');
-
+    const cssPath = path.resolve(process.cwd(), 'src/ui/hud.css');
+    assertTrue(fs.existsSync(cssPath), 'Dedicated HUD stylesheet must exist');
     const cssContent = fs.readFileSync(cssPath, 'utf-8');
+    const html = fs.readFileSync(path.resolve(process.cwd(), 'index.html'), 'utf-8');
+    assertTrue(html.includes('href="src/ui/hud.css"'), 'HUD stylesheet must actually be loaded');
+    for (const selector of ['.hud-overlay', '.bottom-hud', '.minimap-container', '.hud-inventory',
+      '.audio-controls-container', '.audio-toggle-btn', '.sound-volume-slider', '.combat-controls']) {
+      assertTrue(cssContent.includes(selector), `HUD must style ${selector}`);
+    }
+    assertTrue(cssContent.includes('(min-width:1100px) and (min-height:650px)'), 'Large layout requires both width and height');
+    assertTrue(cssContent.includes('@media (orientation:portrait)'), 'Portrait must have an explicit adapted layout');
+    assertTrue(cssContent.includes('env(safe-area-inset-left)'), 'Touch HUD must respect device safe areas');
+    assertTrue(cssContent.includes('grid-template-columns: repeat(6, minmax(0,1fr))'), 'All six inventory slots remain available');
+    assertTrue(html.includes('class="hud-inventory"'), 'Inventory remains in the DOM');
+    assertTrue(cssContent.includes('width: 44px; height: 44px;'), 'Upgrade hit targets must remain finger sized');
 
-    // 1. Breakpoint 1: Base desktop layout (>1200px)
-    assertTrue(cssContent.includes('.hud-overlay'), 'HUD overlay container must be styled');
-    assertTrue(cssContent.includes('.bottom-hud'), 'Bottom HUD must be styled');
-    assertTrue(cssContent.includes('.minimap-container'), 'Minimap container must be styled');
-
-    // 2. Breakpoint 2: Compact Desktop (961px - 1200px)
-    assertTrue(
-      cssContent.includes('@media (min-width: 961px) and (max-width: 1200px)'),
-      'CSS must contain media query for Breakpoint 2 (961px - 1200px)'
-    );
-
-    // 3. Breakpoint 3: Tablet with preserved mini-strip inventory (641px - 960px)
-    assertTrue(
-      cssContent.includes('@media (min-width: 641px) and (max-width: 960px)'),
-      'CSS must contain media query for Breakpoint 3 (641px - 960px)'
-    );
-    // Ensure inventory is preserved in mini-strip row (not hidden)
-    const bp3Index = cssContent.indexOf('@media (min-width: 641px) and (max-width: 960px)');
-    const bp3Block = cssContent.slice(bp3Index, bp3Index + 1200);
-    assertTrue(
-      bp3Block.includes('.hud-inventory'),
-      'Breakpoint 3 must configure .hud-inventory mini-strip'
-    );
-    assertTrue(
-      bp3Block.includes('flex-direction: row'),
-      'Breakpoint 3 must arrange inventory horizontally in a mini-strip'
-    );
-
-    // 4. Breakpoint 4: Mobile (<=640px)
-    assertTrue(
-      cssContent.includes('@media (max-width: 640px)'),
-      'CSS must contain media query for Breakpoint 4 (<= 640px)'
-    );
-
-    // 5. Audio controls styling present
-    assertTrue(cssContent.includes('.audio-controls-container'), 'Audio controls container must be styled');
-    assertTrue(cssContent.includes('.audio-toggle-btn'), 'Audio toggle button must be styled');
-    assertTrue(cssContent.includes('#sound-volume-slider'), 'Sound volume slider must be styled');
   });
 
 });

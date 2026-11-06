@@ -1,0 +1,61 @@
+{
+  "tool": "Built-in image_gen",
+  "layout": {
+    "Q": [
+      0,
+      0
+    ],
+    "W": [
+      1,
+      0
+    ],
+    "E": [
+      0,
+      1
+    ],
+    "R": [
+      1,
+      1
+    ]
+  },
+  "shared_prompt": "One square fantasy MOBA ability atlas. Exactly four equal quadrants in a 2x2 grid, row-major Q/W/E/R. Uniform dark navy #101c2c background, centered isolated subjects with 12 percent padding. Polished hand-painted fantasy game UI, bold silhouettes legible at small size. No text, letters, numbers, frames, borders, divider lines or button rings. Artwork only; clipped with CSS.",
+  "hero_prompts": {
+    "knight": [
+      "Blue gold shield with cyan impact burst",
+      "Silver helmet profile emitting cyan provoking shout waves",
+      "Silver sword with sweeping cyan spinning cleave arc",
+      "White stone fortress with gold roofs and protective blue aura"
+    ],
+    "sorceress": [
+      "Orange fireball with golden flame tail",
+      "Icy blue snowflake in a snowstorm",
+      "Cyan teleport portal and lightning streak",
+      "Burning meteor with rocky core and fiery trail"
+    ],
+    "ranger": [
+      "Silver gold piercing arrow with cyan trail",
+      "Three gold arrows raining through green clouds",
+      "Elven leather boot, leaves and cyan evasive wind arc",
+      "Gold bow firing a radiant cyan ultimate arrow"
+    ],
+    "assassin": [
+      "Hooded shadow silhouette with dagger and turquoise smoke",
+      "Crossed silver daggers dripping emerald poison",
+      "Black cloak dissolving into teal smoke",
+      "Three silver blades swirling in a bright teal burst"
+    ],
+    "cleric": [
+      "Open hand holding a white gold healing star",
+      "Golden sanctuary altar, warm halo and floating sparks",
+      "Gold sun disk projecting a white gold beam",
+      "Golden shield with white feather wings and healing rays"
+    ]
+  },
+  "files": {
+    "knight": "knight.png",
+    "sorceress": "sorceress.png",
+    "ranger": "ranger.png",
+    "assassin": "assassin.png",
+    "cleric": "cleric.png"
+  }
+}

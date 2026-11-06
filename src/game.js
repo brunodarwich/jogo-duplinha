@@ -1,3 +1,4 @@
+import { applyAbilityArt } from './ui/ability_art.js';
 /**
  * GameSimulation Orchestrator.
  * Coordinates fixed 60fps simulation, entities, camera follow, input dispatch, 7-pass rendering, and HUD.
@@ -292,6 +293,8 @@ export class GameSimulation {
       }
       portrait.className = `hero-portrait ${heroDef.id}`;
     }
+
+    applyAbilityArt(heroDef.id);
 
     // Update ability button slots in DOM
     const slots = ['Q', 'W', 'E', 'R'];
@@ -2041,7 +2044,7 @@ export class GameSimulation {
     if (this.renderer.ctx) {
       if (this.bossManager) {
         this.bossManager.drawHazards(this.renderer.ctx, this.camera, this.camera.zoom);
-        this.bossManager.drawBossHUD(this.renderer.ctx, this.renderer.viewportWidth, this.renderer.viewportHeight, this.hud.getWorldHUDTop?.() || 100);
+        this.hud.updateBoss(this.bossManager.activeBosses);
       }
       if (this.waveSpawner) {
         this.waveSpawner.drawProjectiles(this.renderer.ctx, this.camera, this.camera.zoom);

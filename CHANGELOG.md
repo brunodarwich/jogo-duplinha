@@ -1,5 +1,28 @@
 # Changelog
 
+## [2.2.0] - 2026-11-06
+
+### Added
+- HUD inspirado na interface aprovada: botões circulares, superfícies azul-escuras e bordas douradas.
+- Vinte ícones de habilidades em cinco atlas ilustrados, com fallback acessível.
+- Joystick fixo e suporte a movimento, ataque e habilidades com dedos independentes.
+- Loja sempre visível com saldo de ouro, configurações e painel Partida.
+- Registro de medidas, posições e comparação visual em tasks/hud-design.md.
+
+### Changed
+- Layouts próprios para tablet horizontal, celular horizontal e retrato, respeitando áreas seguras e alvos de toque.
+- Vida do chefe apresentada no HUD DOM com valores reais, sem duplicação no canvas.
+- Estilos de posicionamento do HUD centralizados em src/ui/hud.css.
+
+### Fixed
+- Toques do segundo dedo reconhecidos sem duplicar ações.
+- Movimento encerrado ao soltar, cancelar, perder foco, rotacionar ou abrir janelas.
+- Loja e menus organizados para preservar o acesso a compra, venda, zoom e inventário em telas pequenas.
+
+### Validation
+- 358 testes aprovados em 53 arquivos.
+- Chrome: sete resoluções de toque, quatro larguras de desktop, cinco heróis, multitouch nativo, limites da loja e fallback de arte.
+
 ## [2.1.0] - 2026-11-05
 
 ### Added

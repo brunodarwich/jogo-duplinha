@@ -1,7 +1,8 @@
+import { enableTouchActivation } from './touch_button.js';
 /**
  * Virtual Joystick & Mobile Touch Controls for MOBA Duplinha 2.5D.
  * Provides:
- * 1. Floating Dynamic Joystick on the left half of the screen.
+ * 1. Fixed joystick in the bottom-left corner.
  * 2. Dedicated Touch Attack Button (auto-targets nearest enemy or moves).
  * 3. Screen-relative to world-space continuous movement mapping.
  */
@@ -30,7 +31,6 @@ export class VirtualJoystick {
 
     this.updateInterval = null;
     this.listeners = [];
-    this.orientationDismissed = false;
 
     this.initDOM();
     this.bindTouchEvents();
@@ -44,7 +44,9 @@ export class VirtualJoystick {
 
     // Joystick visual elements
     const base = document.createElement('div');
-    base.className = 'v-joystick-base hidden';
+    base.className = 'v-joystick-base';
+    base.setAttribute('aria-label', 'Arraste para mover seu herói');
+    base.setAttribute('role', 'group');
     const knob = document.createElement('div');
     knob.className = 'v-joystick-knob';
     base.appendChild(knob);
@@ -56,10 +58,10 @@ export class VirtualJoystick {
     attackBtn.className = 'mobile-action-btn mobile-attack-btn';
     attackBtn.setAttribute('type', 'button');
     attackBtn.innerHTML = `
-      <span class="btn-icon">⚔️</span>
+      <svg class="btn-icon" viewBox="0 0 48 48" aria-hidden="true"><path d="M8 5l26 25-5 5L4 9V4zm32 0L14 30l5 5L44 9V4z" fill="#e2e8f0" stroke="#64748b" stroke-width="2"/><path d="M25 31l13 13m-4-9l6-6M23 31L10 44m4-9l-6-6" stroke="#d7b75d" stroke-width="5"/></svg>
       <span class="btn-label">ATACAR</span>
     `;
-    container.appendChild(attackBtn);
+    document.getElementById('combat-controls').appendChild(attackBtn);
 
     document.body.appendChild(container);
 
@@ -67,25 +69,6 @@ export class VirtualJoystick {
     this.baseEl = base;
     this.knobEl = knob;
     this.attackBtnEl = attackBtn;
-
-    // Orientation Warning Overlay
-    const rotateAlert = document.createElement('div');
-    rotateAlert.id = 'orientation-warning-overlay';
-    rotateAlert.className = 'orientation-warning-overlay hidden';
-    rotateAlert.innerHTML = `
-      <div class="orientation-card">
-        <div class="rotate-phone-icon">🔄📱</div>
-        <h2>Gire seu Celular</h2>
-        <p>Para a melhor experiência, jogue com o celular na horizontal (modo paisagem).</p>
-        <button type="button" class="orientation-continue">Continuar em retrato</button>
-      </div>
-    `;
-    document.body.appendChild(rotateAlert);
-    this.orientationEl = rotateAlert;
-    this.listen(rotateAlert.querySelector('button'), 'click', () => {
-      this.orientationDismissed = true;
-      this.checkOrientation();
-    });
 
     this.checkOrientation();
     this.listen(window, 'resize', () => this.checkOrientation());
@@ -103,16 +86,10 @@ export class VirtualJoystick {
 
   checkOrientation() {
     const alertEl = document.getElementById('orientation-warning-overlay');
-    if (!alertEl) return;
     const isMobile = this.prefersTouchControls();
-    const isPortrait = window.innerHeight > window.innerWidth;
     this.container?.classList.toggle('desktop-mode', !isMobile);
-
-    if (isMobile && isPortrait && !this.orientationDismissed) {
-      alertEl.classList.remove('hidden');
-    } else {
-      alertEl.classList.add('hidden');
-    }
+    this.cancelMovement();
+    alertEl?.classList.add('hidden');
   }
 
   bindTouchEvents() {
@@ -121,6 +98,8 @@ export class VirtualJoystick {
       this.container.classList.add('desktop-mode');
     }
 
+    enableTouchActivation(this.attackBtnEl, this.listen.bind(this));
+
     // Touch Attack Button Handler
     // A native click is emitted once for a tap, mouse click or keyboard activation.
     this.listen(this.attackBtnEl, 'click', (e) => {
@@ -128,80 +107,56 @@ export class VirtualJoystick {
       this.handleTouchAttack();
     });
 
-    // Window-level touch tracking for joystick on left side of screen
-    this.listen(window, 'touchstart', (e) => {
-      if (!this.prefersTouchControls()) return;
-      for (let i = 0; i < e.changedTouches.length; i++) {
-        const touch = e.changedTouches[i];
-        // If touch is on left 45% of screen and not on a button/input
-        const isLeftHalf = touch.clientX < (window.innerWidth * 0.45);
-        const isInteractiveTarget = touch.target.closest('button, input, select, textarea, a, [role="dialog"], .inv-slot, .ability-slot, #lobby-overlay, #shop-modal, #help-overlay');
-
-        if (!this.active && isLeftHalf && !isInteractiveTarget) {
-          e.preventDefault();
-          this.active = true;
-          this.touchId = touch.identifier;
-          this.baseX = touch.clientX;
-          this.baseY = touch.clientY;
-          this.currX = touch.clientX;
-          this.currY = touch.clientY;
-          this.dirX = 0;
-          this.dirY = 0;
-          this.magnitude = 0;
-
-          this.showJoystick(this.baseX, this.baseY);
-          this.startMovementLoop();
-          break;
-        }
-      }
-    }, { passive: false });
-
-    this.listen(window, 'touchmove', (e) => {
-      if (!this.active) return;
-      for (let i = 0; i < e.changedTouches.length; i++) {
-        const touch = e.changedTouches[i];
-        if (touch.identifier === this.touchId) {
-          e.preventDefault();
-          this.updateJoystickPosition(touch.clientX, touch.clientY);
-          break;
-        }
-      }
-    }, { passive: false });
-
-    const endHandler = (e) => {
-      if (!this.active) return;
-      for (let i = 0; i < e.changedTouches.length; i++) {
-        const touch = e.changedTouches[i];
-        if (touch.identifier === this.touchId) {
-          this.active = false;
-          this.touchId = null;
-          this.dirX = 0;
-          this.dirY = 0;
-          this.magnitude = 0;
-          this.hideJoystick();
-          this.stopMovementLoop();
-          break;
-        }
-      }
-    };
-
-    this.listen(window, 'touchend', endHandler);
-    this.listen(window, 'touchcancel', endHandler);
-  }
-
-  showJoystick(x, y) {
-    if (!this.baseEl) return;
-    this.baseEl.style.left = `${x}px`;
-    this.baseEl.style.top = `${y}px`;
-    this.baseEl.classList.remove('hidden');
-    if (this.knobEl) {
-      this.knobEl.style.transform = `translate(-50%, -50%) translate(0px, 0px)`;
+    if (this.baseEl) {
+      this.listen(this.baseEl, 'pointerdown', e => this.beginPointer(e));
+      this.listen(this.baseEl, 'pointermove', e => this.movePointer(e));
+      this.listen(this.baseEl, 'pointerup', e => this.endPointer(e));
+      this.listen(this.baseEl, 'pointercancel', e => this.endPointer(e));
+      this.listen(this.baseEl, 'lostpointercapture', e => this.endPointer(e));
     }
+    this.listen(window, 'blur', () => this.cancelMovement());
+    if (typeof document !== 'undefined') this.listen(document, 'visibilitychange', () => {
+      if (document.hidden) this.cancelMovement();
+    });
   }
 
-  hideJoystick() {
-    if (!this.baseEl) return;
-    this.baseEl.classList.add('hidden');
+  beginPointer(e) {
+    if (this.active || !this.prefersTouchControls() || e.pointerType === 'mouse') return;
+    e.preventDefault(); e.stopPropagation();
+    const rect = this.baseEl.getBoundingClientRect();
+    this.active = true;
+    this.touchId = e.pointerId;
+    this.baseX = rect.left + rect.width / 2;
+    this.baseY = rect.top + rect.height / 2;
+    this.maxRadius = rect.width * .28;
+    this.hasMoved = false;
+    this.baseEl.setPointerCapture?.(e.pointerId);
+    this.updateJoystickPosition(e.clientX, e.clientY);
+    this.startMovementLoop();
+  }
+
+  movePointer(e) {
+    if (!this.active || e.pointerId !== this.touchId) return;
+    e.preventDefault();
+    this.updateJoystickPosition(e.clientX, e.clientY);
+  }
+
+  endPointer(e) {
+    if (e.pointerId !== this.touchId) return;
+    this.cancelMovement();
+  }
+
+  cancelMovement() {
+    const pointerId = this.touchId;
+    const moved = this.hasMoved;
+    this.active = false;
+    this.touchId = null;
+    this.hasMoved = false;
+    this.dirX = this.dirY = this.magnitude = 0;
+    this.stopMovementLoop();
+    if (this.knobEl) this.knobEl.style.transform = 'translate(-50%, -50%)';
+    if (pointerId != null && this.baseEl?.hasPointerCapture?.(pointerId)) this.baseEl.releasePointerCapture(pointerId);
+    if (moved) this.gameSim?.handleCommand({ type: CommandType.STOP });
   }
 
   updateJoystickPosition(x, y) {
@@ -274,6 +229,7 @@ export class VirtualJoystick {
       ? this.gameSim.map.findNearestWalkable(targetWorld.wx, targetWorld.wy, hero.radius)
       : { x: targetWorld.wx, y: targetWorld.wy };
 
+    this.hasMoved = true;
     this.gameSim.handleCommand({ type: CommandType.MOVE_TO, x: walkable.x, y: walkable.y, silent: true });
   }
 
@@ -324,6 +280,6 @@ export class VirtualJoystick {
     this.listeners.forEach(remove => remove());
     this.listeners = [];
     this.container?.remove();
-    this.orientationEl?.remove();
+    this.attackBtnEl?.remove();
   }
 }

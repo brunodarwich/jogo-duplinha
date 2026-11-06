@@ -6,6 +6,7 @@
   <title>MOBA Duplinha 2.5D</title>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="src/ui/hud.css">
   <!-- WebRTC Peer-to-Peer Networking for 1-3 Players -->
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <script>if (typeof Peer === 'undefined') { document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"><\\/script>'); }</script>
@@ -16,40 +17,77 @@
 
   <!-- HUD Overlays (Pointer-events transparent, children interactive) -->
   <div id="hud-overlay" class="hud-overlay">
-    <section id="zoom-controls" class="zoom-controls" aria-label="Zoom da câmera">
-      <div class="zoom-heading"><span>ZOOM</span><output aria-label="Zoom selecionado">125%</output></div>
-      <div class="zoom-actions">
-        <button type="button" data-zoom="out" aria-label="Afastar câmera" title="Afastar">−</button>
-        <input type="range" min="0.6" max="1.6" step="0.05" value="1.25" aria-label="Aproximação da câmera">
-        <button type="button" data-zoom="in" aria-label="Aproximar câmera" title="Aproximar">+</button>
-      </div>
-      <button type="button" class="zoom-reset" data-zoom="reset" title="Restaurar zoom de 125%">Restaurar 125%</button>
-      <small>Use também a roda do mouse</small>
-    </section>
+
     <!-- Top HUD: Objectives & Match Timer -->
-    <header class="top-hud">
-      <div class="tower-status allied">
-        <span class="icon">🛡️</span>
-        <span id="allied-towers-count">Torres: 2</span>
+    <div class="hud-map-group">
+      <div id="minimap-container" class="minimap-container">
+        <canvas id="minimap-canvas" width="200" height="200"></canvas>
       </div>
-      <div class="match-timer-container">
-        <span id="match-timer">00:00</span>
-      </div>
-      <div class="tower-status enemy">
-        <span class="icon">💀</span>
-        <span id="enemy-towers-count">Torres: 2</span>
-      </div>
-      <div class="audio-controls-container">
-        <button id="btn-audio-toggle" class="audio-toggle-btn" title="Alternar Áudio (Mute/Ativar) [M]">🔊</button>
-        <input type="range" id="sound-volume-slider" class="sound-volume-slider" min="0" max="1" step="0.05" value="0.7" title="Volume do Jogo">
-      </div>
-      <button type="button" id="btn-shop-toggle" class="hud-shop-btn" aria-label="Abrir loja de itens" title="Loja [P]">Loja</button>
-      <button type="button" id="btn-help" class="hud-help-btn" aria-label="Abrir guia e preferências" title="Guia e preferências">?</button>
-    </header>
-    <section class="objective-hud" aria-label="Objetivo da partida">
-      <div class="objective-main"><span class="objective-label">OBJETIVO</span><strong id="hud-objective">Destrua a torre externa</strong><span id="hud-objective-detail">Avance junto com seus lacaios.</span></div>
-      <div class="objective-timing"><span id="hud-next-wave">Próxima onda em 01:00</span><small id="hud-network-status">Solo</small></div>
+      <div class="hud-match-score" aria-label="Torres restantes">
+              <div class="tower-status allied" aria-label="Torres aliadas">
+                <span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 2h4v4h3V2h4v4h3V2h4v9l-4 3v5h3v3H4v-3h3v-5l-4-3z"/></svg></span><span id="allied-towers-count">2</span>
+              </div>
+              <div class="tower-status enemy" aria-label="Torres inimigas">
+                <span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 2h4v4h3V2h4v4h3V2h4v9l-4 3v5h3v3H4v-3h3v-5l-4-3z"/></svg></span><span id="enemy-towers-count">2</span>
+              </div>
+            </div>
+    </div>
+    <section class="hud-match-center" aria-label="Partida em andamento">
+      <div class="match-timer-container"><span aria-hidden="true">◷</span> <span id="match-timer">00:00</span></div>
+      <strong id="hud-objective" class="hud-objective-summary">Destrua a torre externa</strong>
+      <section id="boss-hud" class="boss-hud" aria-label="Chefe ativo" hidden>
+        <div class="boss-heading"><strong id="boss-name"></strong><span id="boss-hp-text"></span></div>
+        <div class="boss-health-track" role="progressbar" aria-label="Vida do chefe" aria-valuemin="0" aria-valuemax="100"><div id="boss-hp-fill"></div>
+    </div>
+        <span id="boss-shield" hidden>Escudo ativo</span>
+      </section>
     </section>
+    <header class="top-hud">
+      <button type="button" id="btn-shop-toggle" class="hud-shop-btn" aria-label="Abrir loja de itens" aria-haspopup="dialog" title="Loja [P]"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16l1 14H3L4 7zm4 0V5a4 4 0 018 0v2"/></svg><span>LOJA</span><span class="shop-shortcut-gold"><span aria-hidden="true">●</span> <span id="hud-shop-gold">1200</span></span></button>
+      <details class="hud-info-panel">
+        <summary>Partida <span aria-hidden="true">▾</span></summary>
+        <div class="hud-info-content">
+          <section class="objective-hud" aria-label="Objetivo e próxima onda"><strong id="hud-objective-expanded">Destrua a torre externa</strong><span id="hud-objective-detail">Avance junto com seus lacaios.</span><span id="hud-next-wave">Próxima onda em 01:00</span><small id="hud-network-status">Solo</small></section>
+          <div class="hud-stats-box">
+            <div class="stat-item" title="Dano de Ataque (AD)"><span class="stat-icon">⚔️</span><span id="stat-ad">58</span></div>
+            <div class="stat-item" title="Poder de Habilidade (AP)"><span class="stat-icon">✨</span><span id="stat-ap">0</span></div>
+            <div class="stat-item" title="Armadura Física"><span class="stat-icon">🛡️</span><span id="stat-armor">38</span></div>
+            <div class="stat-item" title="Resistência Mágica"><span class="stat-icon">🔮</span><span id="stat-mr">32</span></div>
+            <div class="stat-item" title="Velocidade de Movimento"><span class="stat-icon">👟</span><span id="stat-speed">325</span></div>
+            <div class="stat-item gold" title="Ouro"><span class="stat-icon">💰</span><span id="stat-gold">1200</span></div>
+          </div>
+          <div class="hud-inventory" title="Inventário de 6 Itens">
+            <button type="button" class="inv-slot" data-slot="0" aria-label="Espaço de inventário 1"></button>
+            <button type="button" class="inv-slot" data-slot="1" aria-label="Espaço de inventário 2"></button>
+            <button type="button" class="inv-slot" data-slot="2" aria-label="Espaço de inventário 3"></button>
+            <button type="button" class="inv-slot" data-slot="3" aria-label="Espaço de inventário 4"></button>
+            <button type="button" class="inv-slot" data-slot="4" aria-label="Espaço de inventário 5"></button>
+            <button type="button" class="inv-slot" data-slot="5" aria-label="Espaço de inventário 6"></button>
+          </div><section id="zoom-controls" class="zoom-controls" aria-label="Zoom da câmera">
+            <div class="zoom-heading"><span>ZOOM</span><output aria-label="Zoom selecionado">125%</output></div>
+            <div class="zoom-actions">
+              <button type="button" data-zoom="out" aria-label="Afastar câmera" title="Afastar">−</button>
+              <input type="range" min="0.6" max="1.6" step="0.05" value="1.25" aria-label="Aproximação da câmera">
+              <button type="button" data-zoom="in" aria-label="Aproximar câmera" title="Aproximar">+</button>
+            </div>
+            <button type="button" class="zoom-reset" data-zoom="reset" title="Restaurar zoom de 125%">Restaurar 125%</button>
+            <small>Use também a roda do mouse</small>
+          </section>
+        </div>
+      </details>
+      <details class="hud-settings-panel">
+        <summary aria-label="Configurações" title="Configurações"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6l1 3 3 1 2 5-2 5-3 1-1 3H9l-1-3-3-1-2-5 2-5 3-1z"/><circle cx="12" cy="12" r="3"/></svg></summary>
+        <div class="hud-settings-content">
+          <h2>Configurações</h2>
+          <label for="sound-volume-slider">Áudio e volume</label><div class="audio-controls-container">
+            <button id="btn-audio-toggle" class="audio-toggle-btn" title="Alternar Áudio (Mute/Ativar) [M]">🔊</button>
+            <input type="range" id="sound-volume-slider" class="sound-volume-slider" min="0" max="1" step="0.05" value="0.7" title="Volume do Jogo">
+          </div>
+          <label class="motion-preference"><input type="checkbox" id="settings-reduce-motion"> Reduzir movimento e tremor</label>
+          <button type="button" id="btn-help" class="hud-help-btn">Abrir guia do jogo</button>
+        </div>
+      </details>
+    </header>
 
     <!-- Dynamic Event Banner Container (M1 / R1) -->
     <div id="event-banner-container" class="event-banner-container"></div>
@@ -100,24 +138,11 @@
 
     <!-- Bottom HUD Console -->
     <footer class="bottom-hud">
-      <!-- Hero Portrait & Level -->
-      <div class="hud-portrait-box">
-        <div id="hero-portrait" class="hero-portrait knight">🛡️</div>
-        <div id="hero-level-badge" class="level-badge">1</div>
-      </div>
-
-      <!-- Stats Matrix -->
-      <div class="hud-stats-box">
-        <div class="stat-item" title="Dano de Ataque (AD)"><span class="stat-icon">⚔️</span><span id="stat-ad">58</span></div>
-        <div class="stat-item" title="Poder de Habilidade (AP)"><span class="stat-icon">✨</span><span id="stat-ap">0</span></div>
-        <div class="stat-item" title="Armadura Física"><span class="stat-icon">🛡️</span><span id="stat-armor">38</span></div>
-        <div class="stat-item" title="Resistência Mágica"><span class="stat-icon">🔮</span><span id="stat-mr">32</span></div>
-        <div class="stat-item" title="Velocidade de Movimento"><span class="stat-icon">👟</span><span id="stat-speed">325</span></div>
-        <div class="stat-item gold" title="Ouro"><span class="stat-icon">💰</span><span id="stat-gold">1200</span></div>
-      </div>
-
-      <!-- Center Console (HP, Mana, Ability Bar) -->
-      <div class="hud-center-console">
+      <section class="hud-hero-summary" aria-label="Seu herói">
+        <div class="hud-portrait-box">
+              <div id="hero-portrait" class="hero-portrait knight">🛡️</div>
+              <div id="hero-level-badge" class="level-badge">1</div>
+            </div>
         <div class="status-bars">
           <div class="bar-container hp-bar">
             <div id="hud-hp-fill" class="bar-fill hp" style="width: 100%;"></div>
@@ -132,10 +157,11 @@
             <span id="hud-xp-text" class="bar-text">0 / 240 XP</span>
           </div>
         </div>
-
+      </section>
+      <section id="combat-controls" class="combat-controls" aria-label="Controles de combate">
         <div class="ability-bar">
-          <div class="ability-slot-wrapper">
-            <button id="btn-upgrade-q" class="ability-levelup-btn hidden" data-upgrade-slot="Q" title="Evoluir Habilidade Q (Ctrl+Q)">+</button>
+          <div class="ability-slot-wrapper" data-slot="Q">
+            <button id="btn-upgrade-q" class="ability-levelup-btn hidden" data-upgrade-slot="Q" aria-label="Evoluir habilidade Q" title="Evoluir Habilidade Q (Ctrl+Q)">+</button>
             <button type="button" id="ability-q" class="ability-slot" data-key="Q" title="Q: Shield Slam (Golpe de Escudo)">
               <span class="ability-icon">💥</span>
               <span class="ability-cooldown-sweep"></span>
@@ -147,8 +173,8 @@
               <span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span>
             </div>
           </div>
-          <div class="ability-slot-wrapper">
-            <button id="btn-upgrade-w" class="ability-levelup-btn hidden" data-upgrade-slot="W" title="Evoluir Habilidade W (Ctrl+W)">+</button>
+          <div class="ability-slot-wrapper" data-slot="W">
+            <button id="btn-upgrade-w" class="ability-levelup-btn hidden" data-upgrade-slot="W" aria-label="Evoluir habilidade W" title="Evoluir Habilidade W (Ctrl+W)">+</button>
             <button type="button" id="ability-w" class="ability-slot" data-key="W" title="W: Provocation (Provocação em Área)">
               <span class="ability-icon">📢</span>
               <span class="ability-cooldown-sweep"></span>
@@ -160,8 +186,8 @@
               <span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span>
             </div>
           </div>
-          <div class="ability-slot-wrapper">
-            <button id="btn-upgrade-e" class="ability-levelup-btn hidden" data-upgrade-slot="E" title="Evoluir Habilidade E (Ctrl+E)">+</button>
+          <div class="ability-slot-wrapper" data-slot="E">
+            <button id="btn-upgrade-e" class="ability-levelup-btn hidden" data-upgrade-slot="E" aria-label="Evoluir habilidade E" title="Evoluir Habilidade E (Ctrl+E)">+</button>
             <button type="button" id="ability-e" class="ability-slot" data-key="E" title="E: Cleave (Cutilada Rotativa)">
               <span class="ability-icon">⚔️</span>
               <span class="ability-cooldown-sweep"></span>
@@ -173,8 +199,8 @@
               <span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span>
             </div>
           </div>
-          <div class="ability-slot-wrapper">
-            <button id="btn-upgrade-r" class="ability-levelup-btn hidden" data-upgrade-slot="R" title="Evoluir Habilidade R (Ctrl+R)">+</button>
+          <div class="ability-slot-wrapper" data-slot="R">
+            <button id="btn-upgrade-r" class="ability-levelup-btn hidden" data-upgrade-slot="R" aria-label="Evoluir habilidade R" title="Evoluir Habilidade R (Ctrl+R)">+</button>
             <button type="button" id="ability-r" class="ability-slot ultimate" data-key="R" title="R: Fortress (Fortaleza Inabalável)">
               <span class="ability-icon">🏰</span>
               <span class="ability-cooldown-sweep"></span>
@@ -186,32 +212,17 @@
               <span class="pip"></span><span class="pip"></span><span class="pip"></span>
             </div>
           </div>
-          <div class="ability-slot-wrapper">
+          </div>
+        <div class="ability-slot-wrapper recall-wrapper">
             <button type="button" id="ability-b" class="ability-slot recall" data-key="B" title="B: Recall (Teleporte de Retorno à Base)">
-              <span class="ability-icon">🌀</span>
+              <span class="ability-icon recall-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><ellipse cx="24" cy="35" rx="19" ry="7"/><ellipse cx="24" cy="35" rx="12" ry="4"/><path d="M20 34L22 6h4l2 28M18 12l6-7 6 7"/></svg></span>
               <span class="ability-cooldown-sweep"></span>
               <span class="cooldown-text"></span>
               <span class="hotkey-label">B</span>
             </button>
             <div class="ability-pips recall-spacer"></div>
           </div>
-        </div>
-      </div>
-
-      <!-- 6-Slot Inventory -->
-      <div class="hud-inventory" title="Inventário de 6 Itens">
-        <button type="button" class="inv-slot" data-slot="0" aria-label="Espaço de inventário 1"></button>
-        <button type="button" class="inv-slot" data-slot="1" aria-label="Espaço de inventário 2"></button>
-        <button type="button" class="inv-slot" data-slot="2" aria-label="Espaço de inventário 3"></button>
-        <button type="button" class="inv-slot" data-slot="3" aria-label="Espaço de inventário 4"></button>
-        <button type="button" class="inv-slot" data-slot="4" aria-label="Espaço de inventário 5"></button>
-        <button type="button" class="inv-slot" data-slot="5" aria-label="Espaço de inventário 6"></button>
-      </div>
-
-      <!-- Interactive Minimap (Bottom-Right) -->
-      <div id="minimap-container" class="minimap-container">
-        <canvas id="minimap-canvas" width="200" height="200"></canvas>
-      </div>
+        </section>
     </footer>
   </div>
 

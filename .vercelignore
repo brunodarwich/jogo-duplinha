@@ -18,3 +18,7 @@ server.js
 *.bat
 assets/ui/promo-arena-v2.png
 assets/ui/promo-arena-v2.prompt.json
+
+# Local design evidence and source-only generation prompts
+output/
+assets/ui/abilities/prompts.json

@@ -1,10 +1,11 @@
 import { describe, it } from '../helpers/framework.js';
 import { assertEqual, assertTrue, assertFalse } from '../helpers/assert.js';
+import { getBossStatus } from '../../src/ui/hud.js';
 import { GameSimulation } from '../../src/game.js';
 import { BossManager, NexusGuardianBoss, StoneColossusBoss, AbyssalBehemothBoss } from '../../src/world/boss.js';
 
 describe('Tier 1 Unit: Boss HUD Robustness & Boost Command Mechanics', () => {
-  it('TC-BST-01: Boss entities have valid name strings and do not throw in drawBossHUD', () => {
+  it('TC-BST-01: Boss entities have valid names in the DOM HUD presentation', () => {
     const mgr = new BossManager();
     const sup = mgr.supremeBoss;
     const colossus = new StoneColossusBoss();
@@ -14,18 +15,10 @@ describe('Tier 1 Unit: Boss HUD Robustness & Boost Command Mechanics', () => {
     assertTrue(typeof colossus.name === 'string' && colossus.name.length > 0, 'Colossus must have a name');
     assertTrue(typeof behemoth.name === 'string' && behemoth.name.length > 0, 'Behemoth must have a name');
 
-    // Mock Canvas Context to test drawBossHUD
-    const calls = [];
-    const mockCtx = {
-      save: () => calls.push('save'),
-      restore: () => calls.push('restore'),
-      fillRect: () => calls.push('fillRect'),
-      strokeRect: () => calls.push('strokeRect'),
-      fillText: (text) => calls.push(`fillText:${text}`)
-    };
+    const view = getBossStatus(mgr.activeBosses);
+    assertTrue(view.label.includes('Guardião do Nexus'), 'HUD renders the active boss name');
+    assertEqual(view.hp, `${sup.hp} / ${sup.maxHp}`);
 
-    mgr.drawBossHUD(mockCtx, 1280, 720);
-    assertTrue(calls.some(c => c.includes('NEXUS GUARDIAN')), 'drawBossHUD renders boss name uppercase');
   });
 
   it('TC-BST-02: GameSimulation applyBoost increases speed, damage, and grants bonus gold', () => {
