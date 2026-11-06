@@ -36,7 +36,7 @@ export const SPRITE_PATHS = {
   nexus_enemy: 'assets/sprites/structures/nexus_enemy.png',
 
   // UI Splash & Key Art
-  ui_splash_heroes: 'assets/ui/splash_heroes.png'
+  ui_splash_heroes: 'assets/ui/promo-arena-v2.webp'
 };
 
 const imageCache = new Map();

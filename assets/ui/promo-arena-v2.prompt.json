@@ -1,0 +1,30 @@
+{
+  "asset": "promo-arena-v2",
+  "tool": "built-in image_gen",
+  "generated": "2026-11-05",
+  "intent": "Promotional loading-screen artwork using the five current hero identities",
+  "prompt": "Use case: stylized-concept, promotional game key art. Create a polished wide landscape 16:9 illustration for the loading screen of the fantasy cooperative game MOBA DUPLINHA. Opaque full-color scene, no embedded text.\nInput images 1-5 are the exact five hero identities and painterly game style to preserve: 1 silver-blue-gold knight with giant helmet, blue plume, sword and shield; 2 copper-haired red-hatted elemental sorceress holding fire staff and an ice crystal; 3 brown-haired green-hooded elf ranger with bow; 4 white/lilac-haired violet-hooded masked female assassin wielding green curved daggers; 5 fluffy ivory-haired cleric in white and gold, solar staff and book. Keep all five unmistakably recognizable with the same clothing, equipment, hair and color identity.\nCOMPOSITION: five heroes exactly once each, full bodies and all weapons visible, standing together on a weathered stone lane/bridge, confident slightly dynamic ready-for-adventure poses. Knight leading at center, sorceress and ranger adjacent, assassin and cleric flanking; no overlapping faces. Retain squat CHIBI large heads and tiny bodies, crisp dark outlines and faceted hand-painted shading from the supplied sprites; premium 2D fantasy illustration, not 3D figurines.\nARCHITECTURE: Behind the party, visibly feature the game's two opposed defensive crystal towers. On the blue side: tall stepped octagonal ivory/silver masonry tower, deep cobalt banners, ornate angular gold trims, huge pointed faceted CYAN crystal seated in a gold crown, blue gem medallion. On the enemy side: matching stepped octagonal dark slate/obsidian tower, crimson banners, bronze/gold braces, huge pointed faceted RUBY crystal in a gold crown. Make these towers large and clearly recognizable rather than tiny distant silhouettes. Behind the blue tower, a larger cyan Nexus citadel with ivory walls, blue rooftops and a tall cyan crystal between golden winglike arches.\nENVIRONMENT/LIGHT: Rich scenic depth, atmospheric blue twilight sky and low mist, blue crystal magical rim light balanced against warm amber/ruby glow, luminous crystal facets, detailed stone and polished armor, restrained magical sparks. Epic but inviting cooperative adventure, beautiful promotional splash art, one coherent painted scene.\nFRAMING: panoramic 16:9, all five characters inside the central 82% with feet safely above lower edge, towers rise at the sides behind them, generous breathing room between silhouettes and architecture. Characters form the foreground focus and towers the scenic frame. The illustration will be shown uncropped with HTML title/loading controls OUTSIDE the picture. Do not draw titles, logos, letters, captions, watermark, interface, buttons or loading bars. No extra characters, no giant villain, no gridded virtual floor, no collage/pasted outlines, no empty half-frame.",
+  "references": [
+    "assets/sprites/heroes/knight.png",
+    "assets/sprites/heroes/sorceress.png",
+    "assets/sprites/heroes/ranger.png",
+    "assets/sprites/heroes/assassin.png",
+    "assets/sprites/heroes/cleric.png"
+  ],
+  "architecture": {
+    "mode": "Tower and Nexus designs described from inspected game assets",
+    "references": [
+      "assets/sprites/structures/tower_allied.png",
+      "assets/sprites/structures/tower_enemy.png",
+      "assets/sprites/structures/nexus_allied.png"
+    ]
+  },
+  "outputs": {
+    "original": "assets/ui/promo-arena-v2.png",
+    "web": "assets/ui/promo-arena-v2.webp",
+    "width": 1672,
+    "height": 941,
+    "webpBytes": 456236,
+    "encoding": "FFmpeg libwebp quality 88, compression level 6; original composition and resolution preserved"
+  }
+}
