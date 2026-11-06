@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.1.0] - 2026-11-05
+
+### Added
+- Nova ilustração promocional com os cinco heróis atuais, torres de cristal azul/rubi e a cidadela do Nexus.
+- Tela inicial com a arte inteira, título destacado e carregamento/entrada em áreas próprias; layout adaptado para celular e paisagem curta.
+
+### Changed
+- Arte servida em WebP de aproximadamente 456 KB; PNG original e prompt preservados no repositório.
+- Entrada aguarda o carregamento da arte e dos sprites, com fallback para a imagem anterior e timeout para não bloquear o jogo.
+
+### Validation
+- 349/349 testes em 51 arquivos, incluindo oito regressões da tela inicial.
+- Navegador: seis resoluções de 320×568 a 1440×900, teclado, retorno à tela inicial, carregamento lento, falha da arte e convite.
+
 ## [2.0.0] - 2026-11-05
 
 ### Added

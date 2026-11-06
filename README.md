@@ -6,6 +6,8 @@ Jogo cooperativo estilo MOBA / Lane Push em perspectiva Isométrica 2.5D jogáve
 
 ## Novidades da versão 2.0
 
+A versão **2.1** acrescenta uma tela inicial promocional com os cinco heróis e as torres do jogo. A arte aparece inteira em desktop e celular; o original e o prompt ficam em assets/ui/promo-arena-v2.png e assets/ui/promo-arena-v2.prompt.json. O site usa uma cópia WebP otimizada.
+
 O anfitrião mantém um único mundo para a equipe: ondas, torres, chefes, dano, ouro e resultado são compartilhados. Convidados enviam comandos, e a entrada tardia recebe o estado da partida em andamento. Todos precisam recarregar a versão atual antes de entrar na mesma sala; clientes com versões incompatíveis recebem uma mensagem.
 
 O HUD mostra o próximo objetivo e a próxima onda. O botão **?** abre um guia curto e a opção de reduzir movimento/tremor; **Loja** abre os equipamentos. A seleção de heróis e os controles da interface aceitam Tab, Enter e Espaço. No toque, o aviso de orientação pode ser dispensado e ATACAR usa apenas ataque básico.
@@ -98,8 +100,8 @@ Cada herói possui animações próprias de ataque básico e Q/W/E/R, totalizand
 
 ## 🧪 Testes Automatizados
 
-Para rodar a suíte completa com **341 testes automatizados** (regras de combate, economia, entrada, UI, efeitos e simulações cooperativas):
+Para rodar a suíte completa com **349 testes automatizados** (regras de combate, economia, entrada, UI, efeitos e simulações cooperativas):
 ```bash
 npm test
 ```
-Resultado desta versão: **341/341 testes aprovados em 50 arquivos**. Os testes Node não substituem o navegador: foram verificados solo/teclado/toque emulado e WebRTC real em duas/três abas. Celular físico e duas máquinas distintas ficam como validação adicional. O roteiro e as evidências estão em tasks/browser-checklist.md.
+Resultado desta versão: **349/349 testes aprovados em 51 arquivos**. Os testes Node não substituem o navegador: foram verificados solo/teclado/toque emulado e WebRTC real em duas/três abas. A tela promocional foi conferida em seis resoluções, com imagem lenta e indisponível. Celular físico e duas máquinas distintas ficam como validação adicional. Os registros estão em tasks/browser-checklist.md e tasks/promo-release.md.
