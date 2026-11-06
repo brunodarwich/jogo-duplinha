@@ -22,6 +22,23 @@ export function formatMatchTime(seconds) {
   return `${m.toString().padStart(2, '0')}:${rem.toString().padStart(2, '0')}`;
 }
 
+export function getObjectiveStatus(state = {}) {
+  if (state.isVictory) return { objective: 'Vitória! Nexus inimigo destruído', detail: 'Sua equipe venceu.', wave: '' };
+  if (state.isDefeat) return { objective: 'Seu Nexus foi destruído', detail: 'Volte à seleção para jogar novamente.', wave: '' };
+  const towers = (state.entities || []).filter(e => e.type === 'tower' && e.team === 'enemy' &&
+    (typeof e.isAlive === 'function' ? e.isAlive() : e.hp > 0));
+  const outerAlive = towers.some(e => e.tier === 'outer' || String(e.id).includes('outer')) || towers.length >= 2;
+  const objective = typeof state.currentObjective === 'string' ? state.currentObjective :
+    (outerAlive ? 'Destrua a torre externa' : towers.length ? 'Destrua a torre interna' : 'Destrua o Nexus inimigo');
+  const seconds = Number.isFinite(state.nextWaveIn) ? state.nextWaveIn :
+    Math.max(0, (state.nextWaveTime || 60) - (state.matchTime || 0));
+  const nextWave = (state.waveIndex || 0) + 1;
+  let detail = towers.length ? 'Avance junto com seus lacaios.' : 'Nexus vulnerável — ataque o cristal!';
+  if (nextWave === 5) detail += ' Colosso na próxima onda.';
+  if (nextWave === 10) detail += ' Behemoth na próxima onda.';
+  return { objective, detail, wave: 'Próxima onda em ' + formatMatchTime(Math.ceil(Math.max(0, seconds))) };
+}
+
 /**
  * Interactive 200x200 Minimap Widget.
  */
@@ -30,10 +47,22 @@ export class Minimap {
    * @param {HTMLCanvasElement} [canvas=null]
    */
   constructor(canvas = null) {
+    this.listeners = [];
     this.canvas = canvas;
     this.ctx = canvas && typeof canvas.getContext === 'function' ? canvas.getContext('2d') : null;
     this.size = 200;
     this.scale = 200 / 3200; // 0.0625 (1px = 16 world units)
+    this.isDragging = false;
+  }
+
+  listen(target, name, callback, options) {
+    target.addEventListener(name, callback, options);
+    this.listeners.push(() => target.removeEventListener(name, callback, options));
+  }
+
+  destroy() {
+    this.listeners.forEach(remove => remove());
+    this.listeners = [];
     this.isDragging = false;
   }
 
@@ -69,23 +98,23 @@ export class Minimap {
       }
     };
 
-    this.canvas.addEventListener('pointerdown', (e) => {
+    this.listen(this.canvas, 'pointerdown', (e) => {
       e.stopPropagation();
       this.isDragging = true;
       handlePointer(e, true);
     });
 
-    window.addEventListener('pointermove', (e) => {
+    this.listen(window, 'pointermove', (e) => {
       if (this.isDragging) {
         handlePointer(e, false);
       }
     });
 
-    window.addEventListener('pointerup', () => {
+    this.listen(window, 'pointerup', () => {
       this.isDragging = false;
     });
 
-    this.canvas.addEventListener('contextmenu', (e) => {
+    this.listen(this.canvas, 'contextmenu', (e) => {
       e.preventDefault();
       e.stopPropagation();
     });
@@ -209,6 +238,8 @@ export class Minimap {
  */
 export class HUDController {
   constructor() {
+    this.listeners = [];
+    this.timers = new Set();
     this.elements = {};
     this.minimap = null;
     this.eventBanners = new EventBannerManager();
@@ -219,12 +250,36 @@ export class HUDController {
     this.cacheDOMElements();
   }
 
+  listen(target, name, callback, options) {
+    if (!target) return;
+    target.addEventListener(name, callback, options);
+    this.listeners.push(() => target.removeEventListener(name, callback, options));
+  }
+
+  schedule(callback, delay) {
+    const timer = setTimeout(() => { this.timers.delete(timer); callback(); }, delay);
+    this.timers.add(timer);
+  }
+
+  destroy() {
+    this.listeners.forEach(remove => remove());
+    this.listeners = [];
+    this.timers.forEach(timer => clearTimeout(timer));
+    this.timers.clear();
+    this.minimap?.destroy();
+    this.eventBanners.clear();
+  }
+
   cacheDOMElements() {
     if (typeof document === 'undefined') return;
 
     this.elements = {
       // Top HUD & Audio
       matchTimer: document.getElementById('match-timer'),
+      objective: document.getElementById('hud-objective'),
+      objectiveDetail: document.getElementById('hud-objective-detail'),
+      nextWave: document.getElementById('hud-next-wave'),
+      networkStatus: document.getElementById('hud-network-status'),
       alliedTowers: document.getElementById('allied-towers-count'),
       enemyTowers: document.getElementById('enemy-towers-count'),
       audioToggleBtn: document.getElementById('btn-audio-toggle'),
@@ -283,7 +338,7 @@ export class HUDController {
     };
 
     if (this.elements.audioToggleBtn) {
-      this.elements.audioToggleBtn.addEventListener('click', (e) => {
+      this.listen(this.elements.audioToggleBtn, 'click', (e) => {
         e.stopPropagation();
         e.preventDefault();
         if (typeof this.onAudioToggle === 'function') {
@@ -293,7 +348,7 @@ export class HUDController {
     }
 
     if (this.elements.volumeSlider) {
-      this.elements.volumeSlider.addEventListener('input', (e) => {
+      this.listen(this.elements.volumeSlider, 'input', (e) => {
         const val = parseFloat(e.target.value);
         if (typeof this.onVolumeChange === 'function') {
           this.onVolumeChange(val);
@@ -344,7 +399,7 @@ export class HUDController {
 
     // Listen to 'M' key for quick mute toggle
     if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
-      window.addEventListener('keydown', (e) => {
+      this.listen(window, 'keydown', (e) => {
         if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
         if (e.key === 'm' || e.key === 'M') {
           e.preventDefault();
@@ -375,7 +430,7 @@ export class HUDController {
     if (typeof document === 'undefined') return;
     const btns = document.querySelectorAll('.ability-levelup-btn');
     for (const btn of btns) {
-      btn.addEventListener('click', (e) => {
+      this.listen(btn, 'click', (e) => {
         e.stopPropagation();
         e.preventDefault();
         const slot = btn.dataset.upgradeSlot;
@@ -393,17 +448,24 @@ export class HUDController {
     if (typeof document === 'undefined') return;
 
     // 1. Top HUD
+    if (gameState) {
+      const view = getObjectiveStatus(gameState);
+      if (this.elements.objective) this.elements.objective.textContent = view.objective;
+      if (this.elements.objectiveDetail) this.elements.objectiveDetail.textContent = view.detail;
+      if (this.elements.nextWave) this.elements.nextWave.textContent = view.wave;
+      if (this.elements.networkStatus) this.elements.networkStatus.textContent = gameState.networkStatus || 'Solo';
+    }
     if (this.elements.matchTimer && gameState) {
       this.elements.matchTimer.textContent = formatMatchTime(gameState.matchTime || 0);
     }
 
     if (this.elements.alliedTowers && gameState) {
       const count = (gameState.entities || []).filter(e => e.type === 'tower' && e.team === 'allied' && (e.isAlive ? e.isAlive() : e.hp > 0)).length;
-      this.elements.alliedTowers.textContent = `Towers: ${count}`;
+      this.elements.alliedTowers.textContent = `Torres: ${count}`;
     }
     if (this.elements.enemyTowers && gameState) {
       const count = (gameState.entities || []).filter(e => e.type === 'tower' && e.team === 'enemy' && (e.isAlive ? e.isAlive() : e.hp > 0)).length;
-      this.elements.enemyTowers.textContent = `Towers: ${count}`;
+      this.elements.enemyTowers.textContent = `Torres: ${count}`;
     }
 
     if (!playerHero) return;
@@ -522,6 +584,16 @@ export class HUDController {
 
       const ab = abilities[slotItem.key];
       if (!ab) continue;
+      const unlearned = Number.isFinite(ab.rank) && ab.rank <= 0;
+      el.classList.toggle?.('unlearned', unlearned);
+      const blocked = unlearned || (ab.cooldownRemaining || 0) > 0 || (playerHero.mana || 0) < (ab.manaCost || 0) || isHeroDead;
+      const stateLabel = unlearned ? 'Não aprendida — use o botão mais para evoluir' :
+        isHeroDead ? 'Indisponível durante a morte' : (ab.cooldownRemaining || 0) > 0 ? 'Em recarga' :
+        (playerHero.mana || 0) < (ab.manaCost || 0) ? 'Mana insuficiente' : 'Pronta';
+      if (typeof el.setAttribute === 'function') {
+        el.setAttribute('aria-disabled', String(blocked));
+        el.setAttribute('aria-label', slotItem.key + ': ' + (ab.name || 'Habilidade') + '. ' + stateLabel);
+      }
 
       const cooldown = ab.cooldown || 10;
       const remaining = ab.cooldownRemaining || 0;
@@ -568,7 +640,7 @@ export class HUDController {
         // Ability cooldown just reached zero
         if (prevRemaining > 0) {
           el.classList.add('ready-burst');
-          setTimeout(() => {
+          this.schedule(() => {
             el.classList.remove('ready-burst');
           }, 600);
         }
@@ -608,9 +680,15 @@ export class HUDController {
     // Force DOM reflow to re-trigger CSS keyframe animation
     if (typeof el.offsetWidth === 'number') void el.offsetWidth;
     el.classList.add('cast-error-shake');
-    setTimeout(() => {
+    this.schedule(() => {
       el.classList.remove('cast-error-shake');
     }, 350);
+  }
+
+  getWorldHUDTop() {
+    if (typeof document === 'undefined') return 112;
+    const panels = [document.querySelector('.top-hud'), document.querySelector('.objective-hud')];
+    return Math.max(72, ...panels.map(panel => panel?.getBoundingClientRect?.().bottom || 0)) + 12;
   }
 }
 

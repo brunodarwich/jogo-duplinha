@@ -32,6 +32,31 @@ export class Renderer {
     this.tileSize = { width: 64, height: 32 };
     this.mapSize = { width: 3200, height: 3200 };
     this.tileStep = 64; // World units per tile
+    this.presentationEntities = new WeakMap();
+  }
+
+  getPresentationEntity(entity, now = performance.now()) {
+    if (!entity || !['hero', 'minion', 'boss'].includes(entity.type) ||
+        !Number.isFinite(entity._snapshotReceivedAt) || !Number.isFinite(entity._snapshotPreviousX) ||
+        !Number.isFinite(entity._snapshotPreviousY)) return entity;
+    const elapsed = now - entity._snapshotReceivedAt;
+    const interval = Math.max(16, Math.min(150, entity._snapshotInterval || 50));
+    if (elapsed >= interval || Math.hypot(entity.x - entity._snapshotPreviousX, entity.y - entity._snapshotPreviousY) > 180) return entity;
+    const alpha = Math.max(0, Math.min(1, elapsed / interval));
+    let view = this.presentationEntities.get(entity);
+    if (!view) {
+      view = Object.create(entity);
+      // Action expiry writes through to its presentation state, so a cached view
+      // cannot shadow a subsequent action received from the next snapshot.
+      Object.defineProperty(view, 'visualAction', {
+        get: () => entity.visualAction,
+        set: value => { entity.visualAction = value; }
+      });
+      this.presentationEntities.set(entity, view);
+    }
+    view.x = entity._snapshotPreviousX + (entity.x - entity._snapshotPreviousX) * alpha;
+    view.y = entity._snapshotPreviousY + (entity.y - entity._snapshotPreviousY) * alpha;
+    return view;
   }
 
   resize(width, height, dpr = 1) {
@@ -68,8 +93,10 @@ export class Renderer {
     if (!ctx || typeof ctx.beginPath !== 'function') return;
 
     const zoom = camera?.zoom ?? 1.0;
-    const entities = gameState?.entities || [];
-    const playerHero = gameState?.playerHero || null;
+    const presentationNow = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    const entities = (gameState?.entities || []).map(entity => this.getPresentationEntity(entity, presentationNow));
+    const playerHero = this.getPresentationEntity(gameState?.playerHero || null, presentationNow);
+    const viewState = { ...gameState, entities, playerHero };
 
     // Clear canvas
     if (typeof ctx.clearRect === 'function') {
@@ -103,7 +130,7 @@ export class Renderer {
     // ─────────────────────────────────────────────────────────────
     // Pass 2: Ground Decals & Ability Targeting Indicators
     // ─────────────────────────────────────────────────────────────
-    this.pass2_GroundDecals(ctx, gameState, inputManager, camera, zoom);
+    this.pass2_GroundDecals(ctx, viewState, inputManager, camera, zoom);
 
     // ─────────────────────────────────────────────────────────────
     // Pass 3: Ground Unit Drop Shadows
@@ -253,7 +280,14 @@ export class Renderer {
         ctx.fill();
         ctx.strokeStyle = tower.team === 'allied' ? 'rgba(59, 130, 246, 0.6)' : 'rgba(239, 68, 68, 0.7)';
         ctx.lineWidth = 1.5;
+        if (ctx.setLineDash) ctx.setLineDash(tower.team === 'allied' ? [] : [10, 6]);
         ctx.stroke();
+        if (tower.team !== 'allied' && dist <= 400 && typeof ctx.fillText === 'function') {
+          ctx.font = 'bold 10px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillStyle = '#fff7ed';
+          ctx.fillText('! ALCANCE DA TORRE', sx, sy + 110 * zoom);
+        }
         ctx.restore();
       }
     }
@@ -264,7 +298,7 @@ export class Renderer {
       const { sx, sy } = worldToScreen(attackTarget.x, attackTarget.y, 0, camera, zoom, vp);
       const targetR = Math.max(18, (attackTarget.selectionRadius || attackTarget.radius || 24) * 1.35 * zoom);
       const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
-      const pulse = 1.0 + Math.sin(now * 0.008) * 0.12;
+      const pulse = this.reducedMotion ? 1 : 1.0 + Math.sin(now * 0.008) * 0.12;
 
       ctx.save();
       // Outer pulsing dashed ring
@@ -280,6 +314,19 @@ export class Renderer {
       ctx.arc(sx, sy, 3.5 * zoom, 0, Math.PI * 2);
       ctx.fillStyle = '#ef4444';
       ctx.fill();
+      // Four fixed brackets make a selected target identifiable without color.
+      if (ctx.setLineDash) ctx.setLineDash([]);
+      ctx.strokeStyle = '#fff7ed';
+      ctx.lineWidth = 2;
+      for (const direction of [-1, 1]) {
+        const edge = sx + direction * targetR;
+        ctx.beginPath();
+        ctx.moveTo(edge - direction * 7, sy - 10);
+        ctx.lineTo(edge, sy - 10);
+        ctx.lineTo(edge, sy + 10);
+        ctx.lineTo(edge - direction * 7, sy + 10);
+        ctx.stroke();
+      }
       ctx.restore();
     }
 
@@ -331,7 +378,15 @@ export class Renderer {
       ctx.fill();
       ctx.strokeStyle = ind.isClamped ? '#ef4444' : '#f59e0b';
       ctx.lineWidth = 2;
+      if (ctx.setLineDash) ctx.setLineDash([4, 3]);
       ctx.stroke();
+      if (ctx.setLineDash) ctx.setLineDash([]);
+      if (typeof ctx.fillText === 'function') {
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillText(ind.isClamped ? 'LIMITE DE ALCANCE' : 'ÁREA DA HABILIDADE', target.sx, target.sy + 18);
+      }
 
       // Guide line from hero origin to target endpoint
       ctx.beginPath();
@@ -483,7 +538,7 @@ export class Renderer {
       const hpRatio = playerHero.hp / (playerHero.maxHp || 1);
       if (hpRatio < 0.25) {
         ctx.save();
-        const pulse = Math.sin(Date.now() * 0.006) * 0.5 + 0.5;
+        const pulse = this.reducedMotion ? 0.5 : Math.sin(Date.now() * 0.006) * 0.5 + 0.5;
         const alpha = (0.25 - hpRatio) * 2 * (0.4 + 0.3 * pulse);
         ctx.fillStyle = `rgba(239, 68, 68, ${alpha.toFixed(3)})`;
         ctx.fillRect(0, 0, this.viewportWidth, this.viewportHeight);

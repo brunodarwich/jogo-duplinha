@@ -29,6 +29,8 @@ export class VirtualJoystick {
     this.attackBtnEl = null;
 
     this.updateInterval = null;
+    this.listeners = [];
+    this.orientationDismissed = false;
 
     this.initDOM();
     this.bindTouchEvents();
@@ -75,22 +77,38 @@ export class VirtualJoystick {
         <div class="rotate-phone-icon">🔄📱</div>
         <h2>Gire seu Celular</h2>
         <p>Para a melhor experiência, jogue com o celular na horizontal (modo paisagem).</p>
+        <button type="button" class="orientation-continue">Continuar em retrato</button>
       </div>
     `;
     document.body.appendChild(rotateAlert);
+    this.orientationEl = rotateAlert;
+    this.listen(rotateAlert.querySelector('button'), 'click', () => {
+      this.orientationDismissed = true;
+      this.checkOrientation();
+    });
 
     this.checkOrientation();
-    window.addEventListener('resize', () => this.checkOrientation());
-    window.addEventListener('orientationchange', () => this.checkOrientation());
+    this.listen(window, 'resize', () => this.checkOrientation());
+    this.listen(window, 'orientationchange', () => this.checkOrientation());
+  }
+
+  listen(target, name, handler, options) {
+    target.addEventListener(name, handler, options);
+    this.listeners.push(() => target.removeEventListener(name, handler, options));
+  }
+
+  prefersTouchControls() {
+    return typeof window !== 'undefined' && !!window.matchMedia?.('(pointer: coarse)').matches;
   }
 
   checkOrientation() {
     const alertEl = document.getElementById('orientation-warning-overlay');
     if (!alertEl) return;
-    const isMobile = window.matchMedia('(max-width: 900px)').matches || ('ontouchstart' in window);
+    const isMobile = this.prefersTouchControls();
     const isPortrait = window.innerHeight > window.innerWidth;
+    this.container?.classList.toggle('desktop-mode', !isMobile);
 
-    if (isMobile && isPortrait) {
+    if (isMobile && isPortrait && !this.orientationDismissed) {
       alertEl.classList.remove('hidden');
     } else {
       alertEl.classList.add('hidden');
@@ -98,31 +116,26 @@ export class VirtualJoystick {
   }
 
   bindTouchEvents() {
-    const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-    if (!isTouchDevice && window.innerWidth > 900) {
+    if (!this.prefersTouchControls()) {
       // Desktop default: hide joystick by default unless touch simulated
       this.container.classList.add('desktop-mode');
     }
 
     // Touch Attack Button Handler
-    this.attackBtnEl.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      this.handleTouchAttack();
-    }, { passive: false });
-
-    this.attackBtnEl.addEventListener('pointerdown', (e) => {
+    // A native click is emitted once for a tap, mouse click or keyboard activation.
+    this.listen(this.attackBtnEl, 'click', (e) => {
       e.stopPropagation();
       this.handleTouchAttack();
     });
 
     // Window-level touch tracking for joystick on left side of screen
-    window.addEventListener('touchstart', (e) => {
+    this.listen(window, 'touchstart', (e) => {
+      if (!this.prefersTouchControls()) return;
       for (let i = 0; i < e.changedTouches.length; i++) {
         const touch = e.changedTouches[i];
         // If touch is on left 45% of screen and not on a button/input
         const isLeftHalf = touch.clientX < (window.innerWidth * 0.45);
-        const isInteractiveTarget = touch.target.closest('button, input, select, .inv-slot, .ability-slot, #lobby-overlay');
+        const isInteractiveTarget = touch.target.closest('button, input, select, textarea, a, [role="dialog"], .inv-slot, .ability-slot, #lobby-overlay, #shop-modal, #help-overlay');
 
         if (!this.active && isLeftHalf && !isInteractiveTarget) {
           e.preventDefault();
@@ -143,7 +156,7 @@ export class VirtualJoystick {
       }
     }, { passive: false });
 
-    window.addEventListener('touchmove', (e) => {
+    this.listen(window, 'touchmove', (e) => {
       if (!this.active) return;
       for (let i = 0; i < e.changedTouches.length; i++) {
         const touch = e.changedTouches[i];
@@ -172,8 +185,8 @@ export class VirtualJoystick {
       }
     };
 
-    window.addEventListener('touchend', endHandler);
-    window.addEventListener('touchcancel', endHandler);
+    this.listen(window, 'touchend', endHandler);
+    this.listen(window, 'touchcancel', endHandler);
   }
 
   showJoystick(x, y) {
@@ -261,10 +274,7 @@ export class VirtualJoystick {
       ? this.gameSim.map.findNearestWalkable(targetWorld.wx, targetWorld.wy, hero.radius)
       : { x: targetWorld.wx, y: targetWorld.wy };
 
-    hero.setAttackTarget(null);
-    hero.attackMoveDestination = null;
-    hero.holdPosition = false;
-    hero.moveTo(walkable.x, walkable.y);
+    this.gameSim.handleCommand({ type: CommandType.MOVE_TO, x: walkable.x, y: walkable.y, silent: true });
   }
 
   handleTouchAttack() {
@@ -300,8 +310,20 @@ export class VirtualJoystick {
         targetEntity: nearestHostile
       });
     } else {
-      // Trigger default basic attack or attack-move forward
-      this.gameSim.input?.triggerAbility('Q');
+      const now = Date.now();
+      if (!this.lastNoTargetAt || now - this.lastNoTargetAt >= 1000) {
+        this.lastNoTargetAt = now;
+        this.gameSim.particles?.addFloatingText('Nenhum alvo por perto', hero.x, hero.y - 25, { color: '#f8fafc', fontSize: 14 });
+      }
     }
+  }
+
+  destroy() {
+    this.active = false;
+    this.stopMovementLoop();
+    this.listeners.forEach(remove => remove());
+    this.listeners = [];
+    this.container?.remove();
+    this.orientationEl?.remove();
   }
 }

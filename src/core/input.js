@@ -694,6 +694,9 @@ export class InputManager {
   }
 
   handleKeyDown(e) {
+    const focused = typeof document !== 'undefined' ? document.activeElement : null;
+    if (focused?.closest?.('dialog[open], [role="dialog"]')) return;
+    if (['BUTTON', 'A', 'SELECT'].includes(focused?.tagName) && ['Enter', ' ', 'Space'].includes(e.key)) return;
     // If typing in input element or chat bar, ignore MOBA hotkeys
     if (typeof document !== 'undefined' && document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) {
       if (e.key === 'Escape') {
@@ -843,6 +846,10 @@ export class InputManager {
     if (!hero) return;
     const ability = hero.abilities ? hero.abilities[slot] : (hero.skills ? hero.skills[slot] : null);
     if (!ability) return;
+    if (Number.isFinite(ability.rank) && ability.rank <= 0) {
+      this.onSkillError?.(slot, 'unlearned');
+      return;
+    }
 
     const isDead = typeof hero.isDead === 'function' ? hero.isDead() : !!hero.isDead;
     const isAlive = typeof hero.isAlive === 'function'

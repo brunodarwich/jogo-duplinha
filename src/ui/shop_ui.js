@@ -31,6 +31,7 @@ export function formatStatChips(stats = {}) {
 
 export class ShopUI {
   constructor(gameSim) {
+    this.listeners = [];
     this.gameSim = gameSim;
     this.isOpen = false;
     this.activeCategory = 'all'; // 'all' | 'attack' | 'magic' | 'defense' | 'boots'
@@ -38,6 +39,20 @@ export class ShopUI {
     this.inventorySlotsElements = [];
 
     this.initUI();
+  }
+
+  listen(target, name, callback, options) {
+    if (!target) return;
+    target.addEventListener(name, callback, options);
+    this.listeners.push(() => target.removeEventListener(name, callback, options));
+  }
+
+  destroy() {
+    this.listeners.forEach(remove => remove());
+    this.listeners = [];
+    this.container?.remove();
+    this.container = null;
+    this.isOpen = false;
   }
 
   initUI() {
@@ -104,7 +119,7 @@ export class ShopUI {
     });
 
     // Keyboard Escape to close
-    window.addEventListener('keydown', (e) => {
+    this.listen(window, 'keydown', (e) => {
       if (e.key === 'Escape' && this.isOpen) {
         this.close();
       }
@@ -113,7 +128,7 @@ export class ShopUI {
     // Bind inventory click on bottom HUD to sell or view
     const hudSlots = document.querySelectorAll('.hud-inventory .inv-slot');
     hudSlots.forEach((slotEl, idx) => {
-      slotEl.addEventListener('click', () => {
+      this.listen(slotEl, 'click', () => {
         this.handleInventorySlotClick(idx);
       });
     });
@@ -122,8 +137,15 @@ export class ShopUI {
     const goldStat = document.querySelector('.stat-item.gold');
     if (goldStat) {
       goldStat.style.cursor = 'pointer';
-      goldStat.addEventListener('click', () => this.toggle());
+      this.listen(goldStat, 'click', () => this.toggle());
+      goldStat.setAttribute('role', 'button');
+      goldStat.tabIndex = 0;
+      goldStat.setAttribute('aria-label', 'Abrir loja de itens');
+      this.listen(goldStat, 'keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); this.toggle(); }
+      });
     }
+    this.listen(document.getElementById('btn-shop-toggle'), 'click', () => this.toggle());
 
     this.renderItemsGrid();
   }
@@ -271,6 +293,10 @@ export class ShopUI {
 
   buyItem(item) {
     if (!this.gameSim?.playerHero) return;
+    if (this.gameSim.network?.authoritativeWorld && !this.gameSim.network.isSoloMode) {
+      this.gameSim.handleCommand({ type: 'BUY_ITEM', itemId: item.id });
+      return;
+    }
     const hero = this.gameSim.playerHero;
 
     if (!this.isOpenShopZone()) {
@@ -347,6 +373,10 @@ export class ShopUI {
     const sellBtn = document.getElementById('sell-item-btn');
     if (sellBtn && insideBase) {
       sellBtn.addEventListener('click', () => {
+        if (this.gameSim.network?.authoritativeWorld && !this.gameSim.network.isSoloMode) {
+          this.gameSim.handleCommand({ type: 'SELL_ITEM', slot: slotIdx });
+          return;
+        }
         const removed = hero.inventoryInstance.removeItem(slotIdx);
         if (removed.success) {
           hero.gold = (hero.gold || 0) + refund;
@@ -368,6 +398,7 @@ export class ShopUI {
     const hudSlots = document.querySelectorAll('.hud-inventory .inv-slot');
     hudSlots.forEach((slotEl, idx) => {
       const item = inv.getItem(idx);
+      slotEl.setAttribute?.('aria-label', 'Espaço ' + (idx + 1) + ': ' + (item ? item.name + '. Abrir detalhes de venda' : 'vazio'));
       slotEl.classList.remove('tier-1', 'tier-2', 'tier-3');
       if (item) {
         slotEl.innerHTML = `<span class="slot-item-icon" title="${item.name}: ${item.description}">${renderItemImage(item)}</span>`;

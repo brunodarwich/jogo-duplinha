@@ -21,9 +21,13 @@ export function setupZoomControls(camera, canvas) {
   slider.oninput = () => { camera.setZoom(Number(slider.value)); sync(); };
   // InputManager's wheel handler runs first and updates targetZoom.
   canvas.addEventListener('wheel', sync);
-  for (const name of ['pointerdown', 'pointermove', 'keyup', 'keydown']) {
-    panel.addEventListener(name, event => event.stopPropagation());
-  }
-  panel.addEventListener('wheel', event => event.stopPropagation());
+  const stop = event => event.stopPropagation();
+  const events = ['pointerdown', 'pointermove', 'keyup', 'keydown', 'wheel'];
+  for (const name of events) panel.addEventListener(name, stop);
   sync();
+  return () => {
+    canvas.removeEventListener('wheel', sync);
+    for (const name of events) panel.removeEventListener(name, stop);
+    minus.onclick = plus.onclick = reset.onclick = slider.oninput = null;
+  };
 }

@@ -10,6 +10,7 @@ import { LoadingScreen } from './ui/loading_screen.js';
 import { PeerNetwork } from './net/peer_network.js';
 import { VirtualJoystick } from './ui/virtual_joystick.js';
 import { setupZoomControls } from './ui/zoom_controls.js';
+import { HelpUI } from './ui/help_ui.js';
 
 window.addEventListener('DOMContentLoaded', () => {
   const canvas = document.getElementById('game-canvas');
@@ -44,15 +45,24 @@ window.addEventListener('DOMContentLoaded', () => {
   resizeCanvas();
 
   // Setup Network Layer beforehand so LobbyUI can use it for waiting room & peer registration
-  const net = new PeerNetwork();
+  const net = new PeerNetwork(null, {
+    authoritativeWorld: new URLSearchParams(window.location.search).get('coop') !== 'legacy'
+  });
+  window.addEventListener('beforeunload', () => {
+    window.gameSim?.stop();
+    net.disconnect();
+  });
 
   function openSelectionScreen() {
     new LobbyUI({
       network: net,
       onBackToSplash: () => {
+        window.gameSim?.stop();
+        net.disconnect();
         openLoadingScreen(false);
       },
       onStartGame: async (options) => {
+        window.gameSim?.stop();
         console.log('[Main] Inicializando partida com configurações:', options);
 
         // Initialize Simulation with Chosen Hero and Multiplayer Roster
@@ -64,7 +74,12 @@ window.addEventListener('DOMContentLoaded', () => {
           network: net
         });
       window.gameSim = gameSim;
-      setupZoomControls(gameSim.camera, canvas);
+      gameSim.helpUI = new HelpUI(gameSim);
+      net.onCommandResultCallback = result => {
+        if (!result.success) gameSim.particles.addFloatingText('Ação indisponível: confira alvo, recursos e base.', gameSim.playerHero.x, gameSim.playerHero.y - 35, { color: '#fbbf24', fontSize: 13 });
+      };
+      net.onConnectionStatusCallback = status => { gameSim.networkStatus = status.message; };
+      gameSim.zoomCleanup = setupZoomControls(gameSim.camera, canvas);
 
       // Mobile Virtual Joystick & Touch Controls
       const joystick = new VirtualJoystick(gameSim);
@@ -84,7 +99,11 @@ window.addEventListener('DOMContentLoaded', () => {
           try {
             await net.hostRoom(options.roomCode, options.heroId);
           } catch (err) {
-            console.warn('Falha no Host P2P, caindo para Solo:', err);
+            gameSim.stop();
+            net.disconnect();
+            alert('Não foi possível criar a sala: ' + err.message);
+            openSelectionScreen();
+            return;
           }
         }
       } else if (options.mode === 'join') {
@@ -92,8 +111,11 @@ window.addEventListener('DOMContentLoaded', () => {
           try {
             await net.joinRoom(options.roomCode, { heroId: options.heroId });
           } catch (err) {
-            alert('Não foi possível conectar à sala informada. Iniciando em modo offline.');
-            net.initSolo();
+            gameSim.stop();
+            net.disconnect();
+            alert('Não foi possível conectar à sala: ' + err.message);
+            openSelectionScreen();
+            return;
           }
         }
       }
@@ -110,14 +132,14 @@ window.addEventListener('DOMContentLoaded', () => {
     for (const btnInfo of abilityButtons) {
       const btn = document.getElementById(btnInfo.id);
       if (btn) {
-        btn.addEventListener('pointerdown', (e) => {
+        btn.onclick = (e) => {
           e.stopPropagation();
           if (btnInfo.slot === 'B') {
             gameSim.handleCommand({ type: 'RECALL' });
           } else {
             gameSim.input.triggerAbility(btnInfo.slot);
           }
-        });
+        };
       }
     }
 
@@ -130,15 +152,13 @@ window.addEventListener('DOMContentLoaded', () => {
       if (!chatInput) return;
       const text = chatInput.value.trim().toLowerCase();
       if (text === '/boost' || text === 'boost') {
-        gameSim.applyBoost();
+        gameSim.handleCommand({ type: 'BOOST' });
       } else if (text === '/plan' || text === 'plan' || text === '/help' || text === 'help') {
         gameSim.applyPlan();
       } else if (text.startsWith('/gold') || text === 'gold') {
-        gameSim.playerHero.gold = (gameSim.playerHero.gold || 0) + 1000;
-        if (gameSim.shopUI) gameSim.shopUI.updateGoldDisplay();
-        gameSim.particles.addFloatingText('+1000 Ouro!', gameSim.playerHero.x, gameSim.playerHero.y - 30, { color: '#fbbf24', fontSize: 18 });
+        gameSim.handleCommand({ type: 'GOLD' });
       } else if (text === '/horde' || text === 'horde' || text === '/hordas' || text === 'hordas' || text === '/waves' || text === 'waves' || text === '/onda' || text === 'onda') {
-        gameSim.spawnExtraWave();
+        gameSim.handleCommand({ type: 'HORDE' });
       }
       chatInput.value = '';
       chatInput.blur();
@@ -146,11 +166,11 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     if (chatSubmit && chatInput) {
-      chatSubmit.addEventListener('click', (e) => {
+      chatSubmit.onclick = (e) => {
         e.stopPropagation();
         executeChatCommand();
-      });
-      chatInput.addEventListener('keydown', (e) => {
+      };
+      chatInput.onkeydown = (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
           executeChatCommand();
@@ -159,11 +179,20 @@ window.addEventListener('DOMContentLoaded', () => {
           chatInput.blur();
           chatBar?.classList.add('hidden');
         }
-      });
+      };
     }
+    gameSim.onCleanup = () => {
+      for (const info of abilityButtons) {
+        const button = document.getElementById(info.id);
+        if (button) button.onclick = null;
+      }
+      if (chatSubmit) chatSubmit.onclick = null;
+      if (chatInput) chatInput.onkeydown = null;
+    };
 
     // Start simulation loop
     gameSim.start();
+    gameSim.helpUI.showFirstRun();
     window.boost = () => window.gameSim?.applyBoost();
     window['/boost'] = () => window.gameSim?.applyBoost();
     window.plan = () => window.gameSim?.applyPlan();

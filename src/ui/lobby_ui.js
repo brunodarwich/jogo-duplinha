@@ -10,6 +10,10 @@ import { generateRoomCode } from '../net/protocol.js';
 import { PeerNetwork } from '../net/peer_network.js';
 import { preloadAllSprites } from '../render/sprite_loader.js';
 
+export function escapeLobbyText(value) {
+  return String(value).replace(/[&<>"']/g, char => ({"&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"})[char]);
+}
+
 export class LobbyUI {
   constructor(optionsOrCb, maybeNet = null) {
     let onStartGame = null;
@@ -43,10 +47,13 @@ export class LobbyUI {
     }
 
     this.container = null;
+    this.connectionGeneration = 0;
+    this.hostReady = false;
+    this.hostConnecting = false;
+    this.isConnecting = false;
 
     // Hook network callbacks
-    this.network.onRosterChangeCallback = (roster) => this.updateRosterUI(roster);
-    this.network.onMatchStartCallback = (roster) => this.onMatchStartedByHost(roster);
+    this.setupNetworkCallbacks();
 
     preloadAllSprites();
     this.render();
@@ -124,6 +131,7 @@ export class LobbyUI {
             <!-- Host View -->
             <div id="host-panel-view" class="mp-view ${this.selectedMode === 'host' ? '' : 'hidden'}">
               <p>Código da sua sala para compartilhar:</p>
+              <div id="host-status" class="join-status-box" role="status" aria-live="polite"></div>
               <div class="room-code-badge" id="host-room-code">${this.roomCode}</div>
               <div class="invite-actions-row">
                 <button type="button" id="copy-invite-link-btn" class="invite-action-btn">
@@ -141,7 +149,7 @@ export class LobbyUI {
 
               <!-- Host Waiting Room Roster -->
               <div class="roster-container">
-                <div class="roster-header">👥 Jogadores na Sala (<span id="roster-count">1</span>/2):</div>
+                <div class="roster-header">👥 Jogadores na Sala (<span id="roster-count">1</span>/3):</div>
                 <div id="roster-list" class="roster-list"></div>
               </div>
             </div>
@@ -159,7 +167,7 @@ export class LobbyUI {
 
               <!-- Client Waiting Room Roster -->
               <div class="roster-container" id="join-roster-container" style="display: none;">
-                <div class="roster-header">👥 Jogadores na Sala (<span id="join-roster-count">2</span>/2):</div>
+                <div class="roster-header">👥 Jogadores na Sala (<span id="join-roster-count">2</span>/3):</div>
                 <div id="join-roster-list" class="roster-list"></div>
               </div>
             </div>
@@ -184,13 +192,21 @@ export class LobbyUI {
     this.updateRosterUI(this.network.roster);
   }
 
+  setupNetworkCallbacks() {
+    this.network.onRosterChangeCallback = roster => this.updateRosterUI(roster);
+    this.network.onMatchStartCallback = roster => this.onMatchStartedByHost(roster);
+  }
+
   renderHeroCards() {
     const grid = document.getElementById('hero-cards-grid');
     if (!grid) return;
     grid.innerHTML = '';
 
     for (const hero of Object.values(HERO_DEFINITIONS)) {
-      const card = document.createElement('div');
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.setAttribute('aria-pressed', String(hero.id === this.selectedHeroId));
+      card.setAttribute('aria-label', hero.name + ' — ' + hero.role);
       card.className = `hero-select-card ${hero.id === this.selectedHeroId ? 'active' : ''}`;
       card.dataset.heroId = hero.id;
       card.style.setProperty('--card-hero-color', hero.color);
@@ -208,7 +224,8 @@ export class LobbyUI {
       `;
 
       card.addEventListener('click', () => {
-        grid.querySelectorAll('.hero-select-card').forEach(c => c.classList.remove('active'));
+        grid.querySelectorAll('.hero-select-card').forEach(c => { c.classList.remove('active'); c.setAttribute('aria-pressed', 'false'); });
+        card.setAttribute('aria-pressed', 'true');
         card.classList.add('active');
         this.selectedHeroId = hero.id;
         this.updateHeroPreview();
@@ -319,6 +336,27 @@ export class LobbyUI {
   }
 
   updateModeUI(mode) {
+    if (mode === 'host' && mode === this.selectedMode && this.hostReady) return;
+    if (mode !== this.selectedMode) {
+      this.connectionGeneration++;
+      this.network.disconnect();
+      this.setupNetworkCallbacks();
+      this.isClientConnected = false;
+      this.isConnecting = false;
+      this.hostReady = false;
+      this.hostConnecting = false;
+      const input = document.getElementById('join-code-input');
+      const joinBtn = document.getElementById('join-room-btn');
+      if (input) input.disabled = false;
+      if (joinBtn) {
+        joinBtn.disabled = false;
+        joinBtn.textContent = '🔗 Conectar';
+        if (joinBtn.style) joinBtn.style.background = '';
+      }
+      document.getElementById('join-status')?.classList.add('hidden');
+      const rosterPanel = document.getElementById('join-roster-container');
+      if (rosterPanel?.style) rosterPanel.style.display = 'none';
+    }
     this.selectedMode = mode;
     const modeBtns = this.container.querySelectorAll('.mode-btn');
     const mpPanel = document.getElementById('multiplayer-panel');
@@ -363,9 +401,20 @@ export class LobbyUI {
   }
 
   async initHostSession() {
+    const generation = ++this.connectionGeneration;
+    this.hostReady = false;
+    this.hostConnecting = true;
+    const startBtn = document.getElementById('start-game-btn');
+    const statusBox = document.getElementById('host-status');
+    if (startBtn) { startBtn.disabled = true; startBtn.textContent = '⏳ PREPARANDO SALA...'; }
+    if (statusBox) { statusBox.className = 'join-status-box connecting'; statusBox.textContent = 'Registrando sua sala...'; }
     const heroDef = HERO_DEFINITIONS[this.selectedHeroId] || HERO_DEFINITIONS.knight;
     try {
       const activeCode = await this.network.hostRoom(this.roomCode, this.selectedHeroId, heroDef.name);
+      if (generation !== this.connectionGeneration || this.selectedMode !== 'host') return;
+      this.hostReady = true;
+      this.hostConnecting = false;
+      if (statusBox) { statusBox.className = 'join-status-box success'; statusBox.textContent = 'Sala pronta! Compartilhe o código ou link com até dois amigos.'; }
       if (activeCode && activeCode !== this.roomCode) {
         this.roomCode = activeCode;
         const codeBadge = document.getElementById('host-room-code');
@@ -378,11 +427,17 @@ export class LobbyUI {
       }
       this.updateRosterUI(this.network.roster);
     } catch (err) {
-      console.warn('[LobbyUI] Falha ao registrar Host:', err);
+      if (generation !== this.connectionGeneration || this.selectedMode !== 'host') return;
+      this.hostConnecting = false;
+      this.network.disconnect();
+      this.setupNetworkCallbacks();
+      if (statusBox) { statusBox.className = 'join-status-box error'; statusBox.textContent = 'Não foi possível criar a sala: ' + (err.message || 'Tente novamente.'); }
+      if (startBtn) { startBtn.disabled = true; startBtn.textContent = 'SALA INDISPONÍVEL — CLIQUE EM CRIAR SALA PARA TENTAR NOVAMENTE'; }
     }
   }
 
   async connectToHost(code) {
+    if (this.isConnecting) return;
     const statusBox = document.getElementById('join-status');
     const joinBtn = document.getElementById('join-room-btn');
     const startBtn = document.getElementById('start-game-btn');
@@ -392,10 +447,12 @@ export class LobbyUI {
       alert('Por favor, digite o código da sala!');
       return;
     }
+    const generation = ++this.connectionGeneration;
+    this.isConnecting = true;
 
     if (statusBox) {
       statusBox.className = 'join-status-box connecting';
-      statusBox.innerHTML = `⏳ Conectando ao Host na sala <strong>${code}</strong>... Aguarde...`;
+      statusBox.textContent = `⏳ Conectando ao Host na sala ${code}... Aguarde...`;
       statusBox.classList.remove('hidden');
     }
     if (joinBtn) joinBtn.disabled = true;
@@ -407,6 +464,7 @@ export class LobbyUI {
         name: heroDef.name
       });
 
+      if (generation !== this.connectionGeneration || this.selectedMode !== 'join') return;
       this.isClientConnected = true;
       if (codeInput) codeInput.disabled = true;
       if (joinBtn) {
@@ -416,7 +474,7 @@ export class LobbyUI {
 
       if (statusBox) {
         statusBox.className = 'join-status-box connected';
-        statusBox.innerHTML = `✅ Conectado ao Host na sala <strong>${code}</strong>!<br>⏳ Aguardando o Host iniciar a partida...`;
+        statusBox.textContent = `✅ Conectado ao Host na sala ${code}! Aguardando o início da partida...`;
       }
 
       const joinRosterContainer = document.getElementById('join-roster-container');
@@ -430,12 +488,17 @@ export class LobbyUI {
         startBtn.classList.add('waiting');
       }
     } catch (err) {
+      if (generation !== this.connectionGeneration || this.selectedMode !== 'join') return;
       this.isClientConnected = false;
+      this.network.disconnect();
+      this.setupNetworkCallbacks();
       if (joinBtn) joinBtn.disabled = false;
       if (statusBox) {
         statusBox.className = 'join-status-box error';
-        statusBox.innerHTML = `❌ ${err.message || 'Falha ao conectar com o Host.'}`;
+        statusBox.textContent = `❌ ${err.message || 'Falha ao conectar com o Host.'}`;
       }
+    } finally {
+      if (generation === this.connectionGeneration) this.isConnecting = false;
     }
   }
 
@@ -457,7 +520,7 @@ export class LobbyUI {
       let html = '';
       for (const p of safeRoster) {
         const hDef = HERO_DEFINITIONS[p.heroId] || HERO_DEFINITIONS.knight;
-        const isMe = (this.selectedMode === 'host' && p.isHost) || (this.selectedMode === 'join' && !p.isHost);
+        const isMe = p.id === this.network.myPlayerId || (this.selectedMode === 'host' && p.isHost);
         const badgeText = p.isHost ? '👑 HOST' : 'ALIADO';
         const badgeClass = p.isHost ? 'host' : 'ally';
         const statusText = isMe ? 'VOCÊ (PRONTO)' : (p.isHost ? 'HOST (PRONTO)' : 'CONECTADO');
@@ -467,7 +530,7 @@ export class LobbyUI {
             <span class="roster-badge ${badgeClass}">${badgeText}</span>
             <span class="roster-hero-icon" style="border-color: ${hDef.color};">${hDef.icon}</span>
             <div class="roster-player-info">
-              <strong class="roster-player-name">${p.name || hDef.name} ${isMe ? '(Você)' : ''}</strong>
+              <strong class="roster-player-name">${escapeLobbyText(p.name || hDef.name)} ${isMe ? '(Você)' : ''}</strong>
               <small class="roster-player-hero">${hDef.name} • ${hDef.role}</small>
             </div>
             <span class="roster-status connected">${statusText}</span>
@@ -475,7 +538,7 @@ export class LobbyUI {
         `;
       }
 
-      if (safeRoster.length < 2) {
+      for (let seat = safeRoster.length; seat < 3; seat++) {
         html += `
           <div class="roster-player-item waiting">
             <span class="roster-badge pending">ALIADO</span>
@@ -497,8 +560,13 @@ export class LobbyUI {
 
     // Update Host Start Button
     if (startBtn && this.selectedMode === 'host') {
+      if (!this.hostReady) {
+        startBtn.disabled = true;
+        startBtn.textContent = this.hostConnecting ? '⏳ PREPARANDO SALA...' : 'CRIE UMA SALA PARA INICIAR';
+        return;
+      }
       if (safeRoster.length >= 2) {
-        startBtn.innerHTML = `⚔️ INICIAR PARTIDA COOPERATIVA (${safeRoster.length}/2 JOGADORES) 🚀`;
+        startBtn.innerHTML = `⚔️ INICIAR PARTIDA COOPERATIVA (${safeRoster.length}/3 JOGADORES) 🚀`;
         startBtn.classList.add('ready-multiplayer');
         startBtn.disabled = false;
       } else {
@@ -624,6 +692,7 @@ export class LobbyUI {
           });
         }
       } else if (this.selectedMode === 'host') {
+        if (!this.hostReady) return;
         // Host launches the match for everyone!
         this.network.startMatch();
         this.close();

@@ -7,6 +7,7 @@
  */
 
 import { getSellRefund } from '../systems/items.js';
+import { getSkillRuntime } from '../entities/heroes.js';
 
 /**
  * Maps item stat keys to human-readable Portuguese labels and icons.
@@ -60,6 +61,13 @@ export class TooltipController {
   formatAbilityScaling(ability, hero = null) {
     if (!ability) {
       return { base: 0, bonus: 0, total: 0, ratio: 0, stat: 'AD', type: 'Dano', scalingText: '', summary: '' };
+    }
+    const runtime = hero?.heroId && hero?.abilities ? getSkillRuntime(hero, String(ability.id || ability.slot || '').toUpperCase()) : null;
+    if (runtime) {
+      const total = Math.round(runtime.damage || runtime.heal || runtime.barrier || 0);
+      const type = runtime.damage ? 'Dano' : runtime.heal ? 'Cura' : runtime.barrier ? 'Barreira' : 'Mobilidade';
+      return { base: total, bonus: 0, total, ratio: 0, stat: '', type, scalingText: '',
+        summary: runtime.description, summaryText: runtime.description, runtime };
     }
 
     const rank = Math.max(1, ability.rank || 1);
@@ -246,11 +254,12 @@ export class TooltipController {
     if (!this.element) return;
 
     const scaling = this.formatAbilityScaling(ab, h);
-    const manaCost = ab.manaCost ?? 0;
-    const cooldown = ab.cooldown ?? 0;
+    const effective = scaling.runtime || ab;
+    const manaCost = effective.manaCost ?? 0;
+    const cooldown = effective.cooldown ?? 0;
     const cooldownRemaining = Number(ab.cooldownRemaining || 0);
-    const range = ab.range ?? 0;
-    const radius = ab.radius;
+    const range = effective.range ?? 0;
+    const radius = effective.radius;
 
     const cdRemainingHtml = cooldownRemaining > 0
       ? ` <span class="cooldown-active-tag">(${cooldownRemaining.toFixed(1)}s)</span>`
@@ -261,7 +270,7 @@ export class TooltipController {
         <span class="tooltip-icon">${ab.icon || '✨'}</span>
         <div class="tooltip-title-box">
           <div class="tooltip-title">${ab.name || 'Habilidade'}</div>
-          <div class="tooltip-subtitle">${ab.id ? `Slot [${ab.id}]` : 'Habilidade'} • Rank ${ab.rank || 1}</div>
+          <div class="tooltip-subtitle">${ab.id ? `Slot [${ab.id}]` : 'Habilidade'} • ${ab.rank === 0 ? "Não aprendida" : "Rank " + (ab.rank || 1)}</div>
         </div>
       </div>
       <div class="tooltip-badges">
@@ -275,10 +284,13 @@ export class TooltipController {
           <span class="damage-formula-text">(${scaling.base} <span class="damage-scaling-highlight">${scaling.scalingText}</span>)</span>
         </div>
       ` : ''}
-      <div class="tooltip-description">${ab.description || 'Nenhuma descrição disponível.'}</div>
+      <div class="tooltip-description">${effective.description || 'Nenhuma descrição disponível.'}</div>
     `;
 
     this.updatePosition(el);
+    this.anchor?.removeAttribute?.('aria-describedby');
+    this.anchor = el;
+    el?.setAttribute?.('aria-describedby', 'game-tooltip');
   }
 
   /**
@@ -377,5 +389,7 @@ export class TooltipController {
       this.element.classList.add('hidden');
       this.element.setAttribute('aria-hidden', 'true');
     }
+    this.anchor?.removeAttribute?.('aria-describedby');
+    this.anchor = null;
   }
 }
