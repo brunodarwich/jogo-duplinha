@@ -365,7 +365,7 @@ export class Renderer {
       // Cast range circle from hero
       const origin = worldToScreen(ind.origin.x, ind.origin.y, 0, camera, zoom, vp);
       ctx.beginPath();
-      ctx.ellipse(origin.sx, origin.sy, ind.castRange * 0.5 * zoom, ind.castRange * 0.25 * zoom, 0, 0, Math.PI * 2);
+      ctx.ellipse(origin.sx, origin.sy, ind.castRange * Math.SQRT1_2 * zoom, ind.castRange * Math.SQRT1_2 * 0.5 * zoom, 0, 0, Math.PI * 2);
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
       ctx.lineWidth = 1.5;
       ctx.stroke();
@@ -373,7 +373,7 @@ export class Renderer {
       // AoE target circle
       const target = worldToScreen(ind.target.x, ind.target.y, 0, camera, zoom, vp);
       ctx.beginPath();
-      ctx.ellipse(target.sx, target.sy, ind.aoeRadius * 0.5 * zoom, ind.aoeRadius * 0.25 * zoom, 0, 0, Math.PI * 2);
+      ctx.ellipse(target.sx, target.sy, ind.aoeRadius * Math.SQRT1_2 * zoom, ind.aoeRadius * Math.SQRT1_2 * 0.5 * zoom, 0, 0, Math.PI * 2);
       ctx.fillStyle = ind.isClamped ? 'rgba(239, 68, 68, 0.25)' : 'rgba(245, 158, 11, 0.25)';
       ctx.fill();
       ctx.strokeStyle = ind.isClamped ? '#ef4444' : '#f59e0b';
@@ -385,7 +385,7 @@ export class Renderer {
         ctx.font = 'bold 10px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillStyle = '#f8fafc';
-        ctx.fillText(ind.isClamped ? 'LIMITE DE ALCANCE' : 'ÁREA DA HABILIDADE', target.sx, target.sy + 18);
+        ctx.fillText(ind.isClamped ? 'LIMITE DE ALCANCE' : ind.assisted ? 'ALVO ASSISTIDO' : 'ÁREA DA HABILIDADE', target.sx, target.sy + 18);
       }
 
       // Guide line from hero origin to target endpoint
@@ -401,7 +401,7 @@ export class Renderer {
       // Range circle
       const origin = worldToScreen(ind.origin.x, ind.origin.y, 0, camera, zoom, vp);
       ctx.beginPath();
-      ctx.ellipse(origin.sx, origin.sy, ind.range * 0.5 * zoom, ind.range * 0.25 * zoom, 0, 0, Math.PI * 2);
+      ctx.ellipse(origin.sx, origin.sy, ind.range * Math.SQRT1_2 * zoom, ind.range * Math.SQRT1_2 * 0.5 * zoom, 0, 0, Math.PI * 2);
       ctx.strokeStyle = 'rgba(241, 196, 15, 0.35)';
       ctx.lineWidth = 1.5;
       ctx.stroke();
@@ -428,7 +428,7 @@ export class Renderer {
     } else if (ind.type === IndicatorType.SELF_AOE) {
       const origin = worldToScreen(ind.origin.x, ind.origin.y, 0, camera, zoom, vp);
       ctx.beginPath();
-      ctx.ellipse(origin.sx, origin.sy, ind.radius * 0.5 * zoom, ind.radius * 0.25 * zoom, 0, 0, Math.PI * 2);
+      ctx.ellipse(origin.sx, origin.sy, ind.radius * Math.SQRT1_2 * zoom, ind.radius * Math.SQRT1_2 * 0.5 * zoom, 0, 0, Math.PI * 2);
       ctx.fillStyle = 'rgba(168, 85, 247, 0.2)';
       ctx.fill();
       ctx.strokeStyle = '#a855f7';
@@ -436,6 +436,29 @@ export class Renderer {
       ctx.stroke();
     }
 
+    if (ind.targetEntity && ind.isValidTarget) {
+      const target = worldToScreen(ind.targetEntity.x, ind.targetEntity.y, 0, camera, zoom, vp);
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = '#5eead4';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.ellipse(target.sx, target.sy, 22 * zoom, 11 * zoom, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    if (typeof ctx.fillText === 'function') {
+      const origin = worldToScreen(ind.origin.x, ind.origin.y, 0, camera, zoom, vp);
+      ctx.globalAlpha = 1;
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#f8fafc';
+      ctx.shadowColor = '#020617';
+      ctx.shadowBlur = 5;
+      const hint = ind.stick ? 'SOLTE PARA LANÇAR · VOLTE AO BOTÃO PARA CANCELAR'
+        : ind.type === IndicatorType.TARGET_UNIT && !ind.isValidTarget ? 'ESCOLHA UM INIMIGO AO ALCANCE'
+        : 'CLIQUE OU REPITA A TECLA · ESC CANCELA';
+      const maxWidth = Math.min(vp.width - 24, 400);
+      ctx.fillText(hint, Math.max(maxWidth / 2 + 12, Math.min(vp.width - maxWidth / 2 - 12, origin.sx)), origin.sy + 42, maxWidth);
+    }
     ctx.restore();
   }
 

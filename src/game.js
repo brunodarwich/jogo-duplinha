@@ -332,6 +332,8 @@ export class GameSimulation {
 
   handleCommand(cmd, hero = this.playerHero, fromNetwork = false) {
     if (!cmd || typeof cmd.type !== 'string') return false;
+    // Aiming previews belong to the local input, never to the shared world.
+    if (cmd.type === CommandType.CANCEL_TARGETING) return true;
     const localTypes = ['CENTER_CAMERA', 'CYCLE_PERSPECTIVE', 'TOGGLE_SHOP', 'CLOSE_MODALS', 'PLAN', '/plan'];
     if (!fromNetwork && this.network?.authoritativeWorld && !this.network.isSoloMode && !this.isHost && !localTypes.includes(cmd.type)) {
       const outgoing = { ...cmd, targetId: cmd.targetEntity?.id || cmd.targetId || cmd.targetEntityId };

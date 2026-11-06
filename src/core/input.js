@@ -7,6 +7,8 @@
  */
 
 import { screenToWorld, worldToScreen } from './isometric.js';
+import { getSkillRuntime } from '../entities/heroes.js';
+import { resolveAbilityAim } from './ability_targeting.js';
 
 export const MAP_SIZE = 3200;
 
@@ -332,6 +334,7 @@ export class InputManager {
     this._onKeyDown = this.handleKeyDown.bind(this);
     this._onKeyUp = this.handleKeyUp.bind(this);
     this._onWheel = this.handleWheel.bind(this);
+    this._onBlur = () => this.cancelTargeting();
 
     // Right-click drag throttle
     this.lastRightDragTime = 0;
@@ -358,6 +361,7 @@ export class InputManager {
     this.canvas.addEventListener('contextmenu', this._onContextMenu);
     window.addEventListener('keydown', this._onKeyDown);
     window.addEventListener('keyup', this._onKeyUp);
+    window.addEventListener('blur', this._onBlur);
     this.canvas.addEventListener('wheel', this._onWheel, { passive: false });
   }
 
@@ -369,6 +373,7 @@ export class InputManager {
     this.canvas.removeEventListener('contextmenu', this._onContextMenu);
     window.removeEventListener('keydown', this._onKeyDown);
     window.removeEventListener('keyup', this._onKeyUp);
+    window.removeEventListener('blur', this._onBlur);
     this.canvas.removeEventListener('wheel', this._onWheel);
   }
 
@@ -450,9 +455,12 @@ export class InputManager {
 
     // Refresh active targeting indicator geometry and orient hero toward cursor
     if (this.targetingState && this.playerHeroRef) {
+      const dead = typeof this.playerHeroRef.isDead === 'function' ? this.playerHeroRef.isDead() : this.playerHeroRef.isDead;
+      if (dead || this.playerHeroRef.hp <= 0) this.cancelTargeting();
       this.updateTargetingIndicator(this.playerHeroRef);
-      if (typeof this.playerHeroRef.targetFacing !== 'undefined') {
-        this.playerHeroRef.targetFacing = Math.atan2(this.worldY - this.playerHeroRef.y, this.worldX - this.playerHeroRef.x);
+      const aim = this.targetingState?.aim;
+      if (aim && typeof this.playerHeroRef.targetFacing !== 'undefined') {
+        this.playerHeroRef.targetFacing = Math.atan2(aim.y - this.playerHeroRef.y, aim.x - this.playerHeroRef.x);
       }
     }
 
@@ -605,6 +613,10 @@ export class InputManager {
   }
 
   handlePointerDown(e) {
+    if (this.targetingState) {
+      this.targetingState.autoAim = false;
+      this.targetingState.stick = null;
+    }
     this.updateCursor(e.clientX, e.clientY);
     if (this.entityManager) {
       this.hoveredEntity = this.pickEntity(this.entityManager, this.playerHeroRef);
@@ -669,6 +681,10 @@ export class InputManager {
   }
 
   handlePointerMove(e) {
+    if (this.targetingState) {
+      this.targetingState.autoAim = false;
+      this.targetingState.stick = null;
+    }
     this.updateCursor(e.clientX, e.clientY);
     if (this.entityManager) {
       this.hoveredEntity = this.pickEntity(this.entityManager, this.playerHeroRef);
@@ -747,6 +763,7 @@ export class InputManager {
     }
 
     const key = e.code || e.key;
+    if (e.repeat && /^(Key)?[QWER]$/i.test(key)) return;
     const hero = this.playerHeroRef;
     const isHeroAlive = hero && (typeof hero.isAlive === 'function'
       ? hero.isAlive()
@@ -793,10 +810,10 @@ export class InputManager {
       }
     }
 
-    else if (key === 'KeyQ' || key === 'q' || key === 'Q') this.triggerAbility('Q');
-    else if (key === 'KeyW' || key === 'w' || key === 'W') this.triggerAbility('W');
-    else if (key === 'KeyE' || key === 'e' || key === 'E') this.triggerAbility('E');
-    else if (key === 'KeyR' || key === 'r' || key === 'R') this.triggerAbility('R');
+    else if (/^(Key)?[QWER]$/i.test(key)) {
+      e.preventDefault?.();
+      this.triggerAbility(key.slice(-1).toUpperCase(), { quickCast: !!e.shiftKey });
+    }
 
     else if (key === 'KeyS' || key === 's' || key === 'S' || key === 'KeyH' || key === 'h' || key === 'H') {
       this.cancelTargeting();
@@ -841,36 +858,36 @@ export class InputManager {
 
   handleKeyUp(e) {}
 
-  triggerAbility(slot) {
+  triggerAbility(slot, { autoAim = false, quickCast = false, previewOnly = false } = {}) {
     const hero = this.playerHeroRef;
-    if (!hero) return;
+    if (!hero) return false;
     const ability = hero.abilities ? hero.abilities[slot] : (hero.skills ? hero.skills[slot] : null);
-    if (!ability) return;
+    if (!ability) return false;
     if (Number.isFinite(ability.rank) && ability.rank <= 0) {
       this.onSkillError?.(slot, 'unlearned');
-      return;
+      return false;
     }
 
     const isDead = typeof hero.isDead === 'function' ? hero.isDead() : !!hero.isDead;
     const isAlive = typeof hero.isAlive === 'function'
       ? hero.isAlive()
       : (!isDead && (typeof hero.hp !== 'number' || hero.hp > 0));
-    if (isDead || !isAlive) return;
+    if (isDead || !isAlive) return false;
     if (typeof ability.cooldownRemaining === 'number' && ability.cooldownRemaining > 0) {
       this.onSkillError?.(slot, 'cooldown', ability.cooldownRemaining);
-      return;
+      return false;
     }
     if (typeof hero.mana === 'number' && typeof ability.manaCost === 'number' && hero.mana < ability.manaCost) {
       this.onSkillError?.(slot, 'mana', ability.manaCost - hero.mana);
-      return;
+      return false;
     }
     if (typeof hero.canCast === 'function' && !hero.canCast()) {
       this.onSkillError?.(slot, 'cc');
-      return;
+      return false;
     }
 
-    // Double-tap self cast check for ally/self abilities
-    if (this.targetingState && this.targetingState.slot === slot) {
+    // A second deliberate press confirms the current preview.
+    if (this.targetingState?.slot === slot && !previewOnly && !quickCast) {
       if (ability.targetingType === IndicatorType.TARGET_UNIT && ability.canSelfCast) {
         this.dispatch({
           type: CommandType.CAST_ABILITY,
@@ -880,38 +897,75 @@ export class InputManager {
           targetId: hero.id
         });
         this.cancelTargeting();
-        return;
+        return true;
       }
+      return this.confirmCast();
     }
 
     // Instant / Self spells without targeting
-    if (ability.targetingType === 'INSTANT_SELF' || ability.targetType === 'self' || ability.targetType === 'instant') {
+    if (!previewOnly && (ability.targetingType === IndicatorType.SELF_AOE || ability.targetingType === 'INSTANT_SELF' || ability.targetType === 'self' || ability.targetType === 'instant')) {
+      this.targetingState = null;
+      this.dispatcher.targetingSkill = null;
       this.dispatch({
         type: CommandType.CAST_ABILITY,
         slot: slot,
         targetX: hero.x,
         targetY: hero.y
       });
-      return;
+      return true;
     }
 
     // Set targeting state
     this.targetingState = {
       slot: slot,
       ability: ability,
-      indicator: null
+      indicator: null,
+      autoAim,
+      stick: null
     };
     this.dispatcher.targetingSkill = slot;
+    if (!autoAim && this.entityManager) this.hoveredEntity = this.pickEntity(this.entityManager, hero);
     this.updateTargetingIndicator(hero);
+    if (quickCast) {
+      const cast = this.confirmCast();
+      if (!cast) this.cancelTargeting();
+      return cast;
+    }
+    return true;
+  }
+
+  aimAbilityFromStick(dx, dy) {
+    if (!this.targetingState || !Number.isFinite(dx) || !Number.isFinite(dy)) return;
+    this.targetingState.autoAim = false;
+    this.targetingState.stick = { dx, dy };
+    this.updateTargetingIndicator(this.playerHeroRef);
   }
 
   updateTargetingIndicator(hero) {
     if (!this.targetingState) return;
-    const ability = this.targetingState.ability;
+    const state = this.targetingState;
+    const ability = getSkillRuntime(hero, state.slot) || state.ability;
     const Hx = hero.x;
     const Hy = hero.y;
-    const Wx = this.worldX;
-    const Wy = this.worldY;
+    let Wx = this.worldX, Wy = this.worldY;
+    if (state.stick) {
+      const { dx, dy } = state.stick;
+      const origin = worldToScreen(Hx, Hy, 0, this.camera);
+      const world = screenToWorld(origin.sx + dx, origin.sy + dy, this.camera);
+      const distance = Math.hypot(world.wx - Hx, world.wy - Hy) || 1;
+      const range = (ability.range || 500) * Math.min(1, Math.hypot(dx, dy) / 72);
+      Wx = clamp(Hx + (world.wx - Hx) / distance * range, 0, MAP_SIZE);
+      Wy = clamp(Hy + (world.wy - Hy) / distance * range, 0, MAP_SIZE);
+    }
+    const entities = typeof this.entityManager?.getActiveEntities === 'function'
+      ? this.entityManager.getActiveEntities()
+      : (Array.isArray(this.entityManager) ? this.entityManager : this.entityManager?.entities || []);
+    const aim = resolveAbilityAim(hero, state.slot, ability, entities, {
+      x: Wx, y: Wy, hoveredEntity: state.stick ? null : this.hoveredEntity,
+      autoAim: state.autoAim, camera: this.camera
+    });
+    state.aim = aim;
+    Wx = aim.x; Wy = aim.y;
     const dx = Wx - Hx;
     const dy = Wy - Hy;
     const dist = Math.hypot(dx, dy);
@@ -924,10 +978,12 @@ export class InputManager {
       case 'linear': {
         const angle = Math.atan2(dy, dx);
         const range = ability.range || 500;
+        const mobility = ['sorceress', 'ranger'].includes(hero.heroId) && state.slot === 'E';
+        const distance = mobility ? Math.min(range, dist) : range;
         this.targetingState.indicator = {
           type: IndicatorType.DIRECTIONAL_LINE,
           origin: { x: Hx, y: Hy },
-          end: { x: Hx + range * Math.cos(angle), y: Hy + range * Math.sin(angle) },
+          end: { x: Hx + distance * Math.cos(angle), y: Hy + distance * Math.sin(angle) },
           angle: angle,
           range: range,
           width: ability.hitboxWidth || ability.width || 40
@@ -942,7 +998,7 @@ export class InputManager {
         const aoeRadius = ability.radius || ability.aoeRadius || 150;
         let Tx = Wx;
         let Ty = Wy;
-        let isClamped = false;
+        let isClamped = Math.hypot(this.worldX - Hx, this.worldY - Hy) > castRange && !aim.assisted && !state.autoAim && !state.stick;
 
         if (dist > castRange) {
           isClamped = true;
@@ -966,8 +1022,8 @@ export class InputManager {
       case 'unit':
       case 'target': {
         const castRange = ability.range || 500;
-        const target = this.hoveredEntity;
-        const isValid = target && Math.hypot(target.x - Hx, target.y - Hy) <= castRange;
+        const target = aim.targetEntity;
+        const isValid = aim.isValidTarget;
 
         this.targetingState.indicator = {
           type: IndicatorType.TARGET_UNIT,
@@ -989,10 +1045,17 @@ export class InputManager {
         break;
       }
     }
+    Object.assign(state.indicator, {
+      assisted: aim.assisted,
+      targetEntity: aim.targetEntity,
+      isValidTarget: aim.isValidTarget,
+      abilityName: ability.name,
+      stick: !!state.stick
+    });
   }
 
   confirmCast() {
-    if (!this.targetingState || !this.targetingState.indicator) return;
+    if (!this.targetingState) return false;
     const hero = this.playerHeroRef;
     if (hero) {
       const isDead = typeof hero.isDead === 'function' ? hero.isDead() : !!hero.isDead;
@@ -1001,14 +1064,20 @@ export class InputManager {
         : (!isDead && (typeof hero.hp !== 'number' || hero.hp > 0));
       if (isDead || !isAlive) {
         this.cancelTargeting();
-        return;
+        return false;
       }
+      if (this.entityManager && !this.targetingState.autoAim && !this.targetingState.stick) {
+        this.hoveredEntity = this.pickEntity(this.entityManager, hero);
+      }
+      this.updateTargetingIndicator(hero);
     }
     const { slot, indicator } = this.targetingState;
+    if (!indicator) return false;
 
     if (indicator.type === IndicatorType.TARGET_UNIT) {
       if (!indicator.isValidTarget || !indicator.targetEntity) {
-        return;
+        this.onSkillError?.(slot, 'invalid_target');
+        return false;
       }
       this.dispatch({
         type: CommandType.CAST_ABILITY,
@@ -1044,6 +1113,7 @@ export class InputManager {
 
     this.targetingState = null;
     this.dispatcher.targetingSkill = null;
+    return true;
   }
 
   cancelTargeting() {
