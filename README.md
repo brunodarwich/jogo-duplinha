@@ -4,6 +4,18 @@ Jogo cooperativo estilo MOBA / Lane Push em perspectiva Isométrica 2.5D jogáve
 
 ---
 
+## Novidades da versão 2.0
+
+O anfitrião mantém um único mundo para a equipe: ondas, torres, chefes, dano, ouro e resultado são compartilhados. Convidados enviam comandos, e a entrada tardia recebe o estado da partida em andamento. Todos precisam recarregar a versão atual antes de entrar na mesma sala; clientes com versões incompatíveis recebem uma mensagem.
+
+O HUD mostra o próximo objetivo e a próxima onda. O botão **?** abre um guia curto e a opção de reduzir movimento/tremor; **Loja** abre os equipamentos. A seleção de heróis e os controles da interface aceitam Tab, Enter e Espaço. No toque, o aviso de orientação pode ser dispensado e ATACAR usa apenas ataque básico.
+
+As habilidades começam sem rank: use **+** para aprender/evoluir Q/W/E. A suprema exige os níveis 6, 11 e 15 para os respectivos ranks. Evolução, defesas e controle de grupo afetam o combate real. Abates concedem ouro ao autor; aliados vivos a até 800 unidades recebem a assistência de 30% prevista para lacaios.
+
+O jogo detecta falhas do canal cooperativo e mostra o encerramento quando o anfitrião cai. Não há migração automática de anfitrião nem reconexão de uma sessão encerrada. Cheats que alteram o mundo são restritos ao anfitrião.
+
+---
+
 ## 🎮 Como Iniciar e Jogar
 
 ### Opção 1: Via Node.js (Recomendado)
@@ -46,15 +58,15 @@ Cada herói possui animações próprias de ataque básico e Q/W/E/R, totalizand
 | **Cavaleiro Guardião** | Tanque / Controle | Golpe de Escudo, Provocação em Área, Cutilada, Fortaleza Inabalável | Alta resistência, atordoamento e criação de barreiras protetoras. |
 | **Feiticeira Elemental** | Maga / Burst AoE | Bola de Fogo, Nevasca Congelante, Teleporte Arcano (Blink), Meteoro Devastador | Dano mágico explosivo em área e controle de multidões com gelo. |
 | **Patrulheiro Arqueiro** | Atirador DPS Físico | Disparo Perfurante, Chuva de Flechas, Salto Acrobático, Tiro Snipe Global | Dano físico à longa distância, agilidade e execução de alvos feridos. |
-| **Sombra Assassina** | Assassino / Burst | Passo das Sombras, Lâminas Envenenadas, Mortalha Sombria, Dança Letal | Teleporte atrás do alvo, dano crítico massivo, invisibilidade e veneno. |
-| **Clérigo da Luz** | Suporte / Curador | Luz Sagrada, Santuário Radiante, Julgamento Solar, Milagre Divino | Cura contínua da equipe, auras sagradas, cegueira solar e invulnerabilidade. |
+| **Sombra Assassina** | Assassino / Burst | Passo das Sombras, Lâminas Envenenadas, Mortalha Sombria, Dança Letal | Teleporte ao alvo, golpes em área e inalvejabilidade temporária com velocidade. |
+| **Clérigo da Luz** | Suporte / Curador | Luz Sagrada, Santuário Radiante, Julgamento Solar, Milagre Divino | Cura de aliados, atordoamento solar e barreira própria. |
 
 ---
 
 ## 🏰 Dinâmica da Trilha (Lane Push & Bosses)
 
 - **Trilha & Torres**: 2 Torres Aliadas defendem sua base e 2 Torres Inimigas barram o avanço. As torres possuem raio de ataque, priorizam agressores de aliados e aumentam o dano a cada disparo consecutivo (*heat scaling*).
-- **Hordas Periódicas**: A cada 60s surge uma nova onda de lacaios corpo-a-corpo e magos à distância, avançando pelos waypoints da trilha. A cada 3 ondas, surge um *Minion Canhoneiro*.
+- **Hordas Periódicas**: A primeira onda surge aos 8s e as seguintes a cada 25s, com lacaios corpo a corpo e magos à distância avançando pela trilha. A cada 3 ondas, surge um *Minion Canhoneiro*.
 - **Mini-Bosses em Turnos**:
   - **Onda 5**: Surge o **Stone Colossus** (alta resistência a torres e pisão com atordoamento em área).
   - **Onda 10**: Surge o **Abyssal Behemoth** (poças de dano contínuo e rugido com silenciamento).
@@ -86,8 +98,8 @@ Cada herói possui animações próprias de ataque básico e Q/W/E/R, totalizand
 
 ## 🧪 Testes Automatizados
 
-Para rodar a suíte completa com **284 testes automatizados** (testes unitários, matemáticos, de combate, economia, UI, UX, VFX, SFX e simulações E2E completas):
+Para rodar a suíte completa com **341 testes automatizados** (regras de combate, economia, entrada, UI, efeitos e simulações cooperativas):
 ```bash
 npm test
 ```
-Resultados certificados: **284/284 testes aprovados em 38 arquivos de teste!**
+Resultado desta versão: **341/341 testes aprovados em 50 arquivos**. Os testes Node não substituem o navegador: foram verificados solo/teclado/toque emulado e WebRTC real em duas/três abas. Celular físico e duas máquinas distintas ficam como validação adicional. O roteiro e as evidências estão em tasks/browser-checklist.md.

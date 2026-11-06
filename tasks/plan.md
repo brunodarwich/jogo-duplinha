@@ -1,6 +1,6 @@
 # Plano de melhorias: MOBA Duplinha
 
-Data: 05/11/2026. Estado: planejamento concluído; implementação aguarda revisão do usuário.
+Data: 05/11/2026. Estado: aprovado pelo usuário e implementado; publicação autorizada.
 
 ## Objetivo
 
@@ -103,4 +103,4 @@ Novos heróis/mapas, ranked, contas, backend dedicado, reconexão completa, migr
 
 ## Revisão
 
-O usuário confirmou os três eixos. Falta revisar este plano concreto antes da implementação, conforme a skill planning-and-task-breakdown invocada. Este turno alterou apenas documentos de planejamento.
+O usuário aprovou o plano e autorizou execução, atualização do GitHub e deploy. As 18 tarefas foram implementadas, com revisões independentes e validação registrada em browser-checklist.md. A validação adicional em celular físico/duas máquinas permanece explicitamente indicada.

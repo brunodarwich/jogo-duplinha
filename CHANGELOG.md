@@ -1,5 +1,32 @@
 # Changelog
 
+## [2.0.0] - 2026-11-05
+
+### Added
+- Objetivo contextual e próxima onda no HUD, guia de primeira partida e preferências de movimento reduzido.
+- Controles de interface operáveis por teclado, retrato dispensável e indicadores de perigo com texto/contorno.
+- Mundo cooperativo decidido pelo anfitrião, entrada tardia com estado completo e interpolação visual.
+
+### Changed
+- Protocolo cooperativo v2: todos os participantes precisam atualizar/recarregar o jogo antes de jogar juntos.
+- Evoluir habilidades agora modifica os efeitos reais dos cinco heróis; descrições correspondem às mecânicas executadas.
+- Compras, vendas, evolução e comandos de combate de convidados são validados pelo anfitrião.
+- Comandos de treino que alteram o mundo ficam restritos ao anfitrião.
+
+### Fixed
+- Habilidades não aprendidas, sem recursos ou bloqueadas por controle deixam de executar.
+- Lentidão/atordoamento afetam movimento e IA; dano respeita defesa, barreiras e invulnerabilidade de forma consistente.
+- Ouro de último golpe é atribuído ao autor; aliados elegíveis recebem assistência, sem prêmio duplicado.
+- ATACAR no toque não usa Q; controles não disparam duas vezes no mesmo toque.
+- Falhas de RTC, cancelamento de sala e troca de modo limpam canais e mostram erros explícitos.
+- HUD do chefe, objetivos e controles têm espaço próprio; listeners são removidos ao encerrar a partida.
+
+### Validation
+- 341 testes passaram em 50 arquivos, incluindo regressões e três simulações independentes.
+- Chrome: solo com os cinco heróis, teclado, cinco resoluções e toque emulado.
+- WebRTC real com duas/três abas: estado comum, compras, evolução, habilidade, entrada tardia e queda do anfitrião.
+- Celular físico e conexão entre duas máquinas distintas não foram testados nesta sessão.
+
 ## [1.2.0] - 2026-11-04
 
 ### Added
