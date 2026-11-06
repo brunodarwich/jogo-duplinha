@@ -6,8 +6,8 @@ export const HELP_STEPS = [
     keyboard: 'Botão direito: mover ou atacar. Espaço: voltar a câmera ao herói.',
     touch: 'Arraste no lado esquerdo para andar. Toque em ATACAR perto de um inimigo.' },
   { title: 'Aprenda e mire suas habilidades', body: 'Use os botões + para gastar pontos de habilidade. Q, W e E ficam mais fortes ao evoluir; R precisa ser desbloqueada. Vida, mana e recarga aparecem no painel inferior.',
-    keyboard: 'Q / W / E / R: preparar habilidade. Clique esquerdo: confirmar a mira. Botão direito ou Esc: cancelar.',
-    touch: 'Toque na habilidade aprendida e depois no chão ou no alvo para confirmar.' },
+    keyboard: 'Q / W / E / R: mirar com assistência. Clique ou repita a tecla para lançar; Shift + tecla lança direto. Habilidades próprias são imediatas. Esc cancela.',
+    touch: 'Toque para lançar no alvo próximo. Arraste do botão para mirar e solte para lançar; volte ao botão para cancelar. Curas priorizam aliados feridos.' },
   { title: 'Prepare-se na base', body: 'Abra a Loja para comprar equipamentos com seu ouro. Compras e vendas exigem estar perto da fonte. B retorna à base após 5 segundos; mover ou receber dano interrompe o retorno.',
     keyboard: 'P: abrir a Loja. B: retornar à base. M: alternar áudio.',
     touch: 'Use o botão Loja e toque em B para retornar. O minimapa ajuda a acompanhar a trilha.' }

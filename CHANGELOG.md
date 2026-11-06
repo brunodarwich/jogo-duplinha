@@ -1,5 +1,26 @@
 # Changelog
 
+## [2.3.0] - 2026-11-06
+
+### Added
+- Mira assistida próxima ao cursor e lançamento rápido com Shift + Q/W/E/R.
+- No celular, toque para lançar automaticamente no alvo focado/próximo; arraste do botão para mirar, solte para lançar e volte ao centro para cancelar.
+- Seleção de heróis aliados feridos para curas automáticas do Clérigo.
+
+### Changed
+- Repetir a tecla da habilidade confirma a mira; skills próprias são imediatas.
+- Indicadores mostram o alcance do rank atual, área real projetada e alvo assistido.
+- Saltos e teleportes respeitam a distância escolhida e não buscam inimigos automaticamente.
+
+### Fixed
+- Confirmação usa a posição atual do clique, sem depender do próximo quadro.
+- Mira de alvo único rejeita aliados, mortos, invulneráveis e alvos fora de alcance antes de gastar recursos.
+- Cancelamento de gestos e teclas mantidas pressionadas não dispara habilidades.
+
+### Validation
+- 394 testes aprovados em 56 arquivos; regressões de mira, gestos e cancelamento no cooperativo.
+- Chrome: teclado, mouse, toque e multitouch nativos via CDP, HUD em sete resoluções, cinco heróis, loja e fallback de arte.
+
 ## [2.2.0] - 2026-11-06
 
 ### Added

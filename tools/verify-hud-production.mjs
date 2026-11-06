@@ -3,10 +3,14 @@ const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright')
 import fs from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import assert from 'node:assert/strict';
+import path from 'node:path';
 const site='https://jogo-duplinha-blush.vercel.app';
-const paths=['index.html','src/ui/hud.css','src/ui/hud.js','src/ui/ability_art.js','src/ui/touch_button.js','src/ui/virtual_joystick.js',...['knight','sorceress','ranger','assassin','cleric'].map(id=>`assets/ui/abilities/${id}.png`)];
+const {version}=JSON.parse(await fs.readFile('package.json','utf8'));
+const outputDir=process.env.PRODUCTION_SCREENSHOT_DIR || 'output/ui-concepts';
+await fs.mkdir(outputDir,{recursive:true});
+const paths=['index.html','src/main.js','src/game.js','src/core/input.js','src/core/ability_targeting.js','src/render/renderer.js','src/ui/help_ui.js','src/ui/ability_button.js','src/ui/hud.css','src/ui/hud.js','src/ui/ability_art.js','src/ui/touch_button.js','src/ui/virtual_joystick.js',...['knight','sorceress','ranger','assassin','cleric'].map(id=>`assets/ui/abilities/${id}.png`)];
 for(const file of paths) {
-  const response=await fetch(`${site}/${file}?release=4df027d`);
+  const response=await fetch(`${site}/${file}?release=${encodeURIComponent(version)}`);
   assert.equal(response.status,200,`${file}: HTTP ${response.status}`);
   const remote=Buffer.from(await response.arrayBuffer()), local=await fs.readFile(file);
   const digest=b=>createHash('sha256').update(b).digest('hex');
@@ -34,7 +38,7 @@ try {
     await page.locator('#buy-item-btn').click();
     await page.getByRole('button',{name:'Fechar loja',exact:true}).click();
     assert.deepEqual(errors,[],`Runtime errors ${width}x${height}`);
-    await page.screenshot({path:`output/ui-concepts/production-${width}x${height}.png`});
+    await page.screenshot({path:path.join(outputDir,`production-${width}x${height}.png`)});
     console.log(`PASS production ${width}x${height}: solo match, illustrated HUD, joystick and item purchase; no pageerror`);
     await page.close();
   }

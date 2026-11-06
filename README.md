@@ -4,7 +4,9 @@ Jogo cooperativo estilo MOBA / Lane Push em perspectiva Isométrica 2.5D jogáve
 
 ---
 
-## Novidades da versão 2.0
+## Novidades da versão 2.3
+
+A versão **2.3** facilita a mira das habilidades: no celular, um toque lança no inimigo focado ou próximo ao alcance; arraste do botão para escolher direção e distância, solte para lançar ou volte ao centro do botão para cancelar. No desktop, Q/W/E/R preparam a mira com encaixe suave em alvos próximos do cursor; clique ou repita a tecla para confirmar, ou use Shift + tecla para lançamento direto. Habilidades ao redor do próprio herói são imediatas. Curas automáticas do Clérigo priorizam heróis aliados feridos, e saltos/teleportes seguem a direção escolhida sem puxar para inimigos. O indicador usa o alcance real de cada rank e destaca o alvo assistido.
 
 A versão **2.1** acrescenta uma tela inicial promocional com os cinco heróis e as torres do jogo. A arte aparece inteira em desktop e celular; o original e o prompt ficam em assets/ui/promo-arena-v2.png e assets/ui/promo-arena-v2.prompt.json. O site usa uma cópia WebP otimizada.
 
@@ -45,6 +47,8 @@ A câmera inicia em 125% para destacar o herói. O painel de zoom dentro de **Pa
 | **W** | Habilidade 2 (Controle de Grupo / Nevasca / Escudo / Veneno) |
 | **E** | Habilidade 3 (Mobilidade / Dash / Cutilada / Julgamento) |
 | **R** | Habilidade Suprema (Meteoro / Fortaleza / Sniper / Dança Letal / Milagre) |
+| **Repetir Q / W / E / R** | Confirmar a habilidade que está sendo mirada |
+| **Shift + Q / W / E / R** | Lançar diretamente na mira do cursor |
 | **B** | **Recall**: Canaliza por 5 segundos para retornar à base com vida e mana |
 | **P** ou **Loja** | Abre os itens; comprar/vender exige estar na base |
 | **Clique no Minimapa** | Botão Esquerdo move a câmera; Botão Direito move o herói |
@@ -102,11 +106,11 @@ Cada herói possui animações próprias de ataque básico e Q/W/E/R, totalizand
 
 ## 🧪 Testes Automatizados
 
-Para rodar a suíte completa com **349 testes automatizados** (regras de combate, economia, entrada, UI, efeitos e simulações cooperativas):
+Para rodar a suíte completa com **394 testes automatizados** (regras de combate, economia, entrada, UI, efeitos e simulações cooperativas):
 ```bash
 npm test
 ```
-Resultado desta versão: **349/349 testes aprovados em 51 arquivos**. Os testes Node não substituem o navegador: foram verificados solo/teclado/toque emulado e WebRTC real em duas/três abas. A tela promocional foi conferida em seis resoluções, com imagem lenta e indisponível. Celular físico e duas máquinas distintas ficam como validação adicional. Os registros estão em tasks/browser-checklist.md e tasks/promo-release.md.
+Resultado desta versão: **394/394 testes aprovados em 56 arquivos**. O targeting tem regressões para assistência, gestos, alcance, recursos e cancelamento no convidado. As verificações de navegador e o processo de publicação estão em [tasks/skill-targeting.md](tasks/skill-targeting.md). As verificações anteriores de WebRTC e tela inicial permanecem registradas em tasks/browser-checklist.md e tasks/promo-release.md; celular físico e duas máquinas distintas ficam como validação adicional.
 
 ### Verificação do HUD responsivo
 
