@@ -26,3 +26,14 @@ Pedido: facilitar o sistema de alvos das skills, atualizar e publicar o jogo.
 - `tools/check-mobile-hud.mjs`: Chrome aprovado em sete resoluções de toque, quatro larguras desktop, cinco heróis, teclado, multitouch, loja e fallback de arte.
 - Projeto Vercel existente: `jogo-duplinha`; produção em https://jogo-duplinha-blush.vercel.app/.
 - Recuperação: `vercel rollback https://jogo-duplinha-bysgsuaeq-raixu01s-projects.vercel.app --yes` ou reverter os commits desta versão e publicar. Sem migração de dados.
+
+## Release publicado em 2026-11-06
+
+- Código: commit `2ba0aa7759e5d969908dccb314fac8764f697d8b`, tag `v2.3.0`, enviado para `origin/main`.
+- Deploy Vercel `dpl_D1jttV3Juym8hX7DYQ2oMG97S7tU`, estado `READY`.
+- URL imutável: https://jogo-duplinha-eeecre0ay-raixu01s-projects.vercel.app/.
+- URL de produção: https://jogo-duplinha-blush.vercel.app/.
+- Os 13 cenários de targeting passaram no Chrome local, sem exceções de runtime. A inspeção visual conferiu o alvo assistido e os indicadores de arraste em desktop, celular horizontal e retrato.
+- Revisão independente sem bloqueadores; mutações de proteção de alvo e cancelamento de gesto foram detectadas pelos testes.
+- Produção verificada sem substituir assets: 13/13 cenários de targeting aprovados, sem exceções de runtime. Resultados e nove capturas em `.playwright-cli/targeting-production/`.
+- HTTP 200 e SHA-256 conferidos para 18 arquivos publicados (módulos, HUD e cinco atlas). Solo, joystick, arte e compra na loja aprovados em 844×390, 390×844 e 1280×800, sem exceções de runtime.
