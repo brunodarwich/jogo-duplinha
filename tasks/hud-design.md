@@ -178,3 +178,19 @@ As coordenadas abaixo foram medidas no navegador. Origem(0,0) no canto superior 
 |Evoluir Q|112|372|44|44|
 |Evoluir W|164|372|44|44|
 |Evoluir E|216|372|44|44|
+
+
+## Publicação — versão2.2.0
+
+Publicação autorizada pelo usuário em6 de novembro de2026. Código enviado ao GitHub/main: `4df027d`.
+
+- Produção: https://jogo-duplinha-blush.vercel.app/.
+- Vercel: `dpl_E2rb6UjHjY2uEgX5YCqQg3U7GGoi`, estado READY.
+- URL imutável: https://jogo-duplinha-bysgsuaeq-raixu01s-projects.vercel.app.
+- HTTP200 e SHA-256 conferidos para index.html, CSS/controladores do HUD e os cinco atlas; bytes publicados idênticos aos locais.
+- Evidências e prompts de geração são preservados no repositório e excluídos do pacote de produção; verificadas respostas404 para a referência de output e os prompts.
+- Recuperação: promover o deploy anterior `dpl_CV9Kw1srLyuxmvp9sau6LqiqonBk`, URL https://jogo-duplinha-8ey0n5u2i-raixu01s-projects.vercel.app.
+
+- Chrome no endereço público, sem substituir os assets: partida solo iniciada, quatro ícones carregados, joystick e chefe visíveis, compra de item concluída e zero pageerror em844×390,390×844 e1280×800.
+- Capturas: [celular horizontal](../output/ui-concepts/production-844x390.png), [celular vertical](../output/ui-concepts/production-390x844.png), [tablet](../output/ui-concepts/production-1280x800.png).
+- Verificação reproduzível: `tools/verify-hud-production.mjs` (requer Playwright/Chrome, usa PLAYWRIGHT_MODULE como o teste local).
