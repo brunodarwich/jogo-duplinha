@@ -3,8 +3,51 @@
  * Supports 1 to 3 players (1 Host + up to 2 Clients) with automatic Solo mode fallback.
  */
 
-import { generateRoomCode, sanitizeRoomCode, MAX_PLAYERS } from './protocol.js';
+import { generateRoomCode, sanitizeRoomCode, MAX_PLAYERS, HEARTBEAT_TIMEOUT_MS } from './protocol.js';
 import { serializeHeroAction } from '../render/hero_action.js';
+import { HERO_DEFINITIONS } from '../entities/heroes.js';
+import { WORLD_PROTOCOL_VERSION, createWorldSnapshot, applyWorldSnapshot, isWorldSnapshotValid } from './world_state.js';
+
+const NETWORK_COMMANDS = new Set(['MOVE_TO', 'ATTACK_TARGET', 'CAST_ABILITY', 'CAST_SKILL',
+  'STOP', 'RECALL', 'UPGRADE_ABILITY', 'BUY_ITEM', 'SELL_ITEM']);
+const safeName = name => typeof name === 'string'
+  ? name.replace(/[<>&\u0000-\u001f]/g, '').trim().slice(0, 48) : '';
+const safeHero = heroId => Object.hasOwn(HERO_DEFINITIONS, heroId) ? heroId : 'knight';
+function cleanCommand(command) {
+  if (!command || !NETWORK_COMMANDS.has(command.type)) return null;
+  const result = { type: command.type };
+  for (const key of ['x', 'y', 'targetX', 'targetY']) {
+    if (command[key] !== undefined) {
+      if (!Number.isFinite(command[key]) || command[key] < 0 || command[key] > 3200) return null;
+      result[key] = command[key];
+    }
+  }
+  for (const key of ['slot', 'skill', 'itemId', 'targetId']) {
+    if (command[key] !== undefined) {
+      if (key === 'slot' && command.type === 'SELL_ITEM' && Number.isInteger(command.slot)
+          && command.slot >= 0 && command.slot < 6) {
+        result.slot = command.slot;
+        continue;
+      }
+      if (typeof command[key] !== 'string' || command[key].length > 120) return null;
+      result[key] = command[key];
+    }
+  }
+  if (!result.targetId) {
+    const id = command.targetEntity?.id || command.targetEntityId;
+    if (id !== undefined) {
+      if (typeof id !== 'string' || id.length > 120) return null;
+      result.targetId = id;
+    }
+  }
+  if (typeof command.attackMove === 'boolean') result.attackMove = command.attackMove;
+  if (command.slotIndex !== undefined) {
+    if (!Number.isInteger(command.slotIndex) || command.slotIndex < 0 || command.slotIndex > 5) return null;
+    result.slotIndex = command.slotIndex;
+    if (command.type === 'SELL_ITEM') result.slot = command.slotIndex;
+  }
+  return result;
+}
 
 export const DEFAULT_ICE_SERVERS = [
   { urls: 'stun:stun.l.google.com:19302' },
@@ -16,7 +59,7 @@ export const DEFAULT_ICE_SERVERS = [
 ];
 
 export class PeerNetwork {
-  constructor(gameSim = null) {
+  constructor(gameSim = null, options = {}) {
     this.gameSim = gameSim;
     this.peer = null;
     this.isHost = true;
@@ -26,6 +69,16 @@ export class PeerNetwork {
     this.roster = [];
     this.isSoloMode = true;
     this.isMatchStarted = false;
+    this.authoritativeWorld = !!options.authoritativeWorld;
+    this.matchId = 'match_' + (globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2));
+    this.worldSequence = 0;
+    this.commandSequence = 0;
+    this._nextPlayerNumber = 2;
+    this._connectionGeneration = 0;
+    this._connectionCleanups = new Map();
+    this._pendingWorldSnapshot = null;
+    this.onCommandResultCallback = null;
+    this.onConnectionStatusCallback = null;
 
     // Callbacks
     this.onPeerJoinCallback = null;
@@ -37,9 +90,122 @@ export class PeerNetwork {
 
   setGameSim(gameSim) {
     this.gameSim = gameSim;
+    if (!this.authoritativeWorld || !gameSim) return;
+    // GameSimulation registers itself before finishing init().
+    queueMicrotask(() => {
+      if (this.gameSim !== gameSim || this.isSoloMode) return;
+      if (this.isHost) {
+        if (this.isMatchStarted) this.publishWorldState();
+      } else {
+        if (this._pendingWorldSnapshot) this.acceptWorldSnapshot(this._pendingWorldSnapshot);
+        this.broadcast({ type: 'WORLD_REQUEST', protocolVersion: WORLD_PROTOCOL_VERSION });
+      }
+    });
+  }
+
+  publishWorldState(targetConnection = null) {
+    if (!this.authoritativeWorld || this.isSoloMode || !this.isHost || !this.gameSim?.playerHero) return null;
+    const packet = createWorldSnapshot(this.gameSim, {
+      sequence: ++this.worldSequence, matchId: this.matchId
+    });
+    if (targetConnection?.open) targetConnection.send(packet);
+    else this.broadcast(packet);
+    return packet;
+  }
+
+  acceptWorldSnapshot(packet) {
+    if (!isWorldSnapshotValid(packet)) return false;
+    if (!this.gameSim?.playerHero) {
+      if (!this._pendingWorldSnapshot || packet.sequence > this._pendingWorldSnapshot.sequence) this._pendingWorldSnapshot = packet;
+      return true;
+    }
+    if (!applyWorldSnapshot(this.gameSim, packet)) return false;
+    this.matchId = packet.matchId;
+    this._pendingWorldSnapshot = null;
+    return true;
+  }
+
+  sendCommand(command) {
+    const cleaned = cleanCommand(command);
+    if (!this.authoritativeWorld || this.isSoloMode || this.isHost || !cleaned) return { success: false, reason: 'invalid_command' };
+    if (!this.gameSim?.worldReady) return { success: false, reason: 'world_not_ready' };
+    this.broadcast({ type: 'GAME_COMMAND', protocolVersion: WORLD_PROTOCOL_VERSION,
+      matchId: this.matchId, sequence: ++this.commandSequence, command: cleaned });
+    return { success: true, pending: true };
+  }
+
+  reportDisconnect(message, isHostLost = false) {
+    if (this._disconnecting) return;
+    this.onConnectionStatusCallback?.({ connected: false, message, isHostLost });
+    if (isHostLost) {
+      this.gameSim?.onNetworkDisconnect?.(message);
+      if (this.gameSim) this.gameSim.worldReady = false;
+    }
+  }
+
+  watchConnection(connection, hostLost = !this.isHost) {
+    if (this._connectionCleanups.has(connection)) return;
+    const pc = connection.peerConnection;
+    if (!pc?.addEventListener) return;
+    const generation = this._connectionGeneration;
+    let timer = null;
+    const cleanup = () => {
+      clearTimeout(timer);
+      timer = null;
+      pc.removeEventListener('connectionstatechange', check);
+      pc.removeEventListener('iceconnectionstatechange', check);
+      this._connectionCleanups.delete(connection);
+    };
+    const check = () => {
+      if (connection.intentionallyClosed || connection._networkDropped || generation !== this._connectionGeneration) {
+        cleanup();
+        return;
+      }
+      const states = [pc.connectionState, pc.iceConnectionState];
+      if (states.some(state => state === 'failed' || state === 'closed')) {
+        this.dropConnection(connection, hostLost);
+      } else if (states.includes('disconnected')) {
+        if (!timer) timer = setTimeout(() => {
+          timer = null;
+          if (generation === this._connectionGeneration
+              && [pc.connectionState, pc.iceConnectionState].includes('disconnected')) {
+            this.dropConnection(connection, hostLost);
+          }
+        }, HEARTBEAT_TIMEOUT_MS);
+      } else {
+        clearTimeout(timer);
+        timer = null;
+      }
+    };
+    this._connectionCleanups.set(connection, cleanup);
+    pc.addEventListener('connectionstatechange', check);
+    pc.addEventListener('iceconnectionstatechange', check);
+    check();
+  }
+
+  dropConnection(connection, hostLost = !this.isHost) {
+    if (!connection) return false;
+    this._connectionCleanups.get(connection)?.();
+    if (connection._networkDropped || connection.intentionallyClosed) return false;
+    connection._networkDropped = true;
+    this.connections = this.connections.filter(candidate => candidate !== connection);
+    if (hostLost) {
+      this._pendingJoin?.reject(new Error('A conexão com a sala foi encerrada.'));
+      this.onPeerLeaveCallback?.({ id: 'player_hero_1', isHost: true });
+      this.reportDisconnect('O anfitrião desconectou. Volte à seleção para iniciar outra partida.', true);
+    } else if (connection.assignedId) {
+      this.roster = this.roster.filter(player => player.id !== connection.assignedId);
+      this.broadcastRoster();
+      this.onRosterChangeCallback?.(this.roster);
+      this.onPeerLeaveCallback?.({ id: connection.assignedId });
+      this.reportDisconnect('Um aliado desconectou.');
+    }
+    try { connection.close?.(); } catch (_) {}
+    return true;
   }
 
   initSolo() {
+    this.disconnect({ keepSimulation: true });
     this.isSoloMode = true;
     this.isHost = true;
     this.roomCode = 'SOLO';
@@ -56,6 +222,12 @@ export class PeerNetwork {
   }
 
   async hostRoom(preferredCode = null, hostHeroId = 'knight', hostName = 'Host') {
+    const requestedCode = preferredCode ? sanitizeRoomCode(preferredCode) : null;
+    if (requestedCode && this._pendingHost && requestedCode === this.roomCode) return this._pendingHost.promise;
+    if (requestedCode && this.isHost && this.peer?.open && this.peer.id === 'moba-duplinha-' + requestedCode) return this.roomCode;
+    this._pendingHost?.cancel(new Error('Criação de sala substituída.'));
+    this._pendingJoin?.reject(new Error('Conexão substituída.'));
+    this._connectionGeneration++;
     this.isSoloMode = false;
     this.isHost = true;
     this.roomCode = preferredCode ? sanitizeRoomCode(preferredCode) : generateRoomCode();
@@ -72,20 +244,28 @@ export class PeerNetwork {
       this.onRosterChangeCallback(this.roster);
     }
 
-    return new Promise((resolve, reject) => {
+    const generation = this._connectionGeneration;
+    const pending = { promise: null, cancel: null };
+    this._pendingHost = pending;
+    const promise = new Promise((resolve, reject) => {
+      pending.cancel = error => {
+        clearTimeout(this._hostTimer);
+        if (this._pendingHost === pending) this._pendingHost = null;
+        reject(error);
+      };
       if (typeof window === 'undefined' || typeof window.Peer === 'undefined') {
-        console.warn('[PeerNetwork] PeerJS não carregado. Operando em modo Solo.');
-        this.initSolo();
-        resolve(this.roomCode);
+        pending.cancel(new Error('PeerJS não carregou. Verifique a conexão ou escolha Jogar Solo.'));
         return;
       }
 
       // If peer already exists for this room, reuse it
-      if (this.peer && !this.peer.destroyed && this.peer.id === peerId) {
+      if (this.peer && !this.peer.destroyed && this.peer.open && this.peer.id === peerId) {
         resolve(this.roomCode);
         return;
       }
       if (this.peer && !this.peer.destroyed) {
+        for (const connection of this.connections) connection.intentionallyClosed = true;
+        this.connections = [];
         try { this.peer.destroy(); } catch (e) {}
       }
 
@@ -96,31 +276,43 @@ export class PeerNetwork {
             iceServers: DEFAULT_ICE_SERVERS
           }
         });
+        const peer = this.peer;
+        const current = () => this.peer === peer && generation === this._connectionGeneration;
+        this._hostTimer = setTimeout(() => {
+          if (current()) pending.cancel(new Error('Tempo limite ao criar a sala. Tente novamente.'));
+        }, 15000);
 
         this.peer.on('open', (id) => {
+          if (!current()) return;
+          clearTimeout(this._hostTimer);
+          if (this._pendingHost === pending) this._pendingHost = null;
           console.log(`[PeerNetwork] Sala criada com código: ${this.roomCode} (PeerID: ${id})`);
           resolve(this.roomCode);
         });
 
         this.peer.on('connection', (conn) => {
+          if (!current()) { conn.close?.(); return; }
           this.handleIncomingConnection(conn);
         });
 
         this.peer.on('error', (err) => {
+          if (!current()) return;
+          clearTimeout(this._hostTimer);
           console.error('[PeerNetwork] Erro no Host:', err);
           if (err.type === 'unavailable-id') {
+            if (this._pendingHost === pending) this._pendingHost = null;
             // Código em uso, tenta outro
             this.hostRoom(null, hostHeroId, hostName).then(resolve).catch(reject);
           } else {
-            reject(err);
+            pending.cancel(err);
           }
         });
       } catch (err) {
-        console.warn('[PeerNetwork] Falha ao iniciar PeerJS:', err);
-        this.initSolo();
-        resolve(this.roomCode);
+        pending.cancel(err);
       }
     });
+    pending.promise = promise;
+    return promise;
   }
 
   updateHostHero(heroId, name = null) {
@@ -160,12 +352,20 @@ export class PeerNetwork {
     this.isMatchStarted = true;
     this.broadcast({
       type: 'START_MATCH',
+      protocolVersion: WORLD_PROTOCOL_VERSION,
+      authoritativeWorld: this.authoritativeWorld,
+      matchId: this.matchId,
       roomCode: this.roomCode,
       roster: this.roster
     });
+    this.publishWorldState();
   }
 
   async joinRoom(roomCode, clientInfo = {}) {
+    this._pendingHost?.cancel(new Error('Criação de sala cancelada.'));
+    this._pendingJoin?.reject(new Error('Conexão substituída.'));
+    this._connectionGeneration++;
+    const generation = this._connectionGeneration;
     this.isSoloMode = false;
     this.isHost = false;
     this.roomCode = sanitizeRoomCode(roomCode);
@@ -180,6 +380,8 @@ export class PeerNetwork {
       }
 
       if (this.peer && !this.peer.destroyed) {
+        for (const connection of this.connections) connection.intentionallyClosed = true;
+        this.connections = [];
         try { this.peer.destroy(); } catch (e) {}
       }
 
@@ -190,67 +392,81 @@ export class PeerNetwork {
             iceServers: DEFAULT_ICE_SERVERS
           }
         });
+        const peer = this.peer;
+        const current = () => this.peer === peer && generation === this._connectionGeneration;
 
         let settled = false;
         let connectionTimeout = setTimeout(() => {
-          if (!settled) {
-            settled = true;
-            reject(new Error('Tempo limite de conexão esgotado. Verifique se o Host já criou a sala.'));
-          }
+          this._pendingJoin?.reject(new Error('Tempo limite de conexão esgotado. Verifique se o Host já criou a sala.'));
         }, 12000);
+        this._joinTimer = connectionTimeout;
+        this._pendingJoin = {
+          resolve: (conn) => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(connectionTimeout);
+            this._joinTimer = null;
+            this._pendingJoin = null;
+            resolve(conn);
+          },
+          reject: (error) => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(connectionTimeout);
+            this._joinTimer = null;
+            this._pendingJoin = null;
+            reject(error);
+          }
+        };
 
         this.peer.on('open', (myId) => {
-          const conn = this.peer.connect(hostPeerId, { reliable: true });
+          if (!current()) return;
+          const conn = peer.connect(hostPeerId, { reliable: true });
 
           conn.on('open', () => {
-            if (!settled) {
-              settled = true;
-              clearTimeout(connectionTimeout);
-            }
+            if (!current()) { conn.intentionallyClosed = true; conn.close(); return; }
             console.log(`[PeerNetwork] Conectado ao Host na sala ${this.roomCode}`);
             this.connections = [conn];
+            this.watchConnection(conn, true);
+            if (conn._networkDropped) return;
 
             // Send handshake request
             conn.send({
               type: 'JOIN_REQUEST',
+              protocolVersion: WORLD_PROTOCOL_VERSION,
+              authoritativeWorld: this.authoritativeWorld,
               name: clientName,
               heroId: chosenHeroId
             });
 
-            resolve(conn);
           });
 
           conn.on('data', (data) => {
-            this.handleData(data, conn);
+            if (current()) this.handleData(data, conn);
           });
 
           conn.on('close', () => {
-            console.log('[PeerNetwork] Desconectado do Host.');
-            this.connections = [];
-            if (this.onPeerLeaveCallback) {
-              this.onPeerLeaveCallback({ id: 'player_hero_1', isHost: true });
-            }
+            if (conn.intentionallyClosed || !current()) return;
+            this.dropConnection(conn, true);
           });
 
           conn.on('error', (err) => {
+            if (!current()) return;
             if (!settled) {
-              settled = true;
-              clearTimeout(connectionTimeout);
               console.error('[PeerNetwork] Erro na conexão com o Host:', err);
-              reject(err);
+              this._pendingJoin?.reject(err);
             }
           });
         });
 
         this.peer.on('error', (err) => {
+          if (!current()) return;
           if (!settled) {
-            settled = true;
-            clearTimeout(connectionTimeout);
             console.error('[PeerNetwork] Erro no Cliente PeerJS:', err);
             if (err.type === 'peer-unavailable') {
-              reject(new Error(`A sala "${this.roomCode}" não foi encontrada. Certifique-se de que o Host criou a sala e está esperando!`));
+              this._pendingJoin?.reject(new Error(`A sala "${this.roomCode}" não foi encontrada. Certifique-se de que o Host criou a sala e está esperando!`));
             } else {
-              reject(err);
+              this._pendingJoin?.reject(err);
             }
           }
         });
@@ -279,6 +495,7 @@ export class PeerNetwork {
         this.connections.push(conn);
         console.log(`[PeerNetwork] Novo canal de dados aberto (${this.connections.length + 1}/${MAX_PLAYERS})`);
       }
+      this.watchConnection(conn, false);
     };
 
     if (conn.open) {
@@ -292,33 +509,42 @@ export class PeerNetwork {
     });
 
     conn.on('close', () => {
-      this.connections = this.connections.filter(c => c !== conn);
-      if (conn.assignedId) {
-        this.roster = this.roster.filter(p => p.id !== conn.assignedId);
-        this.broadcastRoster();
-        if (this.onRosterChangeCallback) this.onRosterChangeCallback(this.roster);
-        if (this.onPeerLeaveCallback) this.onPeerLeaveCallback({ id: conn.assignedId });
-      }
-      console.log('[PeerNetwork] Jogador desconectou.');
+      this.dropConnection(conn, false);
     });
   }
 
   handleData(data, senderConn) {
-    if (!data || !data.type) return;
+    if (!data || !data.type || senderConn?._networkDropped || senderConn?.intentionallyClosed) return;
 
-    if (senderConn && !this.connections.includes(senderConn)) {
+    if (!this.authoritativeWorld && senderConn && !this.connections.includes(senderConn)) {
       this.connections.push(senderConn);
     }
 
     switch (data.type) {
       case 'JOIN_REQUEST': {
-        const assignedId = `player_remote_${this.roster.length + 1}`;
+        if (!this.isHost || !senderConn) return;
+        if (this.authoritativeWorld !== !!data.authoritativeWorld
+            || (this.authoritativeWorld && data.protocolVersion !== WORLD_PROTOCOL_VERSION)) {
+          senderConn.send({ type: 'JOIN_REJECT', reason: 'Versões incompatíveis. Atualize o jogo nos dois dispositivos.' });
+          senderConn.close?.();
+          return;
+        }
+        if (senderConn.assignedId && this.roster.some(p => p.id === senderConn.assignedId)) return;
+        if (this.roster.length >= MAX_PLAYERS) {
+          senderConn.send({ type: 'JOIN_REJECT', reason: 'Sala lotada (máx 3 jogadores).' });
+          senderConn.close?.();
+          return;
+        }
+        if (!this.connections.includes(senderConn)) this.connections.push(senderConn);
+        while (this.roster.some(p => p.id === 'player_remote_' + this._nextPlayerNumber)) this._nextPlayerNumber++;
+        const assignedId = 'player_remote_' + this._nextPlayerNumber++;
         senderConn.assignedId = assignedId;
+        senderConn.lastCommandSequence = 0;
 
         const newPlayer = {
           id: assignedId,
-          heroId: data.heroId || 'knight',
-          name: data.name || `Jogador ${this.roster.length + 1}`,
+          heroId: safeHero(data.heroId),
+          name: safeName(data.name) || `Jogador ${this.roster.length + 1}`,
           isHost: false
         };
 
@@ -326,6 +552,9 @@ export class PeerNetwork {
 
         senderConn.send({
           type: 'JOIN_ACCEPT',
+          protocolVersion: WORLD_PROTOCOL_VERSION,
+          authoritativeWorld: this.authoritativeWorld,
+          matchId: this.matchId,
           assignedId,
           roomCode: this.roomCode,
           roster: this.roster
@@ -340,20 +569,33 @@ export class PeerNetwork {
         if (this.onPeerJoinCallback) {
           this.onPeerJoinCallback(newPlayer);
         }
+        if (this.authoritativeWorld && this.gameSim && !this.gameSim.entities?.some(e => e.id === assignedId)) {
+          this.gameSim.spawnRemoteHero?.(newPlayer);
+        }
 
         // If Host already launched match, immediately send START_MATCH to late-joining player
         if (this.isMatchStarted) {
           senderConn.send({
             type: 'START_MATCH',
+            protocolVersion: WORLD_PROTOCOL_VERSION,
+            authoritativeWorld: this.authoritativeWorld,
+            matchId: this.matchId,
             roomCode: this.roomCode,
             roster: this.roster
           });
+          this.publishWorldState(senderConn);
         }
         break;
       }
 
       case 'JOIN_ACCEPT': {
+        if (this.isHost) return;
+        if (this.authoritativeWorld && (data.protocolVersion !== WORLD_PROTOCOL_VERSION || !data.authoritativeWorld)) {
+          this._pendingJoin?.reject(new Error('Versões incompatíveis. Atualize o jogo nos dois dispositivos.'));
+          return;
+        }
         this.myPlayerId = data.assignedId;
+        if (data.matchId) this.matchId = data.matchId;
         this.roomCode = data.roomCode || this.roomCode;
         if (data.roster) {
           this.roster = data.roster;
@@ -361,10 +603,19 @@ export class PeerNetwork {
         if (this.onRosterChangeCallback) {
           this.onRosterChangeCallback(this.roster);
         }
+        this._pendingJoin?.resolve(senderConn);
+        break;
+      }
+
+      case 'JOIN_REJECT': {
+        const error = new Error(data.reason || 'Não foi possível entrar na sala.');
+        this._pendingJoin?.reject(error);
+        this.onConnectionStatusCallback?.({ connected: false, message: error.message });
         break;
       }
 
       case 'ROSTER_UPDATE': {
+        if (this.authoritativeWorld && this.isHost) return;
         if (data.roster) {
           this.roster = data.roster;
           if (this.onRosterChangeCallback) {
@@ -376,11 +627,14 @@ export class PeerNetwork {
 
       case 'HERO_SELECT': {
         if (this.isHost) {
-          const playerId = senderConn.assignedId || data.playerId;
+          if (this.authoritativeWorld && (!senderConn?.assignedId || !this.connections.includes(senderConn)
+              || this.isMatchStarted)) return;
+          const playerId = this.authoritativeWorld ? senderConn.assignedId : senderConn?.assignedId || data.playerId;
           const player = this.roster.find(p => p.id === playerId);
+          if (this.authoritativeWorld && (!player || player.isHost)) return;
           if (player && data.heroId) {
-            player.heroId = data.heroId;
-            if (data.name) player.name = data.name;
+            player.heroId = safeHero(data.heroId);
+            if (data.name) player.name = safeName(data.name) || player.name;
             this.broadcastRoster();
             if (this.onRosterChangeCallback) {
               this.onRosterChangeCallback(this.roster);
@@ -391,6 +645,10 @@ export class PeerNetwork {
       }
 
       case 'START_MATCH': {
+        if (this.authoritativeWorld && (this.isHost || data.protocolVersion !== WORLD_PROTOCOL_VERSION
+            || !data.authoritativeWorld)) return;
+        this.isMatchStarted = true;
+        if (data.matchId) this.matchId = data.matchId;
         if (data.roster) {
           this.roster = data.roster;
         }
@@ -400,7 +658,52 @@ export class PeerNetwork {
         break;
       }
 
+      case 'WORLD_REQUEST': {
+        if (this.authoritativeWorld && this.isHost && senderConn?.assignedId
+            && this.roster.some(p => p.id === senderConn.assignedId)
+            && data.protocolVersion === WORLD_PROTOCOL_VERSION) this.publishWorldState(senderConn);
+        break;
+      }
+
+      case 'WORLD_SNAPSHOT': {
+        if (this.authoritativeWorld && !this.isHost && senderConn === this.connections[0]
+            && (!this.matchId || data.matchId === this.matchId || !this.gameSim?.worldReady)) this.acceptWorldSnapshot(data);
+        break;
+      }
+
+      case 'GAME_COMMAND': {
+        if (!this.authoritativeWorld || !this.isHost || !senderConn?.assignedId
+            || !this.connections.includes(senderConn)
+            || !this.roster.some(p => p.id === senderConn.assignedId)) return;
+        const command = cleanCommand(data.command);
+        if (data.protocolVersion !== WORLD_PROTOCOL_VERSION || data.matchId !== this.matchId || !command
+            || !Number.isSafeInteger(data.sequence) || data.sequence <= (senderConn.lastCommandSequence || 0)) {
+          senderConn.send({ type: 'COMMAND_RESULT', sequence: data.sequence, success: false, reason: 'invalid_command' });
+          return;
+        }
+        senderConn.lastCommandSequence = data.sequence;
+        let result;
+        try {
+          result = this.gameSim?.handlePlayerCommand?.(senderConn.assignedId, command);
+        } catch (error) {
+          console.warn('[PeerNetwork] Comando rejeitado:', error.message);
+          result = { success: false, reason: 'invalid_command' };
+        }
+        const success = result === true || result?.success === true;
+        senderConn.send({ type: 'COMMAND_RESULT', sequence: data.sequence,
+          success, reason: result?.reason || (success ? null : 'command_rejected') });
+        break;
+      }
+
+      case 'COMMAND_RESULT': {
+        if (this.authoritativeWorld && !this.isHost && senderConn === this.connections[0]) {
+          this.onCommandResultCallback?.(data);
+        }
+        break;
+      }
+
       case 'HERO_UPDATE': {
+        if (this.authoritativeWorld) return;
         if (this.gameSim && typeof this.gameSim.handleRemoteHeroUpdate === 'function') {
           this.gameSim.handleRemoteHeroUpdate(data);
         }
@@ -419,6 +722,7 @@ export class PeerNetwork {
       }
 
       case 'CAST_SKILL': {
+        if (this.authoritativeWorld) return;
         if (this.gameSim && typeof this.gameSim.handleRemoteCast === 'function') {
           this.gameSim.handleRemoteCast(data);
         }
@@ -433,6 +737,7 @@ export class PeerNetwork {
       }
 
       case 'CHAT_COMMAND': {
+        if (this.authoritativeWorld) return;
         if (this.gameSim && typeof this.gameSim.handleRemoteChatCommand === 'function') {
           this.gameSim.handleRemoteChatCommand(data);
         }
@@ -447,6 +752,7 @@ export class PeerNetwork {
       }
 
       case 'UPGRADE_ABILITY': {
+        if (this.authoritativeWorld) return;
         if (this.gameSim && this.gameSim.entities) {
           const hero = this.gameSim.entities.find(e => e.id === data.heroId);
           if (hero && hero.abilities && hero.abilities[data.slot]) {
@@ -524,9 +830,21 @@ export class PeerNetwork {
     }
   }
 
-  disconnect() {
+  disconnect({ keepSimulation = false } = {}) {
+    this._disconnecting = true;
+    for (const cleanup of this._connectionCleanups.values()) cleanup();
+    this._connectionCleanups.clear();
+    this._connectionGeneration++;
+    clearTimeout(this._hostTimer);
+    this._pendingHost?.cancel(new Error('Criação de sala cancelada.'));
+    this._pendingHost = null;
+    clearTimeout(this._joinTimer);
+    this._joinTimer = null;
+    this._pendingJoin?.reject(new Error('Conexão encerrada.'));
+    this._pendingJoin = null;
     if (this.connections) {
       for (const conn of this.connections) {
+        conn.intentionallyClosed = true;
         try { conn.close(); } catch (e) {}
       }
       this.connections = [];
@@ -534,6 +852,24 @@ export class PeerNetwork {
     if (this.peer && !this.peer.destroyed) {
       try { this.peer.destroy(); } catch (e) {}
     }
+    this.peer = null;
+    this.isMatchStarted = false;
+    this._pendingWorldSnapshot = null;
+    this.worldSequence = 0;
+    this.commandSequence = 0;
+    this.roster = [];
+    this._nextPlayerNumber = 2;
+    if (!keepSimulation) {
+      this.gameSim = null;
+      this.onPeerJoinCallback = null;
+      this.onPeerLeaveCallback = null;
+      this.onPeerStateCallback = null;
+      this.onMatchStartCallback = null;
+      this.onRosterChangeCallback = null;
+      this.onCommandResultCallback = null;
+      this.onConnectionStatusCallback = null;
+    }
+    this._disconnecting = false;
   }
 
   // Mock loopback connection for automated testing without browser PeerJS
