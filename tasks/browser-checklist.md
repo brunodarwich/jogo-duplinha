@@ -79,14 +79,14 @@ Ambiente: Chrome isolado via Playwright em Windows, servidor local. Testes de tr
 | Cooperação real | Duas e três abas com RTC connected. IDs das entidades e HP das torres idênticos em todos os observadores; diferença de relógio dentro de um snapshot (~33ms na amostra). |
 | Compra/evolução | Convidado comprou Adaga e evoluiu Q pela interface; anfitrião e convidado confirmaram mesmo inventário e rank. |
 | Movimento/habilidade | Clique direito e Q do convidado confirmados na simulação do anfitrião, com mesma recarga/posição dentro da cadência de rede. |
-| Entrada tardia | Terceiro entrou aos175,9s; recebeu snapshot completo, IDplayer_remote_3 e roster3. IDs/torres convergiram entre os três. |
-| Queda real | Fechar anfitrião com watcher corrigido pausou convidado, worldReady=false e modal CONEXÃO ENCERRADA após13,2s no teste local. A espera inclui a detecção do RTC e a tolerância de desconexão; não é promessa de detecção instantânea. |
+| Entrada tardia | Terceiro entrou aos 175,9s; recebeu snapshot completo, ID player_remote_3 e roster 3. IDs/torres convergiram entre os três. |
+| Queda real | Fechar anfitrião com watcher corrigido pausou convidado, worldReady=false e modal CONEXÃO ENCERRADA após 13,2s no teste local. A espera inclui a detecção do RTC e a tolerância de desconexão; não é promessa de detecção instantânea. |
 | Revisão | Revisão independente aprovou após corrigir spoof de HERO_SELECT, listeners acumulados e ativação do novo protocolo como padrão. Mutação temporária de rank-zero e de lentidão foi detectada; arquivos restaurados. |
 | Recursos | Favicon SVG adicionado após o404 observado inicialmente. Nenhuma falha de recurso obrigatório ou erro de aplicação nos testes finais de início. |
 
 ### Medições de rede
 
-Snapshot inicial de14 entidades/três heróis: aproximadamente16,6KB JSON. Com64 entidades: aproximadamente59,9KB; criação média0,51ms em100 amostras Node. A20Hz e dois convidados, o cenário maior equivale a~2,40MB/s JSON teórico antes do encoding/transporte. Não é medição de FPS do navegador nem da banda real em rede móvel.
+Snapshot inicial de 14 entidades/três heróis: aproximadamente 16,6 KB JSON. Com 64 entidades: aproximadamente 59,9 KB; criação média 0,51 ms em 100 amostras Node. A 20 Hz e dois convidados, o cenário maior equivale a~2,40 MB/s JSON teórico antes do encoding/transporte. Não é medição de FPS do navegador nem da banda real em rede móvel.
 
 ### Validação adicional não executada
 
@@ -95,3 +95,11 @@ Celular físico, máquinas em redes distintas/NAT diferentes e partida longa com
 ### Publicação e recuperação
 
 GitHub e deploy em produção foram autorizados pelo usuário após a aprovação do plano. Deploy anterior confirmado pela CLI: dpl_EXxUb89etxevHKSxPdFKGUSjH6g6, URL jogo-duplinha-ihj4ypk26-raixu01s-projects.vercel.app. Em regressão de produção, promover esse deploy novamente. O resultado da publicação será registrado após a verificação do artefato.
+
+## Publicação verificada
+
+- GitHub main: 2129476 (código/pacote); tag v2.0.0 aponta para f73af28. O commit posterior de exclusões preserva os mesmos arquivos de execução.
+- Vercel produção: dpl_3ETM7KghLTyrxYEmqQnPfvBHbSeU, https://jogo-duplinha-blush.vercel.app/ — Ready.
+- 122 arquivos de execução/PNG: HTTP200 e SHA-256 idêntico ao workspace. Arquivos de testes, plano, fontes locais de sprites e imagens de prévia retornam404.
+- Chrome na URL pública: guia concluído, sala criada, convite padrão sem flag experimental, WebRTC connected, host e convidado com protocolo autoritativo ativo e entidades iguais. Nenhum pageerror. Captura .playwright-cli/production-coop.png.
+- As duas imagens de prévia que já estavam sem versionamento permaneceram fora dos commits e do deploy.
