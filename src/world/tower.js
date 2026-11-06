@@ -5,6 +5,7 @@
  */
 
 import { Entity } from '../entities/entity.js';
+import { applyDamage } from '../combat/combat.js';
 import { worldToScreen } from '../core/isometric.js';
 import { drawDetailed3DStructure, getVisualHeight } from '../render/sprite_loader.js';
 
@@ -83,24 +84,17 @@ export class TowerProjectile {
       this.hasImpacted = true;
       this.isDead = true;
 
-      // Calculate effective damage (e.g. Stone Colossus takes -40%)
-      let effectiveDamage = this.damage;
-      if (target.towerDamageReduction) {
-        effectiveDamage *= (1.0 - target.towerDamageReduction);
-      }
-
-      // Apply damage
-      if (typeof target.takeDamage === 'function') {
-        target.takeDamage(effectiveDamage, 'physical');
-      } else {
-        target.hp = Math.max(0, target.hp - effectiveDamage);
+      const result = applyDamage(target, { sourceId: this.towerId, sourceType: 'tower', amount: this.damage, type: 'physical' });
+      if (result.wasLethal && simulation?.resolveCombatDeath) {
+        const source = simulation.entities?.find(entity => entity.id === this.towerId);
+        simulation.resolveCombatDeath(target, source);
       }
 
       // Spawn VFX and floating text if particles available
       if (simulation?.particles) {
         const color = this.team === 'allied' ? '#38bdf8' : '#ef4444';
         simulation.particles.emit('spark', { x: tx, y: ty, z: tz, count: 16, color });
-        simulation.particles.addFloatingText(Math.round(effectiveDamage), tx, ty, { color, fontSize: 15 });
+        simulation.particles.addFloatingText(Math.round(result.actualDamageDealt), tx, ty, { color, fontSize: 15 });
       }
     } else {
       // Continue homing towards target
@@ -288,15 +282,13 @@ export class DefensiveTower extends Entity {
     }
   }
 
-  takeDamage(amount) {
+  takeDamage(amount, type = 'physical') {
     if (this.isInvulnerable()) {
       return { damageTaken: 0, invulnerable: true, destroyed: false };
     }
-    const damageTaken = Math.min(this.hp, amount);
-    this.hp -= damageTaken;
-    if (this.hp <= 0) {
-      this.isDead = true;
-    }
+    const previousHp = this.hp;
+    super.takeDamage(amount, type);
+    const damageTaken = previousHp - this.hp;
     return { damageTaken, invulnerable: false, destroyed: this.hp <= 0 };
   }
 

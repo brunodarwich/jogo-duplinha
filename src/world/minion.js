@@ -5,6 +5,7 @@
  */
 
 import { Entity } from '../entities/entity.js';
+import { applyDamage } from '../combat/combat.js';
 import { worldToScreen } from '../core/isometric.js';
 import { getMinionSprite, drawChibiSprite } from '../render/sprite_loader.js';
 
@@ -198,12 +199,10 @@ export class MinionProjectile {
       this.z = tz;
       this.isDead = true;
 
-      // Apply damage
-      if (typeof target.takeDamage === 'function') {
-        target.takeDamage(this.damage, 'physical');
-      } else {
-        const currentHp = Number.isFinite(target.hp) ? target.hp : 0;
-        target.hp = Math.max(0, currentHp - this.damage);
+      const result = applyDamage(target, { sourceId: this.sourceId, sourceType: 'minion', amount: this.damage, type: 'physical' });
+      if (result.wasLethal && simulation?.resolveCombatDeath) {
+        const source = simulation.entities?.find(entity => entity.id === this.sourceId);
+        simulation.resolveCombatDeath(target, source);
       }
 
       if (simulation?.particles) {
@@ -288,8 +287,9 @@ export class MinionUnit extends Entity {
 
   takeDamage(amount, type = 'physical', killer = null) {
     if (!this.isAlive()) return { damageTaken: 0, isFatal: false };
-    const taken = Math.min(this.hp, amount);
-    this.hp -= taken;
+    const previousHp = this.hp;
+    super.takeDamage(amount, type);
+    const taken = previousHp - this.hp;
     const isFatal = this.hp <= 0;
     if (isFatal) {
       this.isDead = true;
@@ -297,17 +297,22 @@ export class MinionUnit extends Entity {
     return { damageTaken: taken, isFatal, killer };
   }
 
-  update(dt = 0.01667, entities = [], activeProjectiles = [], particles = null) {
+  update(dt = 0.01667, entities = [], activeProjectiles = [], particles = null, now = Date.now()) {
     if (!this.isAlive()) return;
 
     if (this.attackCooldown > 0) {
       this.attackCooldown -= dt;
     }
+    const canMove = this.canMove(now);
+    const canAttack = this.canAttack(now);
+    const movementSpeed = this.getMovementSpeed(now);
+    if (!canMove && !canAttack) return;
 
     const currentWp = LANE_WAYPOINTS[this.waypointIndex] || LANE_WAYPOINTS[0];
 
     // State 1: LEASH_RETURN (Returning to lane)
     if (this.aiState === MinionAIState.LEASH_RETURN) {
+      if (!canMove) return;
       const dx = currentWp.x - this.x;
       const dy = currentWp.y - this.y;
       const distToWp = Math.hypot(dx, dy);
@@ -316,7 +321,7 @@ export class MinionUnit extends Entity {
         this.aiState = MinionAIState.MARCH;
         this.targetEntity = null;
       } else {
-        const step = this.speed * dt;
+        const step = Math.min(distToWp, movementSpeed * dt);
         this.x += (dx / distToWp) * step;
         this.y += (dy / distToWp) * step;
         this.facing = Math.atan2(dy, dx);
@@ -345,6 +350,7 @@ export class MinionUnit extends Entity {
 
     // Scan for hostile targets if marching
     if (this.aiState === MinionAIState.MARCH) {
+      if (!canMove) return;
       let bestTarget = null;
       let highestPriority = -1;
       let closestDist = Infinity;
@@ -389,7 +395,7 @@ export class MinionUnit extends Entity {
           this.waypointIndex--;
         }
       } else {
-        const step = this.speed * dt;
+        const step = Math.min(distToWp, movementSpeed * dt);
         this.x += (dx / distToWp) * step;
         this.y += (dy / distToWp) * step;
         this.facing = Math.atan2(dy, dx);
@@ -410,7 +416,7 @@ export class MinionUnit extends Entity {
       if (distToTarget <= effectiveRange) {
         this.aiState = MinionAIState.ATTACK;
 
-        if (this.attackCooldown <= 0) {
+        if (canAttack && this.attackCooldown <= 0) {
           const baseAd = Number.isFinite(this.attackDamage) ? this.attackDamage : (MINION_BASE_STATS[this.subType]?.ad || 20);
           let damage = baseAd;
           if (this.subType === 'cannon' && (this.targetEntity.type === 'tower' || this.targetEntity.type === 'nexus')) {
@@ -419,12 +425,7 @@ export class MinionUnit extends Entity {
 
           if (this.subType === 'melee') {
             // Direct attack
-            if (typeof this.targetEntity.takeDamage === 'function') {
-              this.targetEntity.takeDamage(damage, 'physical');
-            } else {
-              const currentHp = Number.isFinite(this.targetEntity.hp) ? this.targetEntity.hp : 0;
-              this.targetEntity.hp = Math.max(0, currentHp - damage);
-            }
+            applyDamage(this.targetEntity, { sourceId: this.id, sourceType: 'minion', amount: damage, type: 'physical' });
             if (particles) {
               const color = this.team === 'allied' ? '#38bdf8' : '#ef4444';
               particles.emit('spark', { x: this.targetEntity.x, y: this.targetEntity.y, count: 6, color });
@@ -450,7 +451,8 @@ export class MinionUnit extends Entity {
       } else {
         // Pursue
         this.aiState = MinionAIState.PURSUE;
-        const step = this.speed * dt;
+        if (!canMove) return;
+        const step = Math.min(distToTarget, movementSpeed * dt);
         this.x += (dx / distToTarget) * step;
         this.y += (dy / distToTarget) * step;
       }

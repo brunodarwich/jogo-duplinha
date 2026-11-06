@@ -7,7 +7,7 @@ export function calculateMitigation(damage, resistance) {
   return damage * (100 / (100 + resistance));
 }
 
-export function applyDamage(target, damageEvent) {
+export function applyDamage(target, damageEvent = {}) {
   const {
     sourceId,
     sourceType = 'hero',
@@ -18,9 +18,26 @@ export function applyDamage(target, damageEvent) {
     lifesteal = 0
   } = damageEvent;
 
+  const emptyResult = {
+    rawDamage: 0, finalDamage: 0, actualDamageDealt: 0,
+    wasLethal: false, killerId: null, lifestealHealed: 0
+  };
+  if (!target || !Number.isFinite(target.hp) || target.hp <= 0 ||
+      !Number.isFinite(amount) || amount <= 0 ||
+      (typeof target.isAlive === 'function' && !target.isAlive()) ||
+      target.isDead === true || target.shieldActive ||
+      (typeof target.isInvulnerable === 'function' && target.isInvulnerable())) {
+    return emptyResult;
+  }
+
   let rawDamage = amount;
   if (isCrit) {
-    rawDamage *= critMultiplier;
+    rawDamage *= Number.isFinite(critMultiplier) && critMultiplier > 0 ? critMultiplier : 2;
+  }
+  if (!Number.isFinite(rawDamage)) return emptyResult;
+
+  if (sourceType === 'tower' && Number.isFinite(target.towerDamageReduction)) {
+    rawDamage *= 1 - Math.max(0, Math.min(1, target.towerDamageReduction));
   }
 
   let finalDamage = rawDamage;
@@ -36,17 +53,27 @@ export function applyDamage(target, damageEvent) {
 
   finalDamage = Math.max(0, finalDamage);
 
-  let remaining = finalDamage;
-  if (target.barrier && target.barrier > 0) {
-    const absorbed = Math.min(target.barrier, remaining);
-    target.barrier -= absorbed;
-    remaining -= absorbed;
-  }
-
   const previousHp = target.hp;
-  target.hp = Math.max(0, target.hp - remaining);
+  const previousBarrier = target.barrier || 0;
+  // takeDamage is the HP/barrier/lifecycle primitive. Mitigation belongs here,
+  // so an entity never receives a second resistance or barrier calculation.
+  if (typeof target.takeDamage === 'function') {
+    target.takeDamage(finalDamage, type);
+  } else {
+    let remaining = finalDamage;
+    if (target.barrier > 0) {
+      const absorbed = Math.min(target.barrier, remaining);
+      target.barrier -= absorbed;
+      remaining -= absorbed;
+    }
+    target.hp = Math.max(0, target.hp - remaining);
+  }
   const actualDamageDealt = previousHp - target.hp;
   const wasLethal = target.hp <= 0 && previousHp > 0;
+  if (sourceId && (actualDamageDealt > 0 || (target.barrier || 0) < previousBarrier)) {
+    target.lastDamagerId = sourceId;
+    target.lastDamageSourceType = sourceType;
+  }
 
   let lifestealHealed = 0;
   if (lifesteal > 0 && type === 'physical') {

@@ -66,6 +66,7 @@ export class Entity {
     this.rootedUntil = options.rootedUntil || 0;
     this.tauntedUntil = options.tauntedUntil || 0;
     this.slowedUntil = options.slowedUntil || 0;
+    this.slowPercentage = options.slowPercentage || 0;
 
     // Flags
     this.isLocalPlayer = !!options.isLocalPlayer;
@@ -114,6 +115,29 @@ export class Entity {
     return true;
   }
 
+  getMovementSpeed(now = Date.now()) {
+    const bonus = Number.isFinite(this.skillSpeedBonus) ? this.skillSpeedBonus : 0;
+    const speed = Math.max(0, this.speed + bonus);
+    if (this.slowedUntil > now) {
+      const slow = Number.isFinite(this.slowPercentage) ? Math.max(0, Math.min(1, this.slowPercentage)) : 0;
+      return speed * (1 - slow);
+    }
+    this.slowedUntil = 0;
+    this.slowPercentage = 0;
+    return speed;
+  }
+
+  clearCrowdControl() {
+    this.stunnedUntil = 0;
+    this.silencedUntil = 0;
+    this.rootedUntil = 0;
+    this.tauntedUntil = 0;
+    this.tauntTargetId = null;
+    this.slowedUntil = 0;
+    this.slowPercentage = 0;
+    this.stealthedUntil = 0;
+  }
+
   moveTo(wx, wy) {
     if (!this.isAlive()) return;
     this.targetX = wx;
@@ -139,7 +163,7 @@ export class Entity {
   }
 
   takeDamage(amount, type = 'physical') {
-    if (!this.isAlive() || amount <= 0) return 0;
+    if (!this.isAlive() || !Number.isFinite(amount) || amount <= 0) return 0;
 
     let remaining = amount;
     if (this.barrier > 0) {
@@ -169,8 +193,9 @@ export class Entity {
     return this.hp - oldHp;
   }
 
-  update(dt = 0.01667) {
+  update(dt = 0.01667, now = Date.now()) {
     if (!this.isAlive()) return;
+    const movementSpeed = this.getMovementSpeed(now);
 
     // Natural regeneration
     if (this.hp < this.maxHp && this.hpRegen > 0) {
@@ -192,11 +217,18 @@ export class Entity {
     }
 
     // Move towards target
-    if (this.isMoving && this.targetX !== null && this.targetY !== null) {
+    if (this.targetX !== null && this.targetY !== null) {
+      if (!this.canMove(now) || movementSpeed <= 0) {
+        this.vx = 0;
+        this.vy = 0;
+        this.isMoving = false;
+        return;
+      }
+      this.isMoving = true;
       const dx = this.targetX - this.x;
       const dy = this.targetY - this.y;
       const dist = Math.hypot(dx, dy);
-      const step = this.speed * dt;
+      const step = movementSpeed * dt;
 
       if (dist <= step || dist < 2) {
         this.x = this.targetX;
@@ -207,8 +239,8 @@ export class Entity {
         this.targetX = null;
         this.targetY = null;
       } else {
-        this.vx = (dx / dist) * this.speed;
-        this.vy = (dy / dist) * this.speed;
+        this.vx = (dx / dist) * movementSpeed;
+        this.vy = (dy / dist) * movementSpeed;
         this.x += this.vx * dt;
         this.y += this.vy * dt;
         this.targetFacing = Math.atan2(dy, dx);
@@ -550,6 +582,7 @@ export class HeroEntity extends Entity {
    */
   die() {
     clearHeroAction(this);
+    this.clearCrowdControl();
     this.hp = 0;
     this.isDeadState = true;
     this.stop();
@@ -587,20 +620,21 @@ export class HeroEntity extends Entity {
     this.attackTarget = null;
     this.attackMoveDestination = null;
     this.attackCooldown = 0;
+    this.bountyAwarded = false;
+    this.xpAwarded = false;
+    this.lastDamagerId = null;
+    this.lastDamageSourceType = null;
+    this.skillSpeedBonus = 0;
+    this.skillSpeedRemaining = 0;
+    this.shroudRemaining = 0;
+    this.isUntargetableFlag = false;
     if (this.isRecalling) {
       this.isRecalling = false;
       this.recallElapsed = 0;
     }
 
     // Cleanse all crowd control debuffs
-    this.stunnedUntil = 0;
-    this.silencedUntil = 0;
-    this.rootedUntil = 0;
-    this.tauntedUntil = 0;
-    this.tauntTargetId = null;
-    this.slowedUntil = 0;
-    this.slowPercentage = 0;
-    this.stealthedUntil = 0;
+    this.clearCrowdControl();
   }
 
   /**
@@ -615,7 +649,7 @@ export class HeroEntity extends Entity {
     return dealt;
   }
 
-  update(dt = 0.01667) {
+  update(dt = 0.01667, now = Date.now()) {
     // 1. Dead Hero Lifecycle
     if (this.isDead) {
       // Cooldown ticks for abilities continue ticking while dead
@@ -634,7 +668,7 @@ export class HeroEntity extends Entity {
       return;
     }
 
-    super.update(dt);
+    super.update(dt, now);
 
     // Basic attack cooldown tick
     if (this.attackCooldown > 0) {

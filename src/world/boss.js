@@ -5,9 +5,18 @@
  */
 
 import { Entity } from '../entities/entity.js';
+import { applyDamage } from '../combat/combat.js';
 import { worldToScreen } from '../core/isometric.js';
 import { MinionUnit } from './minion.js';
 import { getBossSprite, drawChibiSprite } from '../render/sprite_loader.js';
+
+function dealBossDamage(target, source, amount, type, simulation) {
+  const result = applyDamage(target, { sourceId: source.id, sourceType: 'boss', amount, type });
+  if (result.wasLethal && simulation?.resolveCombatDeath) {
+    simulation.resolveCombatDeath(target, source);
+  }
+  return result;
+}
 
 export const BOSS_CONFIGS = {
   colossus: {
@@ -173,6 +182,25 @@ export class GroundHazard {
       ctx.stroke();
     }
 
+    // A fixed dashed boundary and explicit label keep hazards readable without color or shake.
+    ctx.beginPath();
+    ctx.ellipse(sx, sy, r, r * 0.5, 0, 0, Math.PI * 2);
+    ctx.strokeStyle = '#fff7ed';
+    ctx.lineWidth = 2;
+    if (ctx.setLineDash) ctx.setLineDash([8, 5]);
+    ctx.stroke();
+    if (ctx.setLineDash) ctx.setLineDash([]);
+    if (typeof ctx.fillText === 'function') {
+      const label = { slam: '! PISÃO', acid_pool: '! ÁCIDO', meteor: '! METEORO' }[this.type] || '! PERIGO';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = '#0f172a';
+      ctx.fillStyle = '#fff7ed';
+      if (typeof ctx.strokeText === 'function') ctx.strokeText(label, sx, sy + r * 0.5 + 14);
+      ctx.fillText(label, sx, sy + r * 0.5 + 14);
+    }
+
     ctx.restore();
   }
 }
@@ -219,8 +247,9 @@ export class StoneColossusBoss extends Entity {
 
   takeDamage(amount, type = 'physical') {
     if (!this.isAlive()) return { damageTaken: 0, isDead: true };
-    const taken = Math.min(this.hp, amount);
-    this.hp -= taken;
+    const previousHp = this.hp;
+    super.takeDamage(amount, type);
+    const taken = previousHp - this.hp;
     const isDead = this.hp <= 0;
     if (isDead) this.isDead = true;
     return { damageTaken: taken, isDead };
@@ -268,11 +297,7 @@ export class StoneColossusBoss extends Entity {
             const isDead = typeof ent.isDead === 'function' ? ent.isDead() : !!ent.isDead;
             if (isDead || (typeof ent.hp === 'number' && ent.hp <= 0)) continue;
             if (Math.hypot(ent.x - haz.x, ent.y - haz.y) <= haz.radius) {
-              if (typeof ent.takeDamage === 'function') {
-                ent.takeDamage(250, 'physical');
-              } else {
-                ent.hp = Math.max(0, ent.hp - 250);
-              }
+              dealBossDamage(ent, this, 250, 'physical', simulation);
               const now = Date.now();
               ent.stunnedUntil = Math.max(ent.stunnedUntil || 0, now + this.slamStunDuration * 1000);
             }
@@ -406,8 +431,9 @@ export class AbyssalBehemothBoss extends Entity {
 
   takeDamage(amount, type = 'physical') {
     if (!this.isAlive()) return { damageTaken: 0, isDead: true };
-    const taken = Math.min(this.hp, amount);
-    this.hp -= taken;
+    const previousHp = this.hp;
+    super.takeDamage(amount, type);
+    const taken = previousHp - this.hp;
     const isDead = this.hp <= 0;
     if (isDead) this.isDead = true;
     return { damageTaken: taken, isDead };
@@ -455,11 +481,7 @@ export class AbyssalBehemothBoss extends Entity {
             const isDead = typeof ent.isDead === 'function' ? ent.isDead() : !!ent.isDead;
             if (isDead || (typeof ent.hp === 'number' && ent.hp <= 0)) continue;
             if (Math.hypot(ent.x - haz.x, ent.y - haz.y) <= haz.radius) {
-              if (typeof ent.takeDamage === 'function') {
-                ent.takeDamage(20, 'magical');
-              } else {
-                ent.hp = Math.max(0, ent.hp - 20);
-              }
+              dealBossDamage(ent, this, 20, 'magical', simulation);
             }
           }
         }
@@ -605,8 +627,9 @@ export class NexusGuardianBoss extends Entity {
     if (this.shieldActive) {
       return { damageTaken: 0, shielded: true, isDead: false };
     }
-    const taken = Math.min(this.hp, amount);
-    this.hp -= taken;
+    const previousHp = this.hp;
+    super.takeDamage(amount, type);
+    const taken = previousHp - this.hp;
     const isDead = this.hp <= 0;
     if (isDead) {
       this.isDead = true;
@@ -640,11 +663,7 @@ export class NexusGuardianBoss extends Entity {
     if (nearestTarget && minDist <= 180 && this.cleaveTimer <= 0) {
       this.cleaveTimer = this.cleaveCooldown;
       // Frontal cone damage (120 dmg)
-      if (typeof nearestTarget.takeDamage === 'function') {
-        nearestTarget.takeDamage(120, 'physical');
-      } else {
-        nearestTarget.hp = Math.max(0, nearestTarget.hp - 120);
-      }
+      dealBossDamage(nearestTarget, this, 120, 'physical', simulation);
       if (simulation?.particles) {
         simulation.particles.emit('spark', { x: nearestTarget.x, y: nearestTarget.y, count: 12, color: '#f59e0b' });
       }
@@ -668,11 +687,7 @@ export class NexusGuardianBoss extends Entity {
               for (const ent of entities) {
                 if (!ent || ent.team !== 'allied') continue;
                 if (Math.hypot(ent.x - haz.x, ent.y - haz.y) <= haz.radius) {
-                  if (typeof ent.takeDamage === 'function') {
-                    ent.takeDamage(300, 'magical');
-                  } else {
-                    ent.hp = Math.max(0, ent.hp - 300);
-                  }
+                  dealBossDamage(ent, this, 300, 'magical', simulation);
                 }
               }
               if (simulation?.particles) {
@@ -853,17 +868,17 @@ export class BossManager {
     }
   }
 
-  drawBossHUD(ctx, viewportWidth, viewportHeight) {
+  drawBossHUD(ctx, viewportWidth, viewportHeight, topInset = 110) {
     if (!ctx) return;
     // Find active boss
     const activeBoss = this.activeBosses.find(b => b && b.isAlive());
     if (!activeBoss) return;
 
     ctx.save();
-    const barWidth = 400;
+    const barWidth = Math.min(400, Math.max(180, viewportWidth - 48));
     const barHeight = 16;
     const startX = (viewportWidth - barWidth) / 2;
-    const startY = 75; // Cleanly positioned below Top HUD
+    const startY = topInset + 22;
     const maxHp = activeBoss.maxHp || 1;
     const ratio = Math.max(0, Math.min(1, (activeBoss.hp || 0) / maxHp));
 
