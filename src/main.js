@@ -11,6 +11,7 @@ import { PeerNetwork } from './net/peer_network.js';
 import { VirtualJoystick } from './ui/virtual_joystick.js';
 import { setupZoomControls } from './ui/zoom_controls.js';
 import { HelpUI } from './ui/help_ui.js';
+import { bindAbilityButton } from './ui/ability_button.js';
 
 window.addEventListener('DOMContentLoaded', () => {
   const canvas = document.getElementById('game-canvas');
@@ -129,17 +130,18 @@ window.addEventListener('DOMContentLoaded', () => {
       { id: 'ability-r', slot: 'R' },
       { id: 'ability-b', slot: 'B' }
     ];
+    const abilityButtonCleanups = [];
 
     for (const btnInfo of abilityButtons) {
       const btn = document.getElementById(btnInfo.id);
       if (btn) {
+        if (btnInfo.slot !== 'B') {
+          abilityButtonCleanups.push(bindAbilityButton(btn, gameSim.input, btnInfo.slot));
+          continue;
+        }
         btn.onclick = (e) => {
           e.stopPropagation();
-          if (btnInfo.slot === 'B') {
-            gameSim.handleCommand({ type: 'RECALL' });
-          } else {
-            gameSim.input.triggerAbility(btnInfo.slot);
-          }
+          gameSim.handleCommand({ type: 'RECALL' });
         };
       }
     }
@@ -183,6 +185,7 @@ window.addEventListener('DOMContentLoaded', () => {
       };
     }
     gameSim.onCleanup = () => {
+      for (const cleanup of abilityButtonCleanups) cleanup();
       for (const info of abilityButtons) {
         const button = document.getElementById(info.id);
         if (button) button.onclick = null;

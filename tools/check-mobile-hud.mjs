@@ -131,10 +131,9 @@ try {
   const qx=q.x+q.width/2,qy=q.y+q.height/2;
   await session.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{id:1,x:cx+25,y:cy},{id:3,x:qx,y:qy}]});
   await session.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[{id:3,x:qx,y:qy}]});
-  assert(await page.evaluate(()=>!!window.gameSim.input.targetingState),'Second finger cannot aim a skill');
-  await session.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{id:1,x:cx+25,y:cy},{id:4,x:400,y:160}]});
-  await session.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[{id:4,x:400,y:160}]});
-  assert(await page.evaluate(()=>window.gameSim.playerHero.abilities.Q.cooldownRemaining>0),'Ground tap did not cast the aimed skill');
+  assert(await page.evaluate(()=>window.gameSim.playerHero.abilities.Q.cooldownRemaining>0),'Second finger did not cast the skill');
+  assert(!await page.evaluate(()=>!!window.gameSim.input.targetingState),'Assisted touch cast left a preview active');
+  assert(await page.evaluate(()=>window.gameSim.virtualJoystick.active),'Casting with the second finger cancels movement');
   await session.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{id:1,x:cx+150,y:cy-100}]});
   await session.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
   assert(!await page.evaluate(()=>window.gameSim.virtualJoystick.active),'Release outside leaves joystick active');

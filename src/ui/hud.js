@@ -380,7 +380,7 @@ export class HUDController {
     if (this.elements.minimapCanvas) {
       this.minimap = new Minimap(this.elements.minimapCanvas);
     }
-    for (const button of document.querySelectorAll('.ability-slot, .ability-levelup-btn')) {
+    for (const button of document.querySelectorAll('#ability-b, .ability-levelup-btn')) {
       enableTouchActivation(button, this.listen.bind(this));
     }
     const panels = [...document.querySelectorAll('.hud-info-panel, .hud-settings-panel')];

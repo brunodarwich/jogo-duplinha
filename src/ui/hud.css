@@ -103,6 +103,7 @@
 .ability-slot-wrapper[data-slot="E"] { transform: translateY(-12px); }
 .ability-slot-wrapper[data-slot="R"] { transform: translateY(-8px); }
 .ability-slot { position: relative; display: grid; place-items: center; width: var(--skill-size); height: var(--skill-size); border-radius: 50%; background: #10263d; border: 2px solid var(--hud-gold); color: white; cursor: pointer; pointer-events: auto; touch-action: manipulation; box-shadow: 0 2px 4px #0009, inset 0 0 12px #62c5ff44; }
+.hud-overlay .ability-slot:not(.recall) { touch-action: none; }
 .ability-slot:active { filter: brightness(1.2); }
 .ability-icon { position: relative; z-index: 0; font-size: 24px; pointer-events: none; }
 .ability-art { position: absolute; inset: 2px; overflow: hidden; border-radius: 50%; pointer-events: none; z-index: 1; }
