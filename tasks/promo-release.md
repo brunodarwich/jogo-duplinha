@@ -24,4 +24,10 @@ Solicitação: criar arte dos heróis/torres, colocá-la na tela de carregamento
 
 ## Publicação
 
-Resultado do deploy será acrescentado após confirmar a URL pública e os hashes.
+- GitHub main/tag v2.1.0: 647d0a0 (código e pacote).
+- Vercel: dpl_CV9Kw1srLyuxmvp9sau6LqiqonBk — Ready.
+- URL pública: https://jogo-duplinha-blush.vercel.app/.
+- Verificados por HTTP200 e SHA-256: index, CSS, loader, manifesto de sprites e WebP. MIME image/webp correto. PNG original/prompt retornam404 na aplicação, conforme exclusões do pacote.
+- Chrome em produção: arte1672×941 pronta, progresso100%, entrada no lobby e partida solo iniciada; nenhum pageerror. Captura .playwright-cli/production-promo.png.
+- Recuperação: promover o deploy anterior dpl_3ETM7KghLTyrxYEmqQnPfvBHbSeU, jogo-duplinha-io4whi6dt-raixu01s-projects.vercel.app.
+- Prévia PNG/zoom pré-existentes permaneceram sem versionamento e fora do deploy.
